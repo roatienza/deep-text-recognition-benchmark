@@ -57,29 +57,29 @@ def train(opt):
 
     if opt.rgb:
         opt.input_channel = 3
-    model = Model(opt)
-    print('model input parameters', opt.imgH, opt.imgW, opt.num_fiducial, opt.input_channel, opt.output_channel,
-          opt.hidden_size, opt.num_class, opt.batch_max_length, opt.Transformation, opt.FeatureExtraction,
-          opt.SequenceModeling, opt.Prediction)
+    #model = Model(opt)
+    #print('model input parameters', opt.imgH, opt.imgW, opt.num_fiducial, opt.input_channel, opt.output_channel,
+    #      opt.hidden_size, opt.num_class, opt.batch_max_length, opt.Transformation, opt.FeatureExtraction,
+    #      opt.SequenceModeling, opt.Prediction)
 
     # weight initialization
-    for name, param in model.named_parameters():
-        if 'localization_fc2' in name:
-            print(f'Skip {name} as it is already initialized')
-            continue
-        try:
-            if 'bias' in name:
-                init.constant_(param, 0.0)
-            elif 'weight' in name:
-                init.kaiming_normal_(param)
-        except Exception as e:  # for batchnorm.
-            if 'weight' in name:
-                param.data.fill_(1)
-            continue
+    #for name, param in model.named_parameters():
+    #    if 'localization_fc2' in name:
+    #        print(f'Skip {name} as it is already initialized')
+    #        continue
+    #    try:
+    #        if 'bias' in name:
+    #            init.constant_(param, 0.0)
+    #        elif 'weight' in name:
+    #            init.kaiming_normal_(param)
+    #    except Exception as e:  # for batchnorm.
+    #        if 'weight' in name:
+    #            param.data.fill_(1)
+    #        continue
 
     # data parallel for multi-GPU
-    model = torch.nn.DataParallel(model).to(device)
-    model.train()
+    #model = torch.nn.DataParallel(model).to(device)
+    #model.train()
     if opt.saved_model != '':
         print(f'loading pretrained model from {opt.saved_model}')
         if opt.FT:
@@ -87,7 +87,7 @@ def train(opt):
         else:
             model.load_state_dict(torch.load(opt.saved_model))
     print("Model:")
-    print(model)
+    #print(model)
 
     """ setup loss """
     if opt.Prediction is None:
@@ -107,19 +107,19 @@ def train(opt):
     # filter that only require gradient decent
     filtered_parameters = []
     params_num = []
-    for p in filter(lambda p: p.requires_grad, model.parameters()):
-        filtered_parameters.append(p)
-        params_num.append(np.prod(p.size()))
-    print('Trainable params num : ', sum(params_num))
+    #for p in filter(lambda p: p.requires_grad, model.parameters()):
+    #    filtered_parameters.append(p)
+    #    params_num.append(np.prod(p.size()))
+    #print('Trainable params num : ', sum(params_num))
     # [print(name, p.numel()) for name, p in filter(lambda p: p[1].requires_grad, model.named_parameters())]
 
     # setup optimizer
-    if opt.adam:
-        optimizer = optim.Adam(filtered_parameters, lr=opt.lr, betas=(opt.beta1, 0.999))
-    else:
-        optimizer = optim.Adadelta(filtered_parameters, lr=opt.lr, rho=opt.rho, eps=opt.eps)
+    #if opt.adam:
+    #    optimizer = optim.Adam(filtered_parameters, lr=opt.lr, betas=(opt.beta1, 0.999))
+    #else:
+    #    optimizer = optim.Adadelta(filtered_parameters, lr=opt.lr, rho=opt.rho, eps=opt.eps)
     print("Optimizer:")
-    print(optimizer)
+    #print(optimizer)
 
     """ final options """
     # print(opt)
