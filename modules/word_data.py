@@ -1,5 +1,7 @@
 import io
 import torch
+import torch.nn as nn
+import math
 from torchtext.utils import download_from_url, extract_archive
 from torchtext.data.utils import get_tokenizer
 from torchtext.vocab import build_vocab_from_iterator
@@ -31,6 +33,7 @@ def batchify(data, bsz):
     data = data.narrow(0, 0, nbatch * bsz)
     # Evenly divide the data across the bsz batches.
     data = data.view(bsz, -1).t().contiguous()
+    print(data.size())
     return data.to(device)
 
 batch_size = 20
@@ -54,6 +57,7 @@ nlayers = 2 # the number of nn.TransformerEncoderLayer in nn.TransformerEncoder
 nhead = 2 # the number of heads in the multiheadattention models
 dropout = 0.2 # the dropout value
 model = TransformerModel(ntokens, emsize, nhead, nhid, nlayers, dropout).to(device)
+print(model)
 
 criterion = nn.CrossEntropyLoss()
 lr = 5.0 # learning rate
@@ -68,6 +72,8 @@ def train():
     src_mask = model.generate_square_subsequent_mask(bptt).to(device)
     for batch, i in enumerate(range(0, train_data.size(0) - 1, bptt)):
         data, targets = get_batch(train_data, i)
+        print(data.size())
+        print(targets.size())
         optimizer.zero_grad()
         if data.size(0) != bptt:
             src_mask = model.generate_square_subsequent_mask(data.size(0)).to(device)
@@ -128,4 +134,8 @@ for epoch in range(1, epochs + 1):
     scheduler.step()
 
 
-
+test_loss = evaluate(best_model, test_data)
+print('=' * 89)
+print('| End of training | test loss {:5.2f} | test ppl {:8.2f}'.format(
+        test_loss, math.exp(test_loss)))
+print('=' * 89)

@@ -44,7 +44,9 @@ def train(opt):
     log.close()
     
     """ model configuration """
-    if 'CTC' in opt.Prediction:
+    if opt.Prediction is None:
+        converter = TokenLabelConverter(opt.character)
+    elif 'CTC' in opt.Prediction:
         if opt.baiduCTC:
             converter = CTCLabelConverterForBaiduWarpctc(opt.character)
         else:
@@ -88,7 +90,9 @@ def train(opt):
     print(model)
 
     """ setup loss """
-    if 'CTC' in opt.Prediction:
+    if opt.Prediction is None:
+        criterion = torch.nn.CrossEntropyLoss().to(device)
+    elif 'CTC' in opt.Prediction:
         if opt.baiduCTC:
             # need to install warpctc. see our guideline.
             from warpctc_pytorch import CTCLoss 
@@ -147,7 +151,11 @@ def train(opt):
         image_tensors, labels = train_dataset.get_batch()
         image = image_tensors.to(device)
         text, length = converter.encode(labels, batch_max_length=opt.batch_max_length)
+        print(text, length)
         batch_size = image.size(0)
+
+        # debug
+        exit(0)
 
         if 'CTC' in opt.Prediction:
             preds = model(image, text)
@@ -262,11 +270,12 @@ if __name__ == '__main__':
     parser.add_argument('--PAD', action='store_true', help='whether to keep ratio then pad for image resize')
     parser.add_argument('--data_filtering_off', action='store_true', help='for data_filtering_off mode')
     """ Model Architecture """
+    parser.add_argument('--Transformer', action='store_true', help='Use end-to-end transformer')
     parser.add_argument('--Transformation', type=str, required=True, help='Transformation stage. None|TPS')
     parser.add_argument('--FeatureExtraction', type=str, required=True,
                         help='FeatureExtraction stage. VGG|RCNN|ResNet')
     parser.add_argument('--SequenceModeling', type=str, required=True, help='SequenceModeling stage. None|BiLSTM')
-    parser.add_argument('--Prediction', type=str, required=True, help='Prediction stage. CTC|Attn')
+    parser.add_argument('--Prediction', type=str, required=True, help='Prediction stage. None|CTC|Attn')
     parser.add_argument('--num_fiducial', type=int, default=20, help='number of fiducial points of TPS-STN')
     parser.add_argument('--input_channel', type=int, default=1,
                         help='the number of input channel of Feature extractor')

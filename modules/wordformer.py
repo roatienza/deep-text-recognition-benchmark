@@ -30,9 +30,14 @@ class TransformerModel(nn.Module):
 
     def forward(self, src, src_mask):
         src = self.encoder(src) * math.sqrt(self.ninp)
+        print(src.size())
         src = self.pos_encoder(src)
+        print(src.size())
         output = self.transformer_encoder(src, src_mask)
+        print(output.size())
         output = self.decoder(output)
+        print(output.size())
+        exit(0)
         return output
 
 
