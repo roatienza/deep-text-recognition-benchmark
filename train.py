@@ -14,7 +14,7 @@ import numpy as np
 
 from utils import CTCLabelConverter, CTCLabelConverterForBaiduWarpctc, AttnLabelConverter, Averager
 from dataset import hierarchical_dataset, AlignCollate, Batch_Balanced_Dataset
-from model import Model
+from model import Model, Wordformer
 from test import validation
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -57,29 +57,33 @@ def train(opt):
 
     if opt.rgb:
         opt.input_channel = 3
-    #model = Model(opt)
-    #print('model input parameters', opt.imgH, opt.imgW, opt.num_fiducial, opt.input_channel, opt.output_channel,
-    #      opt.hidden_size, opt.num_class, opt.batch_max_length, opt.Transformation, opt.FeatureExtraction,
-    #      opt.SequenceModeling, opt.Prediction)
+
+    if opt.Transformer:
+        model = Wordformer(opt) 
+    else:
+        model = Model(opt)
+    print('model input parameters', opt.imgH, opt.imgW, opt.num_fiducial, opt.input_channel, opt.output_channel,
+          opt.hidden_size, opt.num_class, opt.batch_max_length, opt.Transformation, opt.FeatureExtraction,
+          opt.SequenceModeling, opt.Prediction)
 
     # weight initialization
-    #for name, param in model.named_parameters():
-    #    if 'localization_fc2' in name:
-    #        print(f'Skip {name} as it is already initialized')
-    #        continue
-    #    try:
-    #        if 'bias' in name:
-    #            init.constant_(param, 0.0)
-    #        elif 'weight' in name:
-    #            init.kaiming_normal_(param)
-    #    except Exception as e:  # for batchnorm.
-    #        if 'weight' in name:
-    #            param.data.fill_(1)
-    #        continue
+    for name, param in model.named_parameters():
+        if 'localization_fc2' in name:
+            print(f'Skip {name} as it is already initialized')
+            continue
+        try:
+            if 'bias' in name:
+                init.constant_(param, 0.0)
+            elif 'weight' in name:
+                init.kaiming_normal_(param)
+        except Exception as e:  # for batchnorm.
+            if 'weight' in name:
+                param.data.fill_(1)
+            continue
 
     # data parallel for multi-GPU
-    #model = torch.nn.DataParallel(model).to(device)
-    #model.train()
+    model = torch.nn.DataParallel(model).to(device)
+    model.train()
     if opt.saved_model != '':
         print(f'loading pretrained model from {opt.saved_model}')
         if opt.FT:
@@ -87,7 +91,7 @@ def train(opt):
         else:
             model.load_state_dict(torch.load(opt.saved_model))
     print("Model:")
-    #print(model)
+    print(model)
 
     """ setup loss """
     if opt.Prediction is None:
@@ -107,19 +111,19 @@ def train(opt):
     # filter that only require gradient decent
     filtered_parameters = []
     params_num = []
-    #for p in filter(lambda p: p.requires_grad, model.parameters()):
-    #    filtered_parameters.append(p)
-    #    params_num.append(np.prod(p.size()))
-    #print('Trainable params num : ', sum(params_num))
+    for p in filter(lambda p: p.requires_grad, model.parameters()):
+        filtered_parameters.append(p)
+        params_num.append(np.prod(p.size()))
+    print('Trainable params num : ', sum(params_num))
     # [print(name, p.numel()) for name, p in filter(lambda p: p[1].requires_grad, model.named_parameters())]
 
     # setup optimizer
-    #if opt.adam:
-    #    optimizer = optim.Adam(filtered_parameters, lr=opt.lr, betas=(opt.beta1, 0.999))
-    #else:
-    #    optimizer = optim.Adadelta(filtered_parameters, lr=opt.lr, rho=opt.rho, eps=opt.eps)
+    if opt.adam:
+        optimizer = optim.Adam(filtered_parameters, lr=opt.lr, betas=(opt.beta1, 0.999))
+    else:
+        optimizer = optim.Adadelta(filtered_parameters, lr=opt.lr, rho=opt.rho, eps=opt.eps)
     print("Optimizer:")
-    #print(optimizer)
+    print(optimizer)
 
     """ final options """
     # print(opt)
@@ -151,11 +155,11 @@ def train(opt):
         image_tensors, labels = train_dataset.get_batch()
         image = image_tensors.to(device)
         text, length = converter.encode(labels, batch_max_length=opt.batch_max_length)
-        print(text, length)
+        #print(text, length)
         batch_size = image.size(0)
 
         # debug
-        exit(0)
+        #exit(0)
 
         if 'CTC' in opt.Prediction:
             preds = model(image, text)
@@ -166,11 +170,28 @@ def train(opt):
             else:
                 preds = preds.log_softmax(2).permute(1, 0, 2)
                 cost = criterion(preds, text, preds_size, length)
-
+        elif opt.Transformer:
+            preds = model(text)
+            target = text
+            #target = text[:, 1:]  # without [GO] Symbol
+            cost = criterion(preds.view(-1, preds.shape[-1]), target.contiguous().view(-1))
+            print(preds.view(-1, preds.shape[-1]).size()) 
+            print(target.contiguous().view(-1).size())
+            print(preds.size())
+            print(target.size())
+            print(target[0])
+            print(torch.argmax(preds[0], dim=-1))
+            exit(0)
         else:
             preds = model(image, text[:, :-1])  # align with Attention.forward
             target = text[:, 1:]  # without [GO] Symbol
             cost = criterion(preds.view(-1, preds.shape[-1]), target.contiguous().view(-1))
+            #print(preds.view(-1, preds.shape[-1]).size()) 
+            #print(target.contiguous().view(-1).size())
+            #print(preds.size())
+            #print(target.size())
+            #print(target[0])
+            #exit(0)
 
         model.zero_grad()
         cost.backward()
