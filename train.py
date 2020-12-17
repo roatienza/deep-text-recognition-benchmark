@@ -12,7 +12,7 @@ import torch.optim as optim
 import torch.utils.data
 import numpy as np
 
-from utils import CTCLabelConverter, CTCLabelConverterForBaiduWarpctc, AttnLabelConverter, Averager
+from utils import CTCLabelConverter, CTCLabelConverterForBaiduWarpctc, AttnLabelConverter, Averager, TokenLabelConverter
 from dataset import hierarchical_dataset, AlignCollate, Batch_Balanced_Dataset
 from model import Model, Wordformer
 from test import validation
@@ -44,7 +44,7 @@ def train(opt):
     log.close()
     
     """ model configuration """
-    if opt.Prediction is None:
+    if opt.Transformer:
         converter = TokenLabelConverter(opt.character)
     elif 'CTC' in opt.Prediction:
         if opt.baiduCTC:
@@ -94,7 +94,7 @@ def train(opt):
     print(model)
 
     """ setup loss """
-    if opt.Prediction is None:
+    if opt.Transformer:
         criterion = torch.nn.CrossEntropyLoss().to(device)
     elif 'CTC' in opt.Prediction:
         if opt.baiduCTC:
@@ -171,27 +171,13 @@ def train(opt):
                 preds = preds.log_softmax(2).permute(1, 0, 2)
                 cost = criterion(preds, text, preds_size, length)
         elif opt.Transformer:
-            preds = model(text)
             target = text
-            #target = text[:, 1:]  # without [GO] Symbol
+            preds = model(text)
             cost = criterion(preds.view(-1, preds.shape[-1]), target.contiguous().view(-1))
-            print(preds.view(-1, preds.shape[-1]).size()) 
-            print(target.contiguous().view(-1).size())
-            print(preds.size())
-            print(target.size())
-            print(target[0])
-            print(torch.argmax(preds[0], dim=-1))
-            exit(0)
         else:
             preds = model(image, text[:, :-1])  # align with Attention.forward
             target = text[:, 1:]  # without [GO] Symbol
             cost = criterion(preds.view(-1, preds.shape[-1]), target.contiguous().view(-1))
-            #print(preds.view(-1, preds.shape[-1]).size()) 
-            #print(target.contiguous().view(-1).size())
-            #print(preds.size())
-            #print(target.size())
-            #print(target[0])
-            #exit(0)
 
         model.zero_grad()
         cost.backward()
@@ -235,7 +221,11 @@ def train(opt):
                 head = f'{"Ground Truth":25s} | {"Prediction":25s} | Confidence Score & T/F'
                 predicted_result_log = f'{dashed_line}\n{head}\n{dashed_line}\n'
                 for gt, pred, confidence in zip(labels[:5], preds[:5], confidence_score[:5]):
-                    if 'Attn' in opt.Prediction:
+                    if opt.Transformer:
+                        gt = gt[4:gt.find('[s]')]
+                        pred = pred[:]
+                        #pred = pred[4:pred.find('[s]')]
+                    elif 'Attn' in opt.Prediction:
                         gt = gt[:gt.find('[s]')]
                         pred = pred[:pred.find('[s]')]
 

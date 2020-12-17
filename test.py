@@ -91,10 +91,14 @@ def validation(model, criterion, evaluation_loader, converter, opt):
         length_of_data = length_of_data + batch_size
         image = image_tensors.to(device)
         # For max length prediction
-        length_for_pred = torch.IntTensor([opt.batch_max_length] * batch_size).to(device)
-        text_for_pred = torch.LongTensor(batch_size, opt.batch_max_length + 1).fill_(0).to(device)
-
-        text_for_loss, length_for_loss = converter.encode(labels, batch_max_length=opt.batch_max_length)
+        if opt.Transformer:
+            length_for_pred = torch.IntTensor([opt.batch_max_length + 2] * batch_size).to(device)
+            text_for_pred = torch.LongTensor(batch_size, opt.batch_max_length + 2).fill_(0).to(device)
+            text_for_loss, length_for_loss = converter.encode(labels, batch_max_length=opt.batch_max_length)
+        else:
+            length_for_pred = torch.IntTensor([opt.batch_max_length] * batch_size).to(device)
+            text_for_pred = torch.LongTensor(batch_size, opt.batch_max_length + 1).fill_(0).to(device)
+            text_for_loss, length_for_loss = converter.encode(labels, batch_max_length=opt.batch_max_length)
 
         start_time = time.time()
         if 'CTC' in opt.Prediction:
@@ -117,6 +121,22 @@ def validation(model, criterion, evaluation_loader, converter, opt):
                 _, preds_index = preds.max(2)
             preds_str = converter.decode(preds_index.data, preds_size.data)
         
+        elif opt.Transformer:
+            preds = model(text_for_loss)
+            _, preds_index = preds.topk(1, dim=-1, largest=True, sorted=True)
+            preds_index = preds_index.view(-1, opt.batch_max_length + 2)
+            #print(preds_index)
+            #print(preds_index.size())
+            #exit(0)
+            forward_time = time.time() - start_time
+            target = text_for_loss
+            cost = criterion(preds.contiguous().view(-1, preds.shape[-1]), target.contiguous().view(-1))
+
+            # select max probabilty (greedy decoding) then decode index to character
+            #_, preds_index = preds.max(2)
+            length_for_pred = torch.IntTensor([opt.batch_max_length + 2] * batch_size).to(device)
+            preds_str = converter.decode(preds_index, length_for_pred)
+            labels = converter.decode(text_for_loss, length_for_loss)
         else:
             preds = model(image, text_for_pred, is_train=False)
             forward_time = time.time() - start_time
@@ -138,7 +158,7 @@ def validation(model, criterion, evaluation_loader, converter, opt):
         preds_max_prob, _ = preds_prob.max(dim=2)
         confidence_score_list = []
         for gt, pred, pred_max_prob in zip(labels, preds_str, preds_max_prob):
-            if 'Attn' in opt.Prediction:
+            if 'Attn' in opt.Prediction or opt.Transformer:
                 gt = gt[:gt.find('[s]')]
                 pred_EOS = pred.find('[s]')
                 pred = pred[:pred_EOS]  # prune after "end of sentence" token ([s])
