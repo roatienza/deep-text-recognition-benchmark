@@ -25,7 +25,7 @@ from modules.prediction import Attention
 
 from modules.modules import TransformerBlock
 from modules.util.util import d
-
+import math
 
 
 class Model(nn.Module):
@@ -108,21 +108,94 @@ class Wordformer(nn.Module):
         heads: number of heads (def 8)
         depth: number of attention layers (def 12)
         seq_length: opt.batch_max_length = 25 (plus [GO])
+        num_tokens: opt.num_classo
+
+
+        ntokens = len(vocab.stoi) # the size of vocabulary
+        emsize = 200 # embedding dimension
+        nhid = 200 # the dimension of the feedforward network model in nn.TransformerEncoder
+        nlayers = 2 # the number of nn.TransformerEncoderLayer in nn.TransformerEncoder
+        nhead = 2 # the number of heads in the multiheadattention models
+        dropout = 0.2 # the dropout value
+        model = TransformerModel(ntokens, emsize, nhead, nhid, nlayers, dropout).to(device)
+    """
+    def __init__(self, opt):
+
+        super().__init__()
+        emb = opt.hidden_size
+        heads = 8
+        nlayers = 6
+        dropout = 0.2
+        hidden_dim = 512
+        seq_length = opt.batch_max_length + 2 # [GO] + text + [s]
+        num_tokens = opt.num_class
+        self.num_tokens = num_tokens
+        self.emb = emb
+        self.pos_embedding = PositionalEncoding(emb, max_len=seq_length)
+        encoder_layers = nn.TransformerEncoderLayer(emb, heads, hidden_dim, dropout)
+        self.transformer_encoder = nn.TransformerEncoder(encoder_layers, nlayers)
+        self.encoder = nn.Embedding(num_tokens, emb)
+        self.decoder = nn.Linear(emb, num_tokens)
+        self.init_weights()
+
+    def init_weights(self):
+        initrange = 0.1
+        self.encoder.weight.data.uniform_(-initrange, initrange)
+        self.decoder.bias.data.zero_()
+        self.decoder.weight.data.uniform_(-initrange, initrange)
+
+
+    def forward(self, x):
+        tokens = self.encoder(x) * math.sqrt(self.emb)
+        b, t, e = tokens.size()
+        x =  self.pos_embedding(tokens)
+        x = self.transformer_encoder(x, None)
+        x = self.decoder(x.view(b*t, e)).view(b, t, self.num_tokens)
+        return x
+
+
+class PositionalEncoding(nn.Module):
+    def __init__(self, d_model, dropout=0.1, max_len=128):
+        super(PositionalEncoding, self).__init__()
+        self.dropout = nn.Dropout(p=dropout)
+        pe = torch.zeros(max_len, d_model)
+        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        #pe = pe.unsqueeze(0).transpose(0, 1)
+        pe = pe.unsqueeze(0)
+        self.register_buffer('pe', pe)
+
+    def forward(self, x):
+        x = x + self.pe
+        return self.dropout(x)
+
+
+class Wordformer1(nn.Module):
+    """
+    Transformer for generating texts
+    """
+
+    """
+        emb: opt.hidden_size = 256
+        heads: number of heads (def 8)
+        depth: number of attention layers (def 12)
+        seq_length: opt.batch_max_length = 25 (plus [GO])
         num_tokens: opt.num_class
     """
-    #def __init__(self, emb, heads, depth, seq_length, num_tokens, wide=False):
     def __init__(self, opt):
 
         super().__init__()
         emb = opt.hidden_size
         heads = 8
         depth = 12
-        seq_length = opt.batch_max_length + 2 # text + [s]
+        seq_length = opt.batch_max_length + 2 # [GO] + text + [s]
         num_tokens = opt.num_class
 
         self.num_tokens = num_tokens
-        self.token_embedding = nn.Embedding(embedding_dim=emb, num_embeddings=num_tokens)
-        self.pos_embedding = nn.Embedding(embedding_dim=emb, num_embeddings=seq_length)
+        self.token_embedding = nn.Embedding(num_tokens, emb)
+        self.pos_embedding = PositionalEncoding(emb, max_len=seq_length)
 
         tblocks = []
         for i in range(depth):
@@ -141,8 +214,10 @@ class Wordformer(nn.Module):
         tokens = self.token_embedding(x)
         b, t, e = tokens.size()
 
-        positions = self.pos_embedding(torch.arange(t, device=d()))[None, :, :].expand(b, t, e)
-        x = tokens + positions
+        #positions = self.pos_embedding(torch.arange(t, device=d()))[None, :, :].expand(b, t, e)
+        #x = tokens + positions
+
+        x =  self.pos_embedding(tokens)
 
         x = self.tblocks(x)
 
@@ -151,57 +226,4 @@ class Wordformer(nn.Module):
         return x
         #return F.log_softmax(x, dim=2)
 
-class CTransformer(nn.Module):
-    """
-    Transformer for classifying sequences
-    """
-
-    def __init__(self, emb, heads, depth, seq_length, num_tokens, num_classes, max_pool=True, dropout=0.0, wide=False):
-        """
-        :param emb: Embedding dimension
-        :param heads: nr. of attention heads
-        :param depth: Number of transformer blocks
-        :param seq_length: Expected maximum sequence length
-        :param num_tokens: Number of tokens (usually words) in the vocabulary
-        :param num_classes: Number of classes.
-        :param max_pool: If true, use global max pooling in the last layer. If false, use global
-                         average pooling.
-        """
-        super().__init__()
-
-        self.num_tokens, self.max_pool = num_tokens, max_pool
-
-        self.token_embedding = nn.Embedding(embedding_dim=emb, num_embeddings=num_tokens)
-        self.pos_embedding = nn.Embedding(embedding_dim=emb, num_embeddings=seq_length)
-
-        tblocks = []
-        for i in range(depth):
-            tblocks.append(
-                TransformerBlock(emb=emb, heads=heads, seq_length=seq_length, mask=False, dropout=dropout, wide=wide))
-
-        self.tblocks = nn.Sequential(*tblocks)
-
-        self.toprobs = nn.Linear(emb, num_classes)
-
-        self.do = nn.Dropout(dropout)
-
-    def forward(self, x):
-        """
-        :param x: A batch by sequence length integer tensor of token indices.
-        :return: predicted log-probability vectors for each token based on the preceding tokens.
-        """
-        tokens = self.token_embedding(x)
-        b, t, e = tokens.size()
-
-        positions = self.pos_embedding(torch.arange(t, device=d()))[None, :, :].expand(b, t, e)
-        x = tokens + positions
-        x = self.do(x)
-
-        x = self.tblocks(x)
-
-        x = x.max(dim=1)[0] if self.max_pool else x.mean(dim=1) # pool over the time dimension
-
-        x = self.toprobs(x)
-
-        return F.log_softmax(x, dim=1)
 

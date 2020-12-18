@@ -156,18 +156,19 @@ class TokenLabelConverter(object):
         self.GO = '[GO]'
         self.SPACE = '[s]'
         self.MASK = '[MASK]'
-        self.list_token = [self.GO, self.SPACE, self.MASK]  # ['[s]','[UNK]','[PAD]','[GO]']
+
+        self.list_token = [self.GO, self.SPACE, self.MASK]
         self.character = self.list_token + list(character)
 
-        self.dict = {}
-        for i, char in enumerate(self.character):
-            self.dict[char] = i
+        self.dict = {word: i for i, word in enumerate(self.character)}
 
+        #self.dict = {}
         #for i, char in enumerate(self.character):
-            # print(i, char)
-        #    self.dict[char] = np.fromstring(char, dtype=np.uint8)[0]
+        #    self.dict[char] = i
 
-        #self.character = self.list_token + self.character
+        #for char in self.character:
+            # print(i, char)
+            #self.embedding[char] = np.fromstring(char, dtype=np.uint8)[0]
 
     def encode(self, text, batch_max_length=25, is_train=False):
         """ convert text-label into text-index.
