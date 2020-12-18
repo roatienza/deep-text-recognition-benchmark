@@ -92,8 +92,6 @@ def validation(model, criterion, evaluation_loader, converter, opt):
         image = image_tensors.to(device)
         # For max length prediction
         if opt.Transformer:
-            length_for_pred = torch.IntTensor([opt.batch_max_length + 2] * batch_size).to(device)
-            text_for_pred = torch.LongTensor(batch_size, opt.batch_max_length + 2).fill_(0).to(device)
             text_for_loss, length_for_loss = converter.encode(labels, batch_max_length=opt.batch_max_length, is_train=True)
         else:
             length_for_pred = torch.IntTensor([opt.batch_max_length] * batch_size).to(device)
@@ -154,7 +152,6 @@ def validation(model, criterion, evaluation_loader, converter, opt):
         confidence_score_list = []
         for gt, pred, pred_max_prob in zip(labels, preds_str, preds_max_prob):
             if  opt.Transformer:
-                #gt = gt[1:gt.find('[s]')]
                 pred_EOS = pred.find('[s]')
                 pred = pred[:pred_EOS]  # prune after "end of sentence" token ([s])
                 pred_max_prob = pred_max_prob[:pred_EOS]

@@ -162,14 +162,6 @@ class TokenLabelConverter(object):
 
         self.dict = {word: i for i, word in enumerate(self.character)}
 
-        #self.dict = {}
-        #for i, char in enumerate(self.character):
-        #    self.dict[char] = i
-
-        #for char in self.character:
-            # print(i, char)
-            #self.embedding[char] = np.fromstring(char, dtype=np.uint8)[0]
-
     def encode(self, text, batch_max_length=25, is_train=False):
         """ convert text-label into text-index.
         input:

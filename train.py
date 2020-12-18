@@ -154,11 +154,7 @@ def train(opt):
         # train part
         image_tensors, labels = train_dataset.get_batch()
         image = image_tensors.to(device)
-        if opt.Transformer:
-            text, length = converter.encode(labels, batch_max_length=opt.batch_max_length)
-        else:
-            text, length = converter.encode(labels, batch_max_length=opt.batch_max_length, is_train=True)
-        #print(text, length)
+        text, length = converter.encode(labels, batch_max_length=opt.batch_max_length, is_train=True)
         batch_size = image.size(0)
 
         if 'CTC' in opt.Prediction:
@@ -172,7 +168,7 @@ def train(opt):
                 cost = criterion(preds, text, preds_size, length)
         elif opt.Transformer:
             preds = model(text)
-            target, length = converter.encode(labels, batch_max_length=opt.batch_max_length, is_train=True)
+            target, length = converter.encode(labels, batch_max_length=opt.batch_max_length, is_train=False)
             cost = criterion(preds.view(-1, preds.shape[-1]), target.contiguous().view(-1))
         else:
             preds = model(image, text[:, :-1])  # align with Attention.forward

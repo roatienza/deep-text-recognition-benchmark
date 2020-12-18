@@ -122,20 +122,18 @@ class Wordformer(nn.Module):
     def __init__(self, opt):
 
         super().__init__()
-        emb = opt.hidden_size
-        heads = 8
-        nlayers = 6
+        self.emb = opt.hidden_size
+        num_heads = 16
+        num_layers = 6
         dropout = 0.2
         hidden_dim = 512
         seq_length = opt.batch_max_length + 2 # [GO] + text + [s]
-        num_tokens = opt.num_class
-        self.num_tokens = num_tokens
-        self.emb = emb
-        self.pos_embedding = PositionalEncoding(emb, dropout=0, max_len=seq_length)
-        encoder_layers = nn.TransformerEncoderLayer(emb, heads, hidden_dim, dropout)
-        self.transformer_encoder = nn.TransformerEncoder(encoder_layers, nlayers)
-        self.encoder = nn.Embedding(num_tokens, emb)
-        self.decoder = nn.Linear(emb, num_tokens)
+        self.num_tokens = opt.num_class
+        self.pos_embedding = PositionalEncoding(self.emb, dropout=dropout, max_len=seq_length)
+        encoder_layers = nn.TransformerEncoderLayer(self.emb, num_heads, hidden_dim, dropout)
+        self.transformer_encoder = nn.TransformerEncoder(encoder_layers, num_layers)
+        self.encoder = nn.Embedding(self.num_tokens, self.emb)
+        self.decoder = nn.Linear(self.emb, self.num_tokens)
         self.init_weights()
 
     def init_weights(self):
@@ -144,11 +142,10 @@ class Wordformer(nn.Module):
         self.decoder.bias.data.zero_()
         self.decoder.weight.data.uniform_(-initrange, initrange)
 
-
     def forward(self, x):
-        tokens = self.encoder(x) * math.sqrt(self.emb)
-        b, t, e = tokens.size()
-        x =  self.pos_embedding(tokens)
+        x = self.encoder(x) * math.sqrt(self.emb)
+        b, t, e = x.size()
+        x = self.pos_embedding(x)
         x = self.transformer_encoder(x, None)
         x = self.decoder(x.view(b*t, e)).view(b, t, self.num_tokens)
         return x
