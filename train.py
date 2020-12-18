@@ -154,7 +154,10 @@ def train(opt):
         # train part
         image_tensors, labels = train_dataset.get_batch()
         image = image_tensors.to(device)
-        text, length = converter.encode(labels, batch_max_length=opt.batch_max_length)
+        if opt.Transformer:
+            text, length = converter.encode(labels, batch_max_length=opt.batch_max_length)
+        else:
+            text, length = converter.encode(labels, batch_max_length=opt.batch_max_length, is_train=True)
         #print(text, length)
         batch_size = image.size(0)
 
@@ -171,8 +174,8 @@ def train(opt):
                 preds = preds.log_softmax(2).permute(1, 0, 2)
                 cost = criterion(preds, text, preds_size, length)
         elif opt.Transformer:
-            target = text
             preds = model(text)
+            target, length = converter.encode(labels, batch_max_length=opt.batch_max_length, is_train=False)
             cost = criterion(preds.view(-1, preds.shape[-1]), target.contiguous().view(-1))
         else:
             preds = model(image, text[:, :-1])  # align with Attention.forward
@@ -222,9 +225,9 @@ def train(opt):
                 predicted_result_log = f'{dashed_line}\n{head}\n{dashed_line}\n'
                 for gt, pred, confidence in zip(labels[:5], preds[:5], confidence_score[:5]):
                     if opt.Transformer:
-                        gt = gt[4:gt.find('[s]')]
-                        pred = pred[:]
-                        #pred = pred[4:pred.find('[s]')]
+                        #gt = gt[4:gt.find('[s]')]
+                        #pred = pred[:]
+                        pred = pred[:pred.find('[s]')]
                     elif 'Attn' in opt.Prediction:
                         gt = gt[:gt.find('[s]')]
                         pred = pred[:pred.find('[s]')]

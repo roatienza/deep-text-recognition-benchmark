@@ -169,7 +169,7 @@ class TokenLabelConverter(object):
 
         #self.character = self.list_token + self.character
 
-    def encode(self, text, batch_max_length=25):
+    def encode(self, text, batch_max_length=25, is_train=False):
         """ convert text-label into text-index.
         input:
             text: text labels of each image. [batch_size]
@@ -188,13 +188,14 @@ class TokenLabelConverter(object):
         for i, t in enumerate(text):
             text = [self.GO] + list(t) + [self.SPACE]
             text = [self.dict[char] for char in text]
-            index = np.random.randint(1, len(t) + 1)
-            prob = np.random.uniform()
-            if prob > 0.2:
-                text[index] = self.dict[self.MASK]
-            elif prob > 0.1: 
-                char_index = np.random.randint(len(self.list_token), len(self.character))
-                text[index] = self.dict[self.character[char_index]]
+            if is_train:
+                index = np.random.randint(1, len(t) + 1)
+                prob = np.random.uniform()
+                if prob > 0.2:
+                    text[index] = self.dict[self.MASK]
+                elif prob > 0.1: 
+                    char_index = np.random.randint(len(self.list_token), len(self.character))
+                    text[index] = self.dict[self.character[char_index]]
             batch_text[i][:len(text)] = torch.LongTensor(text)  # batch_text[:, 0] = [GO] token
         return (batch_text.to(device), torch.IntTensor(length).to(device))
 
