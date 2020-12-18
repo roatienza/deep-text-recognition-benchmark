@@ -161,9 +161,6 @@ def train(opt):
         #print(text, length)
         batch_size = image.size(0)
 
-        # debug
-        #exit(0)
-
         if 'CTC' in opt.Prediction:
             preds = model(image, text)
             preds_size = torch.IntTensor([preds.size(1)] * batch_size)
@@ -175,7 +172,7 @@ def train(opt):
                 cost = criterion(preds, text, preds_size, length)
         elif opt.Transformer:
             preds = model(text)
-            target, length = converter.encode(labels, batch_max_length=opt.batch_max_length, is_train=False)
+            target, length = converter.encode(labels, batch_max_length=opt.batch_max_length, is_train=True)
             cost = criterion(preds.view(-1, preds.shape[-1]), target.contiguous().view(-1))
         else:
             preds = model(image, text[:, :-1])  # align with Attention.forward
@@ -225,8 +222,6 @@ def train(opt):
                 predicted_result_log = f'{dashed_line}\n{head}\n{dashed_line}\n'
                 for gt, pred, confidence in zip(labels[:5], preds[:5], confidence_score[:5]):
                     if opt.Transformer:
-                        #gt = gt[4:gt.find('[s]')]
-                        #pred = pred[:]
                         pred = pred[:pred.find('[s]')]
                     elif 'Attn' in opt.Prediction:
                         gt = gt[:gt.find('[s]')]

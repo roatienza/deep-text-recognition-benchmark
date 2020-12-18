@@ -131,7 +131,7 @@ class Wordformer(nn.Module):
         num_tokens = opt.num_class
         self.num_tokens = num_tokens
         self.emb = emb
-        self.pos_embedding = PositionalEncoding(emb, max_len=seq_length)
+        self.pos_embedding = PositionalEncoding(emb, dropout=0, max_len=seq_length)
         encoder_layers = nn.TransformerEncoderLayer(emb, heads, hidden_dim, dropout)
         self.transformer_encoder = nn.TransformerEncoder(encoder_layers, nlayers)
         self.encoder = nn.Embedding(num_tokens, emb)
