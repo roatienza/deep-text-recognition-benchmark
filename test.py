@@ -92,7 +92,7 @@ def validation(model, criterion, evaluation_loader, converter, opt):
         image = image_tensors.to(device)
         # For max length prediction
         if opt.Transformer:
-            text_for_loss, length_for_loss = converter.encode(labels, batch_max_length=opt.batch_max_length, is_train=True)
+            text_for_loss, length_for_loss = converter.encode(labels, batch_max_length=opt.batch_max_length, is_train=False)
         else:
             length_for_pred = torch.IntTensor([opt.batch_max_length] * batch_size).to(device)
             text_for_pred = torch.LongTensor(batch_size, opt.batch_max_length + 1).fill_(0).to(device)
