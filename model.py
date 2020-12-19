@@ -100,24 +100,14 @@ class Model(nn.Module):
 
 class Wordformer(nn.Module):
     """
-    Transformer for generating texts
-    """
+        BERT style word training
 
-    """
-        emb: opt.hidden_size = 256
-        heads: number of heads (def 8)
-        depth: number of attention layers (def 12)
-        seq_length: opt.batch_max_length = 25 (plus [GO])
-        num_tokens: opt.num_classo
-
-
-        ntokens = len(vocab.stoi) # the size of vocabulary
-        emsize = 200 # embedding dimension
-        nhid = 200 # the dimension of the feedforward network model in nn.TransformerEncoder
-        nlayers = 2 # the number of nn.TransformerEncoderLayer in nn.TransformerEncoder
-        nhead = 2 # the number of heads in the multiheadattention models
-        dropout = 0.2 # the dropout value
-        model = TransformerModel(ntokens, emsize, nhead, nhid, nlayers, dropout).to(device)
+        num_tokens = the size of vocabulary
+        emb = embedding dimension
+        hidden_dim = the dimension of the feedforward network model in nn.TransformerEncoder
+        num_layers = the number of nn.TransformerEncoderLayer in nn.TransformerEncoder
+        num_heads = the number of heads in the multiheadattention models
+        dropout = the dropout value
     """
     def __init__(self, opt):
 
