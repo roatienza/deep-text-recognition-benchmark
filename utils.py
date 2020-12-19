@@ -150,18 +150,18 @@ class AttnLabelConverter(object):
 class TokenLabelConverter(object):
     """ Convert between text-label and text-index """
 
-    def __init__(self, character, loss_weight=0.1):
+    def __init__(self, opt):
         # character (str): set of the possible characters.
         # [GO] for the start token of the attention decoder. [s] for end-of-sentence token.
         self.GO = '[GO]'
         self.SPACE = '[s]'
         self.MASK = '[MASK]'
 
-        self.loss_weight = loss_weight
         self.list_token = [self.GO, self.SPACE, self.MASK]
-        self.character = self.list_token + list(character)
+        self.character = self.list_token + list(opt.character)
 
         self.dict = {word: i for i, word in enumerate(self.character)}
+        self.nomask_weight = opt.nomask_weight
 
     def encode(self, text, batch_max_length=25, is_train=False):
         """ convert text-label into text-index.
@@ -179,7 +179,7 @@ class TokenLabelConverter(object):
         batch_max_length += 1
         # additional +1 for [GO] at first step. batch_text is padded with [GO] token after [s] token.
         batch_text = torch.LongTensor(len(text), batch_max_length + 1).fill_(0)
-        batch_weights = torch.FloatTensor(len(text), batch_max_length + 1).fill_(self.loss_weight)
+        batch_weights = torch.FloatTensor(len(text), batch_max_length + 1).fill_(self.nomask_weight)
         for i, t in enumerate(text):
             text = [self.GO] + list(t) + [self.SPACE]
             text = [self.dict[char] for char in text]
