@@ -440,7 +440,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
 
     # Dataset / Model parameters
-    parser.add_argument('--model', default='vit_small_patch16_224', type=str, metavar='MODEL',
+    parser.add_argument('--model', default='vit_base_patch16_224', type=str, metavar='MODEL',
                         help='Name of model to train (default: "countception"')
     parser.add_argument('--pretrained', action='store_true', default=False,
                         help='Start with pretrained version of specified network (if avail)')
