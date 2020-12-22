@@ -101,6 +101,7 @@ def data_augment(dataset="cifar10",
             normalize,
         ])
         transform_test = transforms.Compose([
+            transforms.Resize(size),
             transforms.ToTensor(),
             normalize,
         ])

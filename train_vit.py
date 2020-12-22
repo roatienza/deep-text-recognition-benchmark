@@ -15,6 +15,7 @@ from torch.utils.data import ConcatDataset
 from timm.models.vision_transformer import VisionTransformer
 from transform import data_augment
 from utilities.misc import get_device, AverageMeter
+from utilities.metrics import accuracy
 from utilities.ui import progress_bar
 
 import datetime
@@ -212,14 +213,12 @@ class Classifier:
         filename.close()
 
 
-    def _log_acc(self, epoch, top1, top5, is_val=False, eps=0., val_name=None):
+    def _log_acc(self, epoch, top1, top5, is_val=False, val_name=None):
         folder = self.args.logs_dir
         os.makedirs(folder, exist_ok=True)
         model_name = self.get_model_name()
         if is_val:
             filename = model_name + "val-acc.log"
-        elif eps > 0:
-            filename = model_name + "fgsm-acc.log"
         elif val_name is not None:
             filename = model_name + val_name + "-acc.log"
         else:
@@ -232,17 +231,12 @@ class Classifier:
             logs.append("Epoch,Top1,Top5")
             logs.append("%d,%f,%f" % (epoch, top1, top5))
         else:
-            if eps > 0:
-                logs = ["FGSM Attack: Epsilon %0.2f, Top-1 %f, Top-5 %f" % (eps, top1, top5)]
-            else:
-                logs = ["%d,%f,%f" % (epoch, top1, top5)]
+            logs = ["%d,%f,%f" % (epoch, top1, top5)]
 
         for log in logs:
             filename.write(log)
             filename.write("\n")
         filename.close()
-
-
 
     def _log(self, top1=None, top5=None, verbose=True):
 
@@ -262,9 +256,9 @@ class Classifier:
         logs.append("Number of classes: %d" % self.args.num_classes)
         logs.append("Backbone: %s" % self.args.model)
         logs.append("Batch size: %d" % self.args.batch_size)
-        #logs.append("Weight decay: %f" % self.args.weight_decay)
-        #logs.append("LR: %f" % self.args.lr)
-        #logs.append("Epochs: %d" % self.args.epochs)
+        logs.append("Weight decay: %f" % self.args.weight_decay)
+        logs.append("LR: %f" % self.args.lr)
+        logs.append("Epochs: %d" % self.args.epochs)
         #logs.append("Dropout: %f" % self.args.dropout)
         logs.append("---------%s--------%s---------" % \
                     (model_name, datetime.datetime.now()))
@@ -321,7 +315,7 @@ class Classifier:
         total = 0
         losses = AverageMeter()
 
-        ce_loss = nn.CrossEntropyLoss()        
+        ce_loss = nn.CrossEntropyLoss().to(self.device)       
         for i, data in enumerate(self.dataloader.train):
             image, target = data
             x = image.to(self.device)
@@ -350,7 +344,7 @@ class Classifier:
         
 
     def eval(self, epoch=0, is_val=False, val_name=None):
-        self.backbone.eval()
+        self.model.eval()
         top1 = AverageMeter()
         top5 = AverageMeter()
         extra = ""
@@ -366,7 +360,7 @@ class Classifier:
                 x = x.to(self.device)
                 target = target.to(self.device)
 
-                y = self.backbone(x)
+                y = self.model(x)
                 acc1, acc5 = accuracy(y, target, (1, 5))
                 top1.update(acc1[0], x.size(0))
                 top5.update(acc5[0], x.size(0))
@@ -374,7 +368,7 @@ class Classifier:
                 progress_bar(i,
                              len(self.dataloader.test), 
                              '%s%s %s %s accuracy: Top 1: %0.2f%%, Top 5: %0.2f%%'
-                             % (self.backbone.name, extra, self.args.dataset, dset, top1.avg, top5.avg))
+                             % (self.args.model, extra, self.args.dataset, dset, top1.avg, top5.avg))
                 
             if self.best_top1 > 0 and not is_val:
                 info = "Epoch %d top 1 accuracy: %0.2f%%"
@@ -392,10 +386,7 @@ class Classifier:
                 os.makedirs(folder, exist_ok=True)
                 self.best_model = self.get_model_name()
                 self.best_model += str(round(self.best_top1,2)) 
-                if self.args.mimax:
-                    self.best_model += "-mlp-" + str(self.args.n_units) +  ".pth"
-                else:
-                    self.best_model += ".pth"
+                self.best_model += ".pth"
                 path = os.path.join(folder, self.best_model)
                 self.save_checkpoint(epoch, path=path, is_best=True)
 
@@ -672,6 +663,10 @@ if __name__ == '__main__':
     parser.add_argument('--logs-dir',
                         default="logs",
                         help='Folder of debug logs')
+    parser.add_argument('--save',
+                        default=False,
+                        action='store_true',
+                        help='Save checkpoint file every epoch')
 
     args = parser.parse_args()
 
