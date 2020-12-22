@@ -96,6 +96,8 @@ class Model(nn.Module):
         return prediction
 
 
+
+
 class Wordformer(nn.Module):
     """
         BERT style word training

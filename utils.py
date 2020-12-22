@@ -161,7 +161,7 @@ class TokenLabelConverter(object):
         self.character = self.list_token + list(opt.character)
 
         self.dict = {word: i for i, word in enumerate(self.character)}
-        self.nomask_weight = opt.nomask_weight
+        self.nomask_weight = 1.  #opt.nomask_weight
 
     def encode(self, text, batch_max_length=25, is_train=False):
         """ convert text-label into text-index.
