@@ -714,7 +714,7 @@ if __name__ == '__main__':
         scriptable=args.torchscript,
         checkpoint_path=args.initial_checkpoint)
 
-    #print(model)
+    print(model)
 
 
     classifier = Classifier(args, model=model, dataloader=dataloader, device=get_device())

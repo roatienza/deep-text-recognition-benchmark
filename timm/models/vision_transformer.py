@@ -258,7 +258,7 @@ class VisionTransformer(nn.Module):
     def get_classifier(self):
         return self.head
 
-    def reset_classifier(self, num_classes, global_pool=''):
+    def reset_classifier(self, num_classes, seqlen=25, global_pool=''):
         self.num_classes = num_classes
         self.head = nn.Linear(self.embed_dim, num_classes) if num_classes > 0 else nn.Identity()
 
@@ -275,11 +275,18 @@ class VisionTransformer(nn.Module):
             x = blk(x)
 
         x = self.norm(x)
-        return x[:, 0]
+        return x
+        #return x[:, 0]
 
-    def forward(self, x):
+    def forward(self, x, seqlen=25):
         x = self.forward_features(x)
-        x = self.head(x)
+        x = x[:, :seqlen]
+
+        # batch, seqlen, embsize
+        b, s, e = x.size()
+        #x = self.head(x)
+        x = x.reshape(b*s, e)
+        x = self.head(x).view(b, s, self.num_classes)
         return x
 
 

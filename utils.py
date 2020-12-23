@@ -157,7 +157,8 @@ class TokenLabelConverter(object):
         self.SPACE = '[s]'
         self.MASK = '[MASK]'
 
-        self.list_token = [self.GO, self.SPACE, self.MASK]
+        #self.list_token = [self.GO, self.SPACE, self.MASK]
+        self.list_token = [self.GO, self.SPACE]
         self.character = self.list_token + list(opt.character)
 
         self.dict = {word: i for i, word in enumerate(self.character)}

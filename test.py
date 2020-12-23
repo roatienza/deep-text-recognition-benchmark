@@ -120,7 +120,8 @@ def validation(model, criterion, evaluation_loader, converter, opt):
             preds_str = converter.decode(preds_index.data, preds_size.data)
         
         elif opt.Transformer:
-            preds = model(text_for_loss)
+            #preds = model(text_for_loss)
+            preds = model(image, seqlen=(opt.batch_max_length+2))
             _, preds_index = preds.topk(1, dim=-1, largest=True, sorted=True)
             preds_index = preds_index.view(-1, opt.batch_max_length + 2)
             forward_time = time.time() - start_time

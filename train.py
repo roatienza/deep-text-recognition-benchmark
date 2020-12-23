@@ -17,7 +17,8 @@ from dataset import hierarchical_dataset, AlignCollate, Batch_Balanced_Dataset
 from model import Model, Wordformer
 from test import validation
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
+from wordformer import wordformer
+# python3 train.py --train_data data_lmdb_release/training --valid_data data_lmdb_release/validation --select_data MJ-ST --batch_ratio 0.5-0.5 --Transformation None --FeatureExtraction None --SequenceModeling None --Prediction None --Transformer --imgH 224 --imgW 224  --rgb --batch_size=128  --valInterval=200 --sgd --lr=0.01
 
 def train(opt):
     """ dataset preparation """
@@ -59,7 +60,8 @@ def train(opt):
         opt.input_channel = 3
 
     if opt.Transformer:
-        model = Wordformer(opt) 
+        #model = Wordformer(opt) 
+        model = wordformer(num_tokens=opt.num_class)
     else:
         model = Model(opt)
     print('model input parameters', opt.imgH, opt.imgW, opt.num_fiducial, opt.input_channel, opt.output_channel,
@@ -121,6 +123,11 @@ def train(opt):
     # setup optimizer
     if opt.adam:
         optimizer = optim.Adam(filtered_parameters, lr=opt.lr, betas=(opt.beta1, 0.999))
+    elif opt.sgd:
+        optimizer = optim.SGD(model.parameters(),
+                              lr=opt.lr,
+                              momentum=0.9,
+                              weight_decay=1e-4)
     else:
         optimizer = optim.Adadelta(filtered_parameters, lr=opt.lr, rho=opt.rho, eps=opt.eps)
     print("Optimizer:")
@@ -155,7 +162,7 @@ def train(opt):
         # train part
         image_tensors, labels = train_dataset.get_batch()
         image = image_tensors.to(device)
-        text, length = converter.encode(labels, batch_max_length=opt.batch_max_length, is_train=True)
+        text, length = converter.encode(labels, batch_max_length=opt.batch_max_length)
         batch_size = image.size(0)
 
         if 'CTC' in opt.Prediction:
@@ -168,10 +175,15 @@ def train(opt):
                 preds = preds.log_softmax(2).permute(1, 0, 2)
                 cost = criterion(preds, text, preds_size, length)
         elif opt.Transformer:
-            preds = model(text)
-            batch_weights = length.contiguous().view(-1)
+            preds = model(image, seqlen=(opt.batch_max_length+2))
+            #print(preds.size())
+            #exit(0)
+
+            #preds = model(text)
+            #batch_weights = length.contiguous().view(-1)
             target, _ = converter.encode(labels, batch_max_length=opt.batch_max_length, is_train=False)
             cost = criterion(preds.view(-1, preds.shape[-1]), target.contiguous().view(-1))
+
             # if reduction is none
             #cost = torch.div(torch.mul(cost, batch_weights).sum(), batch_weights.sum())
         else:
@@ -255,6 +267,7 @@ if __name__ == '__main__':
     parser.add_argument('--valInterval', type=int, default=2000, help='Interval between each validation')
     parser.add_argument('--saved_model', default='', help="path to model to continue training")
     parser.add_argument('--FT', action='store_true', help='whether to do fine-tuning')
+    parser.add_argument('--sgd', action='store_true', help='Whether to use SGD (default is Adadelta)')
     parser.add_argument('--adam', action='store_true', help='Whether to use adam (default is Adadelta)')
     parser.add_argument('--lr', type=float, default=1, help='learning rate, default=1.0 for Adadelta')
     parser.add_argument('--beta1', type=float, default=0.9, help='beta1 for adam. default=0.9')
