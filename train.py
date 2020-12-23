@@ -18,7 +18,7 @@ from model import Model, Wordformer
 from test import validation
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 from wordformer import wordformer
-# python3 train.py --train_data data_lmdb_release/training --valid_data data_lmdb_release/validation --select_data MJ-ST --batch_ratio 0.5-0.5 --Transformation None --FeatureExtraction None --SequenceModeling None --Prediction None --Transformer --imgH 224 --imgW 224  --rgb --batch_size=128  --valInterval=200 --sgd --lr=0.01
+# python3 train.py --train_data data_lmdb_release/training --valid_data data_lmdb_release/validation --select_data MJ-ST --batch_ratio 0.5-0.5 --Transformation None --FeatureExtraction None --SequenceModeling None --Prediction None --Transformer --imgH 224 --imgW 224 --batch_size=128  --valInterval=200 --sgd --lr=0.01
 
 def train(opt):
     """ dataset preparation """

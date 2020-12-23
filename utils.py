@@ -153,12 +153,12 @@ class TokenLabelConverter(object):
     def __init__(self, opt):
         # character (str): set of the possible characters.
         # [GO] for the start token of the attention decoder. [s] for end-of-sentence token.
-        self.GO = '[GO]'
         self.SPACE = '[s]'
+        self.GO = '[GO]'
         self.MASK = '[MASK]'
 
         #self.list_token = [self.GO, self.SPACE, self.MASK]
-        self.list_token = [self.GO, self.SPACE]
+        self.list_token = [self.SPACE, self.GO]
         self.character = self.list_token + list(opt.character)
 
         self.dict = {word: i for i, word in enumerate(self.character)}
