@@ -69,19 +69,20 @@ def train(opt):
           opt.SequenceModeling, opt.Prediction)
 
     # weight initialization
-    for name, param in model.named_parameters():
-        if 'localization_fc2' in name:
-            print(f'Skip {name} as it is already initialized')
-            continue
-        try:
-            if 'bias' in name:
-                init.constant_(param, 0.0)
-            elif 'weight' in name:
-                init.kaiming_normal_(param)
-        except Exception as e:  # for batchnorm.
-            if 'weight' in name:
-                param.data.fill_(1)
-            continue
+    if not opt.Transformer:
+        for name, param in model.named_parameters():
+            if 'localization_fc2' in name:
+                print(f'Skip {name} as it is already initialized')
+                continue
+            try:
+                if 'bias' in name:
+                    init.constant_(param, 0.0)
+                elif 'weight' in name:
+                    init.kaiming_normal_(param)
+            except Exception as e:  # for batchnorm.
+                if 'weight' in name:
+                    param.data.fill_(1)
+                continue
 
     # data parallel for multi-GPU
     model = torch.nn.DataParallel(model).to(device)

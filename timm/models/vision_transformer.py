@@ -322,7 +322,7 @@ def vit_base_patch16_224(pretrained=False, **kwargs):
     if pretrained:
         print("loading pretrained weights")
         load_pretrained(
-            model, num_classes=model.num_classes, in_chans=kwargs.get('in_chans', 1), filter_fn=_conv_filter)
+            model, num_classes=model.num_classes, in_chans=kwargs.get('in_chans', 3), filter_fn=_conv_filter)
     return model
 
 
