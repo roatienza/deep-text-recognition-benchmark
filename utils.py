@@ -154,51 +154,41 @@ class TokenLabelConverter(object):
         # character (str): set of the possible characters.
         # [GO] for the start token of the attention decoder. [s] for end-of-sentence token.
         self.SPACE = '[s]'
-        self.GO = '[GO]'
-        self.MASK = '[MASK]'
+        #self.GO = '[GO]'
+        #self.MASK = '[MASK]'
 
         #self.list_token = [self.GO, self.SPACE, self.MASK]
-        self.list_token = [self.SPACE, self.GO]
+        self.list_token = [self.SPACE]
         self.character = self.list_token + list(opt.character)
 
         self.dict = {word: i for i, word in enumerate(self.character)}
-        self.nomask_weight = 1.  #opt.nomask_weight
+        self.batch_max_length = opt.batch_max_length + len(self.list_token)
 
-    def encode(self, text, batch_max_length=25, is_train=False):
+    def encode(self, text):
         """ convert text-label into text-index.
-        input:
-            text: text labels of each image. [batch_size]
-            batch_max_length: max length of text label in the batch. 25 by default
-
-        output:
-            text : the input of attention decoder. [batch_size x (max_length+2)] +1 for [GO] token and +1 for [s] token.
-                text[:, 0] is [GO] token and text is padded with [GO] token after [s] token.
-            length : the length of output of attention decoder, which count [s] token also. [3, 7, ....] [batch_size]
         """
-        length = [len(s) + 2 for s in text]  # +2 for [GO] and [s] at end of sentence.
+        length = [len(s) + len(self.list_token) for s in text]  # +2 for [GO] and [s] at end of sentence.
         # batch_max_length = max(length) # this is not allowed for multi-gpu setting
-        batch_max_length += 1
-        # additional +1 for [GO] at first step. batch_text is padded with [GO] token after [s] token.
-        batch_text = torch.LongTensor(len(text), batch_max_length + 1).fill_(0)
-        batch_weights = torch.FloatTensor(len(text), batch_max_length + 1).fill_(self.nomask_weight)
+        #batch_max_length += 1
+        batch_text = torch.LongTensor(len(text), self.batch_max_length).fill_(self.dict[self.SPACE])
         for i, t in enumerate(text):
-            text = [self.GO] + list(t) + [self.SPACE]
+            text = list(t) + [self.SPACE]
             text = [self.dict[char] for char in text]
-            prob = np.random.uniform()
-            mask_len = round(len(list(t)) * 0.15)
-            if is_train and mask_len > 0:
-                for m in range(mask_len):
-                    index = np.random.randint(1, len(t) + 1)
-                    prob = np.random.uniform()
-                    if prob > 0.2:
-                        text[index] = self.dict[self.MASK]
-                        batch_weights[i][index] = 1.
-                    elif prob > 0.1: 
-                        char_index = np.random.randint(len(self.list_token), len(self.character))
-                        text[index] = self.dict[self.character[char_index]]
-                        batch_weights[i][index] = 1.
+            #prob = np.random.uniform()
+            #mask_len = round(len(list(t)) * 0.15)
+            #if is_train and mask_len > 0:
+            #    for m in range(mask_len):
+            #        index = np.random.randint(1, len(t) + 1)
+            #        prob = np.random.uniform()
+            #        if prob > 0.2:
+            #            text[index] = self.dict[self.MASK]
+            #            batch_weights[i][index] = 1.
+            #        elif prob > 0.1: 
+            #            char_index = np.random.randint(len(self.list_token), len(self.character))
+            #            text[index] = self.dict[self.character[char_index]]
+            #            batch_weights[i][index] = 1.
             batch_text[i][:len(text)] = torch.LongTensor(text)  # batch_text[:, 0] = [GO] token
-        return (batch_text.to(device), batch_weights.to(device))
+        return batch_text.to(device)
 
     def decode(self, text_index, length):
         """ convert text-index into text-label. """

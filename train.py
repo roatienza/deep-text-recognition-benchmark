@@ -59,11 +59,11 @@ def train(opt):
     if opt.rgb:
         opt.input_channel = 3
 
-    if opt.Transformer:
+    #if opt.Transformer:
         #model = Wordformer(opt) 
-        model = wordformer(num_tokens=opt.num_class)
-    else:
-        model = Model(opt)
+    #    model = wordformer(num_tokens=opt.num_class)
+    #else:
+    model = Model(opt)
     print('model input parameters', opt.imgH, opt.imgW, opt.num_fiducial, opt.input_channel, opt.output_channel,
           opt.hidden_size, opt.num_class, opt.batch_max_length, opt.Transformation, opt.FeatureExtraction,
           opt.SequenceModeling, opt.Prediction)
@@ -163,7 +163,8 @@ def train(opt):
         # train part
         image_tensors, labels = train_dataset.get_batch()
         image = image_tensors.to(device)
-        text, length = converter.encode(labels, batch_max_length=opt.batch_max_length)
+        if not opt.Transformer:
+            text, length = converter.encode(labels, batch_max_length=opt.batch_max_length)
         batch_size = image.size(0)
 
         if 'CTC' in opt.Prediction:
@@ -176,13 +177,13 @@ def train(opt):
                 preds = preds.log_softmax(2).permute(1, 0, 2)
                 cost = criterion(preds, text, preds_size, length)
         elif opt.Transformer:
-            preds = model(image, seqlen=(opt.batch_max_length+2))
+            preds = model(image, seqlen=converter.batch_max_length)
             #print(preds.size())
             #exit(0)
 
             #preds = model(text)
             #batch_weights = length.contiguous().view(-1)
-            target, _ = converter.encode(labels, batch_max_length=opt.batch_max_length, is_train=False)
+            target = converter.encode(labels)
             cost = criterion(preds.view(-1, preds.shape[-1]), target.contiguous().view(-1))
 
             # if reduction is none
