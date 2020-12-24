@@ -92,7 +92,7 @@ def validation(model, criterion, evaluation_loader, converter, opt):
         image = image_tensors.to(device)
         # For max length prediction
         if opt.Transformer:
-            text_for_loss = converter.encode(labels)
+            target = converter.encode(labels)
         else:
             length_for_pred = torch.IntTensor([opt.batch_max_length] * batch_size).to(device)
             text_for_pred = torch.LongTensor(batch_size, opt.batch_max_length + 1).fill_(0).to(device)
@@ -121,16 +121,16 @@ def validation(model, criterion, evaluation_loader, converter, opt):
         
         elif opt.Transformer:
             #preds = model(text_for_loss)
-            preds = model(image, seqlen=converter.batch_max_length)
+            preds = model(image, text=target, seqlen=converter.batch_max_length)
             _, preds_index = preds.topk(1, dim=-1, largest=True, sorted=True)
-            preds_index = preds_index.view(-1, opt.batch_max_length + 2)
+            preds_index = preds_index.view(-1, converter.batch_max_length)
             forward_time = time.time() - start_time
-            target, length_for_loss = converter.encode(labels, batch_max_length=opt.batch_max_length, is_train=False)
+            #target, length_for_loss = converter.encode(labels, batch_max_length=opt.batch_max_length, is_train=False)
             cost = criterion(preds.contiguous().view(-1, preds.shape[-1]), target.contiguous().view(-1))
 
             # select max probabilty (greedy decoding) then decode index to character
-            length_for_pred = torch.IntTensor([opt.batch_max_length + 1] * batch_size).to(device)
-            preds_str = converter.decode(preds_index[:, 1:], length_for_pred)
+            length_for_pred = torch.IntTensor([converter.batch_max_length] * batch_size).to(device)
+            preds_str = converter.decode(preds_index[:, :], length_for_pred)
         else:
             preds = model(image, text_for_pred, is_train=False)
             forward_time = time.time() - start_time

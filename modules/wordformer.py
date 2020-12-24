@@ -5,7 +5,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from .timm.models import create_model
+from timm.models import create_model
 
 def wordformer(num_tokens, model='vit_base_patch16_224'):
     model = create_model(

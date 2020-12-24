@@ -17,7 +17,7 @@ from dataset import hierarchical_dataset, AlignCollate, Batch_Balanced_Dataset
 from model import Model, Wordformer
 from test import validation
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-from wordformer import wordformer
+
 # python3 train.py --train_data data_lmdb_release/training --valid_data data_lmdb_release/validation --select_data MJ-ST --batch_ratio 0.5-0.5 --Transformation None --FeatureExtraction None --SequenceModeling None --Prediction None --Transformer --imgH 224 --imgW 224 --batch_size=128  --valInterval=200 --sgd --lr=0.01
 
 def train(opt):
@@ -177,13 +177,13 @@ def train(opt):
                 preds = preds.log_softmax(2).permute(1, 0, 2)
                 cost = criterion(preds, text, preds_size, length)
         elif opt.Transformer:
-            preds = model(image, seqlen=converter.batch_max_length)
+            target = converter.encode(labels)
+            preds = model(image, text=target, seqlen=converter.batch_max_length)
             #print(preds.size())
             #exit(0)
 
             #preds = model(text)
             #batch_weights = length.contiguous().view(-1)
-            target = converter.encode(labels)
             cost = criterion(preds.view(-1, preds.shape[-1]), target.contiguous().view(-1))
 
             # if reduction is none

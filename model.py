@@ -77,13 +77,13 @@ class Model(nn.Module):
         else:
             raise Exception('Prediction is neither CTC or Attn')
 
-    def forward(self, input, text, is_train=True):
+    def forward(self, input, text, is_train=True, seqlen=25):
         """ Transformation stage """
         if not self.stages['Trans'] == "None":
             input = self.Transformation(input)
 
-        if not self.stages['Wordformer']:
-            prediction = self.Wordformer(input)
+        if self.stages['Wordformer']:
+            prediction = self.Wordformer(input, seqlen=seqlen)
             return prediction
 
         """ Feature extraction stage """
