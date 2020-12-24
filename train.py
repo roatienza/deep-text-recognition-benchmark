@@ -97,10 +97,9 @@ def train(opt):
     print(model)
 
     """ setup loss """
-    if opt.Transformer:
-        criterion = torch.nn.CrossEntropyLoss().to(device)
-        #criterion = torch.nn.CrossEntropyLoss(reduction='none').to(device)
-    elif 'CTC' in opt.Prediction:
+    #if opt.Transformer:
+    #    criterion = torch.nn.CrossEntropyLoss().to(device)
+    if 'CTC' in opt.Prediction:
         if opt.baiduCTC:
             # need to install warpctc. see our guideline.
             from warpctc_pytorch import CTCLoss 
@@ -179,15 +178,7 @@ def train(opt):
         elif opt.Transformer:
             target = converter.encode(labels)
             preds = model(image, text=target, seqlen=converter.batch_max_length)
-            #print(preds.size())
-            #exit(0)
-
-            #preds = model(text)
-            #batch_weights = length.contiguous().view(-1)
             cost = criterion(preds.view(-1, preds.shape[-1]), target.contiguous().view(-1))
-
-            # if reduction is none
-            #cost = torch.div(torch.mul(cost, batch_weights).sum(), batch_weights.sum())
         else:
             preds = model(image, text[:, :-1])  # align with Attention.forward
             target = text[:, 1:]  # without [GO] Symbol

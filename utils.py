@@ -154,11 +154,11 @@ class TokenLabelConverter(object):
         # character (str): set of the possible characters.
         # [GO] for the start token of the attention decoder. [s] for end-of-sentence token.
         self.SPACE = '[s]'
-        #self.GO = '[GO]'
+        self.GO = '[GO]'
         #self.MASK = '[MASK]'
 
         #self.list_token = [self.GO, self.SPACE, self.MASK]
-        self.list_token = [self.SPACE]
+        self.list_token = [self.GO, self.SPACE]
         self.character = self.list_token + list(opt.character)
 
         self.dict = {word: i for i, word in enumerate(self.character)}
@@ -168,11 +168,9 @@ class TokenLabelConverter(object):
         """ convert text-label into text-index.
         """
         length = [len(s) + len(self.list_token) for s in text]  # +2 for [GO] and [s] at end of sentence.
-        # batch_max_length = max(length) # this is not allowed for multi-gpu setting
-        #batch_max_length += 1
-        batch_text = torch.LongTensor(len(text), self.batch_max_length).fill_(self.dict[self.SPACE])
+        batch_text = torch.LongTensor(len(text), self.batch_max_length).fill_(self.dict[self.GO])
         for i, t in enumerate(text):
-            text = list(t) + [self.SPACE]
+            text = [self.GO] + list(t) + [self.SPACE]
             text = [self.dict[char] for char in text]
             #prob = np.random.uniform()
             #mask_len = round(len(list(t)) * 0.15)
