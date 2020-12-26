@@ -44,7 +44,7 @@ class Model(nn.Module):
             print('No Transformation module specified')
 
         if opt.Transformer:
-            self.Wordformer = wordformer(num_tokens=opt.num_class)
+            self.Wordformer = wordformer(num_tokens=opt.num_class, model=opt.TransformerModel)
             return
 
         """ FeatureExtraction """
