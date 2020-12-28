@@ -16,7 +16,6 @@ limitations under the License.
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from modules.transformation import TPS_SpatialTransformerNetwork
 from modules.feature_extraction import VGG_FeatureExtractor, RCNN_FeatureExtractor, ResNet_FeatureExtractor
@@ -105,65 +104,3 @@ class Model(nn.Module):
 
         return prediction
 
-
-
-
-class Wordformer(nn.Module):
-    """
-        BERT style word training
-
-        num_tokens = the size of vocabulary
-        emb = embedding dimension
-        hidden_dim = the dimension of the feedforward network model in nn.TransformerEncoder
-        num_layers = the number of nn.TransformerEncoderLayer in nn.TransformerEncoder
-        num_heads = the number of heads in the multiheadattention models
-        dropout = the dropout value
-    """
-    def __init__(self, opt):
-
-        super().__init__()
-        self.emb = opt.hidden_size
-        num_heads = 16
-        num_layers = 6
-        dropout = 0.2
-        hidden_dim = 512
-        seq_length = opt.batch_max_length + 2 # [GO] + text + [s]
-        self.num_tokens = opt.num_class
-        self.pos_embedding = PositionalEncoding(self.emb, dropout=dropout, max_len=seq_length)
-        encoder_layers = nn.TransformerEncoderLayer(self.emb, num_heads, hidden_dim, dropout)
-        self.transformer_encoder = nn.TransformerEncoder(encoder_layers, num_layers)
-        self.encoder = nn.Embedding(self.num_tokens, self.emb)
-        self.decoder = nn.Linear(self.emb, self.num_tokens)
-        self.init_weights()
-
-    def init_weights(self):
-        initrange = 0.1
-        self.encoder.weight.data.uniform_(-initrange, initrange)
-        self.decoder.bias.data.zero_()
-        self.decoder.weight.data.uniform_(-initrange, initrange)
-
-    def forward(self, x):
-        x = self.encoder(x) * math.sqrt(self.emb)
-        b, t, e = x.size()
-        x = self.pos_embedding(x)
-        x = self.transformer_encoder(x, None)
-        x = self.decoder(x.view(b*t, e)).view(b, t, self.num_tokens)
-        return x
-
-
-class PositionalEncoding(nn.Module):
-    def __init__(self, d_model, dropout=0.1, max_len=128):
-        super(PositionalEncoding, self).__init__()
-        self.dropout = nn.Dropout(p=dropout)
-        pe = torch.zeros(max_len, d_model)
-        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
-        pe[:, 0::2] = torch.sin(position * div_term)
-        pe[:, 1::2] = torch.cos(position * div_term)
-        #pe = pe.unsqueeze(0).transpose(0, 1)
-        pe = pe.unsqueeze(0)
-        self.register_buffer('pe', pe)
-
-    def forward(self, x):
-        x = x + self.pe
-        return self.dropout(x)
