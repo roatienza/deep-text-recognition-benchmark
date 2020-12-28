@@ -111,7 +111,7 @@ def train(opt):
     for p in filter(lambda p: p.requires_grad, model.parameters()):
         filtered_parameters.append(p)
         params_num.append(np.prod(p.size()))
-    print('Trainable params num : ', sum(params_num))
+    # print('Trainable params num : ', sum(params_num))
     # [print(name, p.numel()) for name, p in filter(lambda p: p[1].requires_grad, model.named_parameters())]
 
     # setup optimizer
@@ -137,6 +137,10 @@ def train(opt):
         opt_log += '---------------------------------------\n'
         print(opt_log)
         opt_file.write(opt_log)
+        total_params = int(sum(params_num))
+        total_params = f'Trainable network params num : {total_params:,}'
+        print(total_params)
+        opt_file.write(total_params)
 
     """ start training """
     start_iter = 0

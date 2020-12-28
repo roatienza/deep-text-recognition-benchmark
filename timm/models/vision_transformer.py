@@ -369,13 +369,17 @@ def deit_small_patch16_224_str(pretrained=False, **kwargs):
     model = VisionTransformer(
         patch_size=16, embed_dim=384, depth=12, num_heads=6, mlp_ratio=4, qkv_bias=True,
         norm_layer=partial(nn.LayerNorm, eps=1e-6), **kwargs)
-    model.default_cfg = _cfg()
+    model.default_cfg = _cfg(
+            url="https://github.com/roatienza/public/releases/download/v0.1-deit-small/deit_small_patch16_224-cd65a155.pth"
+            )
     if pretrained:
-        checkpoint = torch.hub.load_state_dict_from_url(
-            url="https://dl.fbaipublicfiles.com/deit/deit_small_patch16_224-cd65a155.pth",
-            map_location="cpu", check_hash=True
-        )
-        model.load_state_dict(checkpoint["model"])
+        #checkpoint = torch.hub.load_state_dict_from_url(
+        #    url="https://dl.fbaipublicfiles.com/deit/deit_small_patch16_224-cd65a155.pth",
+        #   map_location="cpu", check_hash=True
+        #)
+        #model.load_state_dict(checkpoint["model"])
+        load_pretrained(
+            model, num_classes=model.num_classes, in_chans=kwargs.get('in_chans', 1), filter_fn=_conv_filter)
     return model
 
 
