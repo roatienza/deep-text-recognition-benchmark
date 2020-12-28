@@ -23,4 +23,7 @@ def wordformer(num_tokens, model='vit_base_patch16_224_str', checkpoint_path='')
         scriptable=False,
         checkpoint_path=checkpoint_path)
 
+    # might need to run to get zero init head for transfer learning
+    model.reset_classifier(num_classes=num_tokens)
+
     return model
