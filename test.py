@@ -14,10 +14,11 @@ from nltk.metrics.distance import edit_distance
 from utils import CTCLabelConverter, AttnLabelConverter, Averager, TokenLabelConverter
 from dataset import hierarchical_dataset, AlignCollate
 from model import Model
+from thop import profile
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
-def benchmark_all_eval(model, criterion, converter, opt, calculate_infer_time=False):
+def benchmark_all_eval(model, criterion, converter, opt): #, calculate_infer_time=False):
     """ evaluation with 10 benchmark evaluation datasets """
     # The evaluation datasets, dataset order is same with Table 1 in our paper.
     eval_data_list = ['IIIT5k_3000', 'SVT', 'IC03_860', 'IC03_867', 'IC13_857',
@@ -27,7 +28,7 @@ def benchmark_all_eval(model, criterion, converter, opt, calculate_infer_time=Fa
     # eval_data_list = ['IIIT5k_3000', 'SVT', 'IC03_867', 
     #                   'IC13_1015', 'IC15_2077', 'SVTP', 'CUTE80']
 
-    if calculate_infer_time:
+    if opt.calculate_infer_time:
         evaluation_batch_size = 1  # batch_size should be 1 to calculate the GPU inference time per image.
     else:
         evaluation_batch_size = opt.batch_size
@@ -71,6 +72,7 @@ def benchmark_all_eval(model, criterion, converter, opt, calculate_infer_time=Fa
         evaluation_log += f'{name}: {accuracy}\t'
     evaluation_log += f'total_accuracy: {total_accuracy:0.3f}\t'
     evaluation_log += f'averaged_infer_time: {averaged_forward_time:0.3f}\t# parameters: {params_num/1e6:0.3f}'
+    evaluation_log += get_flops(model, opt, converter)
     print(evaluation_log)
     log.write(evaluation_log + '\n')
     log.close()
@@ -257,11 +259,28 @@ def test(opt):
             log.write(f'{accuracy_by_best_model:0.3f}\n')
             log.close()
 
+# https://github.com/clovaai/deep-text-recognition-benchmark/issues/125
+def get_flops(model, opt, converter):
+    input = torch.randn(1, 1, opt.imgH, opt.imgW).to(device)
+    if opt.Transformer:
+        seqlen = converter.batch_max_length
+        text_for_pred = torch.LongTensor(1, seqlen).fill_(0).to(device)
+        #preds = model(image, text=target, seqlen=converter.batch_max_length)
+        MACs, params = profile(model, inputs=(input, text_for_pred, True, seqlen))
+    else:
+        text_for_pred = torch.LongTensor(1, opt.batch_max_length + 1).fill_(0).to(device)
+        #model_ = Model(opt).to(device)
+        MACs, params = profile(model, inputs=(input, text_for_pred, ))
+
+    flops = 2 * MACs # approximate FLOPS
+    return f'Approximate FLOPS: {flops:0.3f}'
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--eval_data', required=True, help='path to evaluation dataset')
     parser.add_argument('--benchmark_all_eval', action='store_true', help='evaluate 10 benchmark evaluation datasets')
+    parser.add_argument('--calculate_infer_time', action='store_true', help='calculate inference timing')
     parser.add_argument('--workers', type=int, help='number of data loading workers', default=4)
     parser.add_argument('--batch_size', type=int, default=192, help='input batch size')
     parser.add_argument('--saved_model', required=True, help="path to saved_model to evaluation")
