@@ -72,7 +72,8 @@ def benchmark_all_eval(model, criterion, converter, opt): #, calculate_infer_tim
         evaluation_log += f'{name}: {accuracy}\t'
     evaluation_log += f'total_accuracy: {total_accuracy:0.3f}\t'
     evaluation_log += f'averaged_infer_time: {averaged_forward_time:0.3f}\t# parameters: {params_num/1e6:0.3f}'
-    evaluation_log += get_flops(model, opt, converter)
+    if opt.Transformer:
+        evaluation_log += get_flops(model, opt, converter)
     print(evaluation_log)
     log.write(evaluation_log + '\n')
     log.close()
@@ -262,6 +263,7 @@ def test(opt):
 # https://github.com/clovaai/deep-text-recognition-benchmark/issues/125
 def get_flops(model, opt, converter):
     input = torch.randn(1, 1, opt.imgH, opt.imgW).to(device)
+
     if opt.Transformer:
         seqlen = converter.batch_max_length
         text_for_pred = torch.LongTensor(1, seqlen).fill_(0).to(device)
