@@ -72,7 +72,7 @@ def benchmark_all_eval(model, criterion, converter, opt): #, calculate_infer_tim
         evaluation_log += f'{name}: {accuracy}\t'
     evaluation_log += f'total_accuracy: {total_accuracy:0.3f}\t'
     evaluation_log += f'averaged_infer_time: {averaged_forward_time:0.3f}\t# parameters: {params_num/1e6:0.3f}'
-    if opt.Transformer:
+    if opt.flops:
         evaluation_log += get_flops(model, opt, converter)
     print(evaluation_log)
     log.write(evaluation_log + '\n')
@@ -263,7 +263,7 @@ def test(opt):
 # https://github.com/clovaai/deep-text-recognition-benchmark/issues/125
 def get_flops(model, opt, converter):
     input = torch.randn(1, 1, opt.imgH, opt.imgW).to(device)
-
+    model = model.to(device)
     if opt.Transformer:
         seqlen = converter.batch_max_length
         text_for_pred = torch.LongTensor(1, seqlen).fill_(0).to(device)
@@ -308,6 +308,7 @@ if __name__ == '__main__':
     parser.add_argument('--output_channel', type=int, default=512,
                         help='the number of output channel of Feature extractor')
     parser.add_argument('--hidden_size', type=int, default=256, help='the size of the LSTM hidden state')
+    parser.add_argument('--flops', action='store_true', help='calculates approx flops (may not work)')
 
     opt = parser.parse_args()
 
