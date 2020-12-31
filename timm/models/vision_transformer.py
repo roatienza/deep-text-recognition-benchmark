@@ -326,6 +326,19 @@ def vit_base_patch16_224(pretrained=False, **kwargs):
 
 
 ## str models
+def vit_small_patch16_224_str(pretrained=False, **kwargs):
+    kwargs['in_chans'] = 1
+    if pretrained:
+        # NOTE my scale was wrong for original weights, leaving this here until I have better ones for this model
+        kwargs.setdefault('qk_scale', 768 ** -0.5)
+    model = VisionTransformer(patch_size=16, embed_dim=768, depth=8, num_heads=8, mlp_ratio=3., **kwargs)
+    model.default_cfg = default_cfgs['vit_small_patch16_224']
+    if pretrained:
+        load_pretrained(
+            model, num_classes=model.num_classes, in_chans=kwargs.get('in_chans', 1), filter_fn=_conv_filter)
+    return model
+
+
 @register_model
 def vit_base_patch16_224_str(pretrained=False, **kwargs):
     kwargs['in_chans'] = 1
@@ -400,6 +413,30 @@ def deit_base_patch16_224_str(pretrained=False, **kwargs):
         #model.load_state_dict(checkpoint["model"])
         load_pretrained(
             model, num_classes=model.num_classes, in_chans=kwargs.get('in_chans', 1), filter_fn=_conv_filter)
+    return model
+
+
+@register_model
+def vit_base_patch16_384_str(pretrained=False, **kwargs):
+    kwargs['in_chans'] = 1
+    model = VisionTransformer(
+        img_size=384, patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True,
+        norm_layer=partial(nn.LayerNorm, eps=1e-6), **kwargs)
+    model.default_cfg = default_cfgs['vit_base_patch16_384']
+    if pretrained:
+        load_pretrained(model, num_classes=model.num_classes, in_chans=kwargs.get('in_chans', 1))
+    return model
+
+
+@register_model
+def vit_base_patch32_384_str(pretrained=False, **kwargs):
+    kwargs['in_chans'] = 1
+    model = VisionTransformer(
+        img_size=384, patch_size=32, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True,
+        norm_layer=partial(nn.LayerNorm, eps=1e-6), **kwargs)
+    model.default_cfg = default_cfgs['vit_base_patch32_384']
+    if pretrained:
+        load_pretrained(model, num_classes=model.num_classes, in_chans=kwargs.get('in_chans', 1))
     return model
 
 
