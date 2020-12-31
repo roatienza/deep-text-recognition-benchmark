@@ -14,7 +14,6 @@ from nltk.metrics.distance import edit_distance
 from utils import CTCLabelConverter, AttnLabelConverter, Averager, TokenLabelConverter
 from dataset import hierarchical_dataset, AlignCollate
 from model import Model
-from thop import profile
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
@@ -206,6 +205,7 @@ def validation(model, criterion, evaluation_loader, converter, opt):
 
 
 def test(opt):
+    from thop import profile
     """ model configuration """
     if opt.Transformer:
         converter = TokenLabelConverter(opt)
