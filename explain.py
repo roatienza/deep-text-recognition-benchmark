@@ -1,21 +1,30 @@
 import os
-import time
-import string
 import argparse
-import re
+import cv2
 
 import torch
 import torch.backends.cudnn as cudnn
 import torch.utils.data
 import torch.nn.functional as F
 import numpy as np
-from nltk.metrics.distance import edit_distance
 
-from utils import CTCLabelConverter, AttnLabelConverter, Averager, TokenLabelConverter
+from utils import TokenLabelConverter
 from dataset import hierarchical_dataset, AlignCollate
 from model import Model
+
+from modules.vit_rollout import VITAttentionRollout
+from modules.vit_grad_rollout import VITAttentionGradRollout
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+
+def show_mask_on_image(img, mask):
+    img = np.float32(img) / 255
+    heatmap = cv2.applyColorMap(np.uint8(255 * mask), cv2.COLORMAP_JET)
+    heatmap = np.float32(heatmap) / 255
+    cam = heatmap + np.float32(img)
+    cam = cam / np.max(cam)
+    return np.uint8(255 * cam)
 
 def explain_all(model, opt):
     """ evaluation with 10 benchmark evaluation datasets """
@@ -39,51 +48,33 @@ def explain_all(model, opt):
 
 def explain_data(model, evaluation_loader, opt):
     """ validation or evaluation """
-    length_of_data = 0
 
     for i, (image_tensors, labels) in enumerate(evaluation_loader):
-        batch_size = image_tensors.size(0)
-        length_of_data = length_of_data + batch_size
-        image = image_tensors[0].cpu().numpy()
-        print(np.shape(image))
-        exit(0)
-
-
         image = image_tensors.to(device)
-        # For max length prediction
+        if opt.category_index is not None:
+            grad_rollout = VITAttentionGradRollout(model, discard_ratio=opt.discard_ratio)
+            mask = grad_rollout(image, opt.category_index)
+        else:
+            attention_rollout = VITAttentionRollout(model, head_fusion=opt.head_fusion, discard_ratio=opt.discard_ratio)
+            mask = attention_rollout(image)
+        mask_name = "{}/{}-mask-attention_rollout_{:.3f}_{}.png".format(opt.dir, labels[0], opt.discard_ratio, opt.head_fusion)
+        print(mask_name)
+        image_name = "{}/{}-attention_rollout_{:.3f}_{}.png".format(opt.dir, labels[0], opt.discard_ratio, opt.head_fusion)
+        print(image_name)
 
-        start_time = time.time()
-        preds = model(image, text=target, seqlen=converter.batch_max_length)
-        _, preds_index = preds.topk(1, dim=-1, largest=True, sorted=True)
-        preds_index = preds_index.view(-1, converter.batch_max_length)
-        forward_time = time.time() - start_time
-        cost = criterion(preds.contiguous().view(-1, preds.shape[-1]), target.contiguous().view(-1))
-
-        length_for_pred = torch.IntTensor([converter.batch_max_length - 1] * batch_size).to(device)
-        preds_str = converter.decode(preds_index[:, 1:], length_for_pred)
-
-        infer_time += forward_time
-
-        # calculate accuracy & confidence score
-        preds_prob = F.softmax(preds, dim=2)
-        preds_max_prob, _ = preds_prob.max(dim=2)
-        confidence_score_list = []
-        for gt, pred, pred_max_prob in zip(labels, preds_str, preds_max_prob):
-            pred_EOS = pred.find('[s]')
-            pred = pred[:pred_EOS]  # prune after "end of sentence" token ([s])
-            pred_max_prob = pred_max_prob[:pred_EOS]
-            
-            # To evaluate 'case sensitive model' with alphanumeric and case insensitve setting.
-            if opt.sensitive and opt.data_filtering_off:
-                pred = pred.lower()
-                gt = gt.lower()
-                alphanumeric_case_insensitve = '0123456789abcdefghijklmnopqrstuvwxyz'
-                out_of_alphanumeric_case_insensitve = f'[^{alphanumeric_case_insensitve}]'
-                pred = re.sub(out_of_alphanumeric_case_insensitve, '', pred)
-                gt = re.sub(out_of_alphanumeric_case_insensitve, '', gt)
-
-            #if pred == gt:
-            #    n_correct += 1
+        image = image_tensors[0].squeeze()
+        image = image.cpu().numpy()
+        image = np.expand_dims(image, axis=2)
+        image = np.repeat(image, 3, axis=2)
+        mask = cv2.resize(mask, (image.shape[1], image.shape[0]))
+        mask = show_mask_on_image(image, mask)
+        cv2.imshow("Input Image", image)
+        cv2.imshow("Mask Image", mask)
+        cv2.waitKey(-1)
+        cv2.imwrite(image_name, image)
+        cv2.imwrite(mask_name, mask)
+        if i==10:
+            exit(0)
 
 
 
@@ -105,13 +96,12 @@ def explain(opt):
     # print(model)
 
     """ keep evaluation model and result logs """
-    os.makedirs(f'./explain/{opt.exp_name}', exist_ok=True)
-    os.system(f'cp {opt.saved_model} ./explain/{opt.exp_name}/')
+    os.makedirs(f'./{opt.dir}/{opt.exp_name}', exist_ok=True)
+    os.system(f'cp {opt.saved_model} ./{opt.dir}/{opt.exp_name}/')
 
     """ evaluation """
     model.eval()
-    with torch.no_grad():
-        explain_all(model, opt)
+    explain_all(model, opt)
 
 
 if __name__ == '__main__':
@@ -143,6 +133,14 @@ if __name__ == '__main__':
     parser.add_argument('--FeatureExtraction', type=str, default=None, help='FeatureExtraction stage. VGG|RCNN|ResNet')
     parser.add_argument('--SequenceModeling', type=str, default=None, help='SequenceModeling stage. None|BiLSTM')
     parser.add_argument('--Prediction', type=str, default=None, help='Prediction stage. CTC|Attn')
+    parser.add_argument('--dir', type=str, default="interpret", help='Results folder of interpretability')
+    parser.add_argument('--head_fusion', type=str, default='max',
+                        help='How to fuse the attention heads for attention rollout. \
+                        Can be mean/max/min')
+    parser.add_argument('--discard_ratio', type=float, default=0.9,
+                        help='How many of the lowest 14x14 attention paths should we discard')
+    parser.add_argument('--category_index', type=int, default=None,
+                        help='The category index for gradient rollout')
     opt = parser.parse_args()
 
     """ vocab / character number configuration """
