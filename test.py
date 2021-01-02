@@ -205,7 +205,6 @@ def validation(model, criterion, evaluation_loader, converter, opt):
 
 
 def test(opt):
-    from thop import profile
     """ model configuration """
     if opt.Transformer:
         converter = TokenLabelConverter(opt)
@@ -262,6 +261,7 @@ def test(opt):
 
 # https://github.com/clovaai/deep-text-recognition-benchmark/issues/125
 def get_flops(model, opt, converter):
+    from thop import profile
     input = torch.randn(1, 1, opt.imgH, opt.imgW).to(device)
     model = model.to(device)
     if opt.Transformer:
