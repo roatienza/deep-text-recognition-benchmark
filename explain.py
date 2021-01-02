@@ -26,7 +26,7 @@ def show_mask_on_image(img, mask):
     cam = cam / np.max(cam)
     return np.uint8(255 * cam)
 
-def explain_all(model, opt):
+def explain_all(model, converter, opt):
     """ evaluation with 10 benchmark evaluation datasets """
     # The evaluation datasets, dataset order is same with Table 1 in our paper.
     eval_data_list = ['IIIT5k_3000', 'SVT', 'IC03_860', 'IC03_867', 'IC13_857',
@@ -42,37 +42,53 @@ def explain_all(model, opt):
             num_workers=int(opt.workers),
             collate_fn=AlignCollate_evaluation, pin_memory=True)
 
-        explain_data(model, evaluation_loader, opt)
+        explain_data(model, evaluation_loader, converter, opt)
         print("Done explaining: ", eval_data)
 
 
-def explain_data(model, evaluation_loader, opt):
+def explain_data(model, evaluation_loader, converter, opt):
     """ validation or evaluation """
 
     for i, (image_tensors, labels) in enumerate(evaluation_loader):
         image = image_tensors.to(device)
-        if opt.category_index is not None:
+
+        target = converter.encode(labels)
+        preds = model(image, text=target, seqlen=converter.batch_max_length)
+        _, preds_index = preds.topk(1, dim=-1, largest=True, sorted=True)
+        preds_index = preds_index.view(-1, converter.batch_max_length)
+        length_for_pred = torch.IntTensor([converter.batch_max_length - 1] ).to(device)
+        preds_str = converter.decode(preds_index[:, 1:], length_for_pred)
+        preds_prob = F.softmax(preds, dim=2)
+        preds_max_prob, _ = preds_prob.max(dim=2)
+        if opt.grad:
             grad_rollout = VITAttentionGradRollout(model, discard_ratio=opt.discard_ratio)
-            mask = grad_rollout(image, opt.category_index)
+            mask = grad_rollout(image, opt.token)
+            mask_name = "{}/{}-mask-grad_rollout_cat{}_{:.3f}_{}.png".format(opt.dir, labels[0], opt.token, opt.discard_ratio, opt.head_fusion)
+            image_name = "{}/{}-grad_rollout_cat{}_{:.3f}_{}.png".format(opt.dir, labels[0], opt.token, opt.discard_ratio, opt.head_fusion)
         else:
-            attention_rollout = VITAttentionRollout(model, head_fusion=opt.head_fusion, discard_ratio=opt.discard_ratio)
+            attention_rollout = VITAttentionRollout(model, head_fusion=opt.head_fusion, discard_ratio=opt.discard_ratio, token=opt.token)
             mask = attention_rollout(image)
-        mask_name = "{}/{}-mask-attention_rollout_{:.3f}_{}.png".format(opt.dir, labels[0], opt.discard_ratio, opt.head_fusion)
-        print(mask_name)
-        image_name = "{}/{}-attention_rollout_{:.3f}_{}.png".format(opt.dir, labels[0], opt.discard_ratio, opt.head_fusion)
-        print(image_name)
+            mask_name = "{}/{}-mask-attention_rollout_{:.3f}_{}.png".format(opt.dir, labels[0], opt.discard_ratio, opt.head_fusion)
+            image_name = "{}/{}-attention_rollout_{:.3f}_{}.png".format(opt.dir, labels[0], opt.discard_ratio, opt.head_fusion)
 
         image = image_tensors[0].squeeze()
-        image = image.cpu().numpy()
+        image = (((image.cpu().numpy() + 1) * 0.5) * 255).astype(np.uint8)
         image = np.expand_dims(image, axis=2)
         image = np.repeat(image, 3, axis=2)
         mask = cv2.resize(mask, (image.shape[1], image.shape[0]))
         mask = show_mask_on_image(image, mask)
-        cv2.imshow("Input Image", image)
+        #cv2.imshow("Input Image", image)
         cv2.imshow("Mask Image", mask)
-        cv2.waitKey(-1)
-        cv2.imwrite(image_name, image)
+        #cv2.imwrite(image_name, image)
         cv2.imwrite(mask_name, mask)
+        for gt, pred, pred_max_prob in zip(labels, preds_str, preds_max_prob):
+            pred_EOS = pred.find('[s]')
+            pred = pred[:pred_EOS]  # prune after "end of sentence" token ([s])
+            pred_max_prob = pred_max_prob[:pred_EOS]
+            print(f'Pred: {pred}')
+            print(f'GT:   {gt}')
+
+        cv2.waitKey(-1)
         if i==10:
             exit(0)
 
@@ -94,14 +110,17 @@ def explain(opt):
     model.load_state_dict(torch.load(opt.saved_model, map_location=device))
     opt.exp_name = '_'.join(opt.saved_model.split('/')[1:])
     # print(model)
+    #for name, module in model.named_modules():
+    #    print(name)
 
+    #exit(0)
     """ keep evaluation model and result logs """
     os.makedirs(f'./{opt.dir}/{opt.exp_name}', exist_ok=True)
     os.system(f'cp {opt.saved_model} ./{opt.dir}/{opt.exp_name}/')
 
     """ evaluation """
     model.eval()
-    explain_all(model, opt)
+    explain_all(model, converter, opt)
 
 
 if __name__ == '__main__':
@@ -134,13 +153,14 @@ if __name__ == '__main__':
     parser.add_argument('--SequenceModeling', type=str, default=None, help='SequenceModeling stage. None|BiLSTM')
     parser.add_argument('--Prediction', type=str, default=None, help='Prediction stage. CTC|Attn')
     parser.add_argument('--dir', type=str, default="interpret", help='Results folder of interpretability')
-    parser.add_argument('--head_fusion', type=str, default='max',
+    parser.add_argument('--head_fusion', type=str, default='mean',
                         help='How to fuse the attention heads for attention rollout. \
                         Can be mean/max/min')
     parser.add_argument('--discard_ratio', type=float, default=0.9,
                         help='How many of the lowest 14x14 attention paths should we discard')
-    parser.add_argument('--category_index', type=int, default=None,
-                        help='The category index for gradient rollout')
+    parser.add_argument('--token', type=int, default=None,
+                        help='The token for rollout')
+    parser.add_argument('--grad', action='store_true', help='grad rollout')
     opt = parser.parse_args()
 
     """ vocab / character number configuration """
