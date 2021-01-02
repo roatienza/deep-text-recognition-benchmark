@@ -326,6 +326,7 @@ def vit_base_patch16_224(pretrained=False, **kwargs):
 
 
 ## str models
+@register_model
 def vit_small_patch16_224_str(pretrained=False, **kwargs):
     kwargs['in_chans'] = 1
     if pretrained:

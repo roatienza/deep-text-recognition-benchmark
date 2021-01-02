@@ -302,9 +302,7 @@ if __name__ == '__main__':
     opt = parser.parse_args()
 
     if not opt.exp_name:
-        wordformer = f'-Wordformer-{opt.TransformerModel}' if opt.Transformer else ""
-        opt.exp_name = f'{opt.Transformation}-{opt.FeatureExtraction}-{opt.SequenceModeling}-{opt.Prediction}'
-        opt.exp_name += wordformer
+        opt.exp_name = f'-Wordformer-{opt.TransformerModel}' if opt.Transformer else f'{opt.Transformation}-{opt.FeatureExtraction}-{opt.SequenceModeling}-{opt.Prediction}'
         opt.exp_name += f'-Seed{opt.manualSeed}'
         # print(opt.exp_name)
 
