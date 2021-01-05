@@ -28,11 +28,11 @@ def show_mask_on_image(img, mask):
 def explain_all(model, converter, opt):
     eval_data_list = ['IIIT5k_3000', 'SVT', 'IC03_860', 'IC03_867', 'IC13_857',
                       'IC13_1015', 'IC15_1811', 'IC15_2077', 'SVTP', 'CUTE80']
-    eval_data_list = ['SVT'] # 'IC03_860', 'IC03_867', 'IC13_857',
 
     for eval_data in eval_data_list:
         eval_data_path = os.path.join(opt.eval_data, eval_data)
         dataset = eval_data
+        os.makedirs(f'./{opt.dir}/{eval_data}', exist_ok=True)
         AlignCollate_evaluation = AlignCollate(imgH=opt.imgH, imgW=opt.imgW, keep_ratio_with_pad=opt.PAD)
         eval_data, eval_data_log = hierarchical_dataset(root=eval_data_path, opt=opt)
         evaluation_loader = torch.utils.data.DataLoader(
@@ -42,12 +42,16 @@ def explain_all(model, converter, opt):
             collate_fn=AlignCollate_evaluation, pin_memory=True)
 
         explain_data(model, evaluation_loader, converter, dataset, opt)
-        print("Done explaining: ", eval_data)
+        print("Done explaining: ", dataset)
 
 
 def explain_data(model, evaluation_loader, converter, dataset, opt):
     for i, (image_tensors, labels) in enumerate(evaluation_loader):
+        if i > 100:
+            return
+
         image = image_tensors.to(device)
+        image_hash = (hex(hash(image.cpu().numpy().tobytes()))[2:8]).upper()
 
         target = converter.encode(labels)
         preds = model(image, text=target, seqlen=converter.batch_max_length)
@@ -55,49 +59,36 @@ def explain_data(model, evaluation_loader, converter, dataset, opt):
         preds_index = preds_index.view(-1, converter.batch_max_length)
         length_for_pred = torch.IntTensor([converter.batch_max_length - 1] ).to(device)
         preds_str = converter.decode(preds_index[:, 1:], length_for_pred)
-        preds_prob = F.softmax(preds, dim=2)
-        preds_max_prob, _ = preds_prob.max(dim=2)
-        if opt.grad:
-            grad_rollout = VITAttentionGradRollout(model, discard_ratio=opt.discard_ratio)
-            mask = grad_rollout(image, opt.token)
-            mask_name = "{}/{}-mask-grad_rollout_cat{}_{:.3f}_{}.png".format(opt.dir, labels[0], opt.token, opt.discard_ratio, opt.head_fusion)
-            # image_name = "{}/{}-grad_rollout_cat{}_{:.3f}_{}.png".format(opt.dir, labels[0], opt.token, opt.discard_ratio, opt.head_fusion)
-        else:
+        pred_EOS = preds_str[0].find('[s]')
+        pred = preds_str[0][:pred_EOS]  # prune after "end of sentence" token ([s])
+        print(f'Pred: {pred}')
+        print(f'GT:   {labels[0]}')
+
+        img = image_tensors[0].squeeze()
+        img = img.cpu().numpy()
+        img = (((img + 1) * 0.5) * 255).astype(np.uint8)
+        img = np.expand_dims(img, axis=2)
+        img = np.repeat(img, 3, axis=2)
+        for token in range(25):
+            if token > len(labels[0]):
+                continue
             attention_rollout = VITAttentionRollout(model, 
                                                     head_fusion=opt.head_fusion, 
                                                     discard_ratio=opt.discard_ratio, 
-                                                    token=opt.token,
+                                                    token=token,
                                                     seqlen=converter.batch_max_length)
             mask = attention_rollout(image)
-            mask_name = "{}/{}/{}-rollout-token{}-{:.2f}_{}.png".format(opt.dir,
-                                                                        dataset,      
-                                                                        labels[0], 
-                                                                        opt.token,
-                                                                        opt.discard_ratio, 
-                                                                        opt.head_fusion)
-            os.makedirs(f'./{opt.dir}/{dataset}', exist_ok=True)
-            #image_name = "{}/{}-attention_rollout_{:.3f}_{}.png".format(opt.dir, labels[0], opt.discard_ratio, opt.head_fusion)
+            mask_name = "{}/{}/gt-{}-pred-{}-token{}-{}.png".format(opt.dir,
+                                                                    dataset,      
+                                                                    labels[0], 
+                                                                    pred,
+                                                                    token,
+                                                                    image_hash)
 
-        image = image_tensors[0].squeeze()
-        image = image.cpu().numpy()
-        image = (((image + 1) * 0.5) * 255).astype(np.uint8)
-        image = np.expand_dims(image, axis=2)
-        image = np.repeat(image, 3, axis=2)
-        mask = cv2.resize(mask, (image.shape[1], image.shape[0]))
-        mask = show_mask_on_image(image, mask)
-        cv2.imshow("Mask Image", mask)
-        cv2.imwrite(mask_name, mask)
-        for gt, pred, pred_max_prob in zip(labels, preds_str, preds_max_prob):
-            pred_EOS = pred.find('[s]')
-            pred = pred[:pred_EOS]  # prune after "end of sentence" token ([s])
-            pred_max_prob = pred_max_prob[:pred_EOS]
-            print(f'Pred: {pred}')
-            print(f'GT:   {gt}')
-
-        cv2.waitKey(-1)
-        if i==10:
-            exit(0)
-
+            mask = cv2.resize(mask, (img.shape[1], img.shape[0]))
+            mask = show_mask_on_image(img, mask)
+            #cv2.imshow("Mask Image", mask)
+            cv2.imwrite(mask_name, mask)
 
 
 def explain(opt):
