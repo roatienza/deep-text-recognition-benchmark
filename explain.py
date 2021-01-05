@@ -17,7 +17,6 @@ from modules.vit_grad_rollout import VITAttentionGradRollout
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-
 def show_mask_on_image(img, mask):
     img = np.float32(img) / 255
     heatmap = cv2.applyColorMap(np.uint8(255 * mask), cv2.COLORMAP_JET)
@@ -27,13 +26,13 @@ def show_mask_on_image(img, mask):
     return np.uint8(255 * cam)
 
 def explain_all(model, converter, opt):
-    """ evaluation with 10 benchmark evaluation datasets """
-    # The evaluation datasets, dataset order is same with Table 1 in our paper.
     eval_data_list = ['IIIT5k_3000', 'SVT', 'IC03_860', 'IC03_867', 'IC13_857',
                       'IC13_1015', 'IC15_1811', 'IC15_2077', 'SVTP', 'CUTE80']
+    eval_data_list = ['SVT'] # 'IC03_860', 'IC03_867', 'IC13_857',
 
     for eval_data in eval_data_list:
         eval_data_path = os.path.join(opt.eval_data, eval_data)
+        dataset = eval_data
         AlignCollate_evaluation = AlignCollate(imgH=opt.imgH, imgW=opt.imgW, keep_ratio_with_pad=opt.PAD)
         eval_data, eval_data_log = hierarchical_dataset(root=eval_data_path, opt=opt)
         evaluation_loader = torch.utils.data.DataLoader(
@@ -42,13 +41,11 @@ def explain_all(model, converter, opt):
             num_workers=int(opt.workers),
             collate_fn=AlignCollate_evaluation, pin_memory=True)
 
-        explain_data(model, evaluation_loader, converter, opt)
+        explain_data(model, evaluation_loader, converter, dataset, opt)
         print("Done explaining: ", eval_data)
 
 
-def explain_data(model, evaluation_loader, converter, opt):
-    """ validation or evaluation """
-
+def explain_data(model, evaluation_loader, converter, dataset, opt):
     for i, (image_tensors, labels) in enumerate(evaluation_loader):
         image = image_tensors.to(device)
 
@@ -64,22 +61,31 @@ def explain_data(model, evaluation_loader, converter, opt):
             grad_rollout = VITAttentionGradRollout(model, discard_ratio=opt.discard_ratio)
             mask = grad_rollout(image, opt.token)
             mask_name = "{}/{}-mask-grad_rollout_cat{}_{:.3f}_{}.png".format(opt.dir, labels[0], opt.token, opt.discard_ratio, opt.head_fusion)
-            image_name = "{}/{}-grad_rollout_cat{}_{:.3f}_{}.png".format(opt.dir, labels[0], opt.token, opt.discard_ratio, opt.head_fusion)
+            # image_name = "{}/{}-grad_rollout_cat{}_{:.3f}_{}.png".format(opt.dir, labels[0], opt.token, opt.discard_ratio, opt.head_fusion)
         else:
-            attention_rollout = VITAttentionRollout(model, head_fusion=opt.head_fusion, discard_ratio=opt.discard_ratio, token=opt.token)
+            attention_rollout = VITAttentionRollout(model, 
+                                                    head_fusion=opt.head_fusion, 
+                                                    discard_ratio=opt.discard_ratio, 
+                                                    token=opt.token,
+                                                    seqlen=converter.batch_max_length)
             mask = attention_rollout(image)
-            mask_name = "{}/{}-mask-attention_rollout_{:.3f}_{}.png".format(opt.dir, labels[0], opt.discard_ratio, opt.head_fusion)
-            image_name = "{}/{}-attention_rollout_{:.3f}_{}.png".format(opt.dir, labels[0], opt.discard_ratio, opt.head_fusion)
+            mask_name = "{}/{}/{}-rollout-token{}-{:.2f}_{}.png".format(opt.dir,
+                                                                        dataset,      
+                                                                        labels[0], 
+                                                                        opt.token,
+                                                                        opt.discard_ratio, 
+                                                                        opt.head_fusion)
+            os.makedirs(f'./{opt.dir}/{dataset}', exist_ok=True)
+            #image_name = "{}/{}-attention_rollout_{:.3f}_{}.png".format(opt.dir, labels[0], opt.discard_ratio, opt.head_fusion)
 
         image = image_tensors[0].squeeze()
-        image = (((image.cpu().numpy() + 1) * 0.5) * 255).astype(np.uint8)
+        image = image.cpu().numpy()
+        image = (((image + 1) * 0.5) * 255).astype(np.uint8)
         image = np.expand_dims(image, axis=2)
         image = np.repeat(image, 3, axis=2)
         mask = cv2.resize(mask, (image.shape[1], image.shape[0]))
         mask = show_mask_on_image(image, mask)
-        #cv2.imshow("Input Image", image)
         cv2.imshow("Mask Image", mask)
-        #cv2.imwrite(image_name, image)
         cv2.imwrite(mask_name, mask)
         for gt, pred, pred_max_prob in zip(labels, preds_str, preds_max_prob):
             pred_EOS = pred.find('[s]')
@@ -112,11 +118,10 @@ def explain(opt):
     # print(model)
     #for name, module in model.named_modules():
     #    print(name)
-
     #exit(0)
     """ keep evaluation model and result logs """
     os.makedirs(f'./{opt.dir}/{opt.exp_name}', exist_ok=True)
-    os.system(f'cp {opt.saved_model} ./{opt.dir}/{opt.exp_name}/')
+    #os.system(f'cp {opt.saved_model} ./{opt.dir}/{opt.exp_name}/')
 
     """ evaluation """
     model.eval()
