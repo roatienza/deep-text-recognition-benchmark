@@ -30,7 +30,7 @@ class Batch_Balanced_Dataset(object):
         log.write(f'dataset_root: {opt.train_data}\nopt.select_data: {opt.select_data}\nopt.batch_ratio: {opt.batch_ratio}\n')
         assert len(opt.select_data) == len(opt.batch_ratio)
 
-        _AlignCollate = AlignCollate(imgH=opt.imgH, imgW=opt.imgW, keep_ratio_with_pad=opt.PAD)
+        _AlignCollate = AlignCollate(imgH=opt.imgH, imgW=opt.imgW, keep_ratio_with_pad=opt.PAD, opt=opt)
         self.data_loader_list = []
         self.dataloader_iter_list = []
         batch_size_list = []
