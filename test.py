@@ -42,7 +42,7 @@ def benchmark_all_eval(model, criterion, converter, opt): #, calculate_infer_tim
     log.write(dashed_line + '\n')
     for eval_data in eval_data_list:
         eval_data_path = os.path.join(opt.eval_data, eval_data)
-        AlignCollate_evaluation = AlignCollate(imgH=opt.imgH, imgW=opt.imgW, keep_ratio_with_pad=opt.PAD)
+        AlignCollate_evaluation = AlignCollate(imgH=opt.imgH, imgW=opt.imgW, keep_ratio_with_pad=opt.PAD, opt=opt)
         eval_data, eval_data_log = hierarchical_dataset(root=eval_data_path, opt=opt)
         evaluation_loader = torch.utils.data.DataLoader(
             eval_data, batch_size=evaluation_batch_size,

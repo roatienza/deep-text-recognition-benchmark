@@ -12,7 +12,7 @@ import numpy as np
 from torch.utils.data import Dataset, ConcatDataset, Subset
 from torch._utils import _accumulate
 import torchvision.transforms as transforms
-
+import torchvision.transforms.functional as TF
 
 class Batch_Balanced_Dataset(object):
 
@@ -253,6 +253,30 @@ class RawDataset(Dataset):
         return (img, self.image_path_list[index])
 
 
+
+
+class NormalRotationTransform:
+    def __init__(self, angle_std):
+        self.angle_std = angle_std
+
+    def __call__(self, x):
+        # angle = torch.normal(mean=0., std=torch.Tensor([self.angle_std]))
+        angle = np.random.normal(loc=0., scale=self.angle_std)
+        return TF.rotate(x, angle)
+
+class DataAugment(object):
+    def __init__(self, size, opt=None):
+        self.size = size
+        self.opt = opt
+
+    def __call__(self, img):
+        img = transforms.Resize(self.size, interpolation=Image.BICUBIC)(img)
+        img = NormalRotationTransform(34.)(img)
+        img = transforms.ToTensor()(img)
+        img.sub_(0.5).div_(0.5)
+        return img
+
+
 class ResizeNormalize(object):
 
     def __init__(self, size, interpolation=Image.BICUBIC):
@@ -289,10 +313,11 @@ class NormalizePAD(object):
 
 class AlignCollate(object):
 
-    def __init__(self, imgH=32, imgW=100, keep_ratio_with_pad=False):
+    def __init__(self, imgH=32, imgW=100, keep_ratio_with_pad=False, opt=None):
         self.imgH = imgH
         self.imgW = imgW
         self.keep_ratio_with_pad = keep_ratio_with_pad
+        self.opt = opt
 
     def __call__(self, batch):
         batch = filter(lambda x: x is not None, batch)
@@ -317,7 +342,10 @@ class AlignCollate(object):
                 # resized_image.save('./image_test/%d_test.jpg' % w)
 
             image_tensors = torch.cat([t.unsqueeze(0) for t in resized_images], 0)
-
+        elif self.opt is not None and self.opt.data_augment:
+            transform = DataAugment((self.imgW, self.imgH), self.opt)
+            image_tensors = [transform(image) for image in images]
+            image_tensors = torch.cat([t.unsqueeze(0) for t in image_tensors], 0)
         else:
             transform = ResizeNormalize((self.imgW, self.imgH))
             image_tensors = [transform(image) for image in images]
