@@ -304,6 +304,8 @@ if __name__ == '__main__':
 
     if not opt.exp_name:
         opt.exp_name = f'Wordformer-{opt.TransformerModel}' if opt.Transformer else f'{opt.Transformation}-{opt.FeatureExtraction}-{opt.SequenceModeling}-{opt.Prediction}'
+        if opt.data_augment:
+            opt.exp_name += "-DataAugment"
         opt.exp_name += f'-Seed{opt.manualSeed}'
         # print(opt.exp_name)
 
