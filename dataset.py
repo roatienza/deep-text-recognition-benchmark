@@ -5,6 +5,7 @@ import six
 import math
 import lmdb
 import torch
+import cv2
 
 from natsort import natsorted
 from PIL import Image
@@ -265,13 +266,28 @@ class NormalRotationTransform:
         return TF.rotate(x, angle)
 
 class DataAugment(object):
-    def __init__(self, size, opt=None):
-        self.size = size
+    def __init__(self, opt):
         self.opt = opt
 
     def __call__(self, img):
-        img = transforms.Resize(self.size, interpolation=Image.BICUBIC)(img)
-        img = NormalRotationTransform(34.)(img)
+        img = transforms.Resize((self.opt.imgH, self.opt.imgW), interpolation=Image.BICUBIC)(img)
+        if self.opt.rotation:
+            img = NormalRotationTransform(self.rotation_angle)(img)
+        if self.opt.Transformer:
+            offX = (self.opt.finalW - self.opt.imgW) // 2
+            offY = (self.opt.finalH - self.opt.imgH) // 2
+            img = transforms.Pad(padding=(offX,offY))(img)
+            #target_img[:, offY:offY+self.opt.imgH, offX:offX+self.opt.imgW] = img
+            #target_img = torch.zeros(img.size()[0], self.opt.finalH, self.opt.finalW)
+
+        #print(img.size())
+        #img = image_tensors[0].squeeze()
+        #img = img.cpu().numpy()
+        #img = (((img + 1) * 0.5) * 255).astype(np.uint8)
+        #img = np.expand_dims(img, axis=2)
+        #img = np.repeat(img, 3, axis=2)
+        #cv2.imwrite("data.png", img)
+        #exit(0)
         img = transforms.ToTensor()(img)
         img.sub_(0.5).div_(0.5)
         return img
@@ -343,7 +359,7 @@ class AlignCollate(object):
 
             image_tensors = torch.cat([t.unsqueeze(0) for t in resized_images], 0)
         elif self.opt is not None and self.opt.data_augment:
-            transform = DataAugment((self.imgW, self.imgH), self.opt)
+            transform = DataAugment(self.opt)
             image_tensors = [transform(image) for image in images]
             image_tensors = torch.cat([t.unsqueeze(0) for t in image_tensors], 0)
         else:
