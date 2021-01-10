@@ -274,8 +274,8 @@ class DataAugment(object):
         img = transforms.Resize((self.opt.imgH, self.opt.imgW), interpolation=Image.BICUBIC)(img)
         #img.save("src.png")
         #img = img.resize((self.opt.imgH, self.opt.imgW), Image.BICUBIC)
-
-        if self.opt.warp and np.random.uniform(0,1) < self.opt.warp_prob:
+        iswarp = np.random.uniform(0,1) < self.opt.warp_prob
+        if self.opt.warp and iswarp:
             img = np.array(img)
             W = self.opt.imgW
             H = self.opt.imgH
@@ -311,7 +311,7 @@ class DataAugment(object):
             self.tps.estimateTransformation(np.array(dstpt).reshape((-1, N, 2)), np.array(srcpt).reshape((-1, N, 2)), matches)
             img = self.tps.warpImage(img)
 
-        if self.opt.rotation and np.random.uniform(0,1) < self.opt.rotation_prob:
+        if self.opt.rotation and iswarp:
             angle = np.random.normal(loc=0., scale=self.opt.rotation_angle)
             if isinstance(img, np.ndarray):
                 img = Image.fromarray(img)

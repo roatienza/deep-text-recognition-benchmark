@@ -303,9 +303,9 @@ if __name__ == '__main__':
     parser.add_argument('--rotation_prob', default=0.5, help='Rotation prob')
     parser.add_argument('--rotation_angle', default=34., help='Rotation angle std in deg')
     parser.add_argument('--perspective', action='store_true', help='Perspective')
-    parser.add_argument('--perspective_prob', default=0.5, help='Perspective probability')
+    parser.add_argument('--perspective_prob', default=0.3, help='Perspective probability')
     parser.add_argument('--warp', action='store_true', help='Image warping')
-    parser.add_argument('--warp_prob', default=0.5, help='Image warping prob')
+    parser.add_argument('--warp_prob', default=0.3, help='Image warping prob')
 
     opt = parser.parse_args()
 
