@@ -268,16 +268,30 @@ class NormalRotationTransform:
 class DataAugment(object):
     def __init__(self, opt):
         self.opt = opt
+        self.tps = cv2.createThinPlateSplineShapeTransformer()
 
     def __call__(self, img):
         img = transforms.Resize((self.opt.imgH, self.opt.imgW), interpolation=Image.BICUBIC)(img)
+        #img = img.resize((self.opt.imgH, self.opt.imgW), Image.BICUBIC)
         if self.opt.rotation:
             angle = np.random.normal(loc=0., scale=self.opt.rotation_angle)
-            img = TF.rotate(img, angle)
-            #img = NormalRotationTransform(angle)(img)
+            img = TF.rotate(img=img, angle=angle, resample=Image.BICUBIC, expand=True)
+            img = transforms.Resize((self.opt.imgH, self.opt.imgW), interpolation=Image.BICUBIC)(img)
+        if self.opt.warp:
+            pass
 
         img = transforms.ToTensor()(img)
         img.sub_(0.5).div_(0.5)
+
+        print(img.size())
+        img = img[0].squeeze()
+        img = img.cpu().numpy()
+        img = (((img + 1) * 0.5) * 255).astype(np.uint8)
+        img = np.expand_dims(img, axis=2)
+        img = np.repeat(img, 3, axis=2)
+        cv2.imwrite("data.png", img)
+        exit(0)
+
         return img
 
 
