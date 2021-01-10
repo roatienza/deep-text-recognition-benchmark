@@ -301,6 +301,7 @@ if __name__ == '__main__':
     parser.add_argument('--data_augment', action='store_true', help='If train data augmentation will be used')
     parser.add_argument('--rotation', action='store_true', help='Enable rotation dats aug')
     parser.add_argument('--rotation_angle', default=34., help='Rotation angle std in deg')
+    parser.add_argument('--perspective', action='store_true', help='Perspective')
     parser.add_argument('--warp', action='store_true', help='Image warping')
     #parser.add_argument('--finalH', default=224, help='Transformer input image height')
     #parser.add_argument('--finalW', default=224, help='Transformer input image width')

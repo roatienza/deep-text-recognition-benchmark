@@ -273,12 +273,28 @@ class DataAugment(object):
     def __call__(self, img):
         img = transforms.Resize((self.opt.imgH, self.opt.imgW), interpolation=Image.BICUBIC)(img)
         #img = img.resize((self.opt.imgH, self.opt.imgW), Image.BICUBIC)
+        if self.opt.perspective:
+            # upper-left, upper-right, lower-left, lower-right
+            src =  np.float32([[0, 0], [self.opt.imgW, 0], [0, self.opt.imgH], [self.opt.imgW, self.opt.imgH]])
+            if np.random.uniform(0, 1) > 0.5:
+                toprightY = np.random.uniform(0, 0.4)*self.opt.imgH
+                bottomrightY = np.random.uniform(0.6, 1.0)*self.opt.imgH
+                dest = np.float32([[0, 0], [self.opt.imgW, toprightY], [0, self.opt.imgH], [self.opt.imgW, bottomrightY]])
+            else:
+                topleftY = np.random.uniform(0, 0.4)*self.opt.imgH
+                bottomleftY = np.random.uniform(0.6, 1.0)*self.opt.imgH
+                dest = np.float32([[0, topleftY], [self.opt.imgW, 0], [0, bottomleftY], [self.opt.imgW, self.opt.imgH]])
+            M = cv2.getPerspectiveTransform(src, dest)
+            img = np.array(img)
+            img = cv2.warpPerspective(img, M, (self.opt.imgW, self.opt.imgH) )
+
+        if self.opt.warp:
+            pass
+
         if self.opt.rotation:
             angle = np.random.normal(loc=0., scale=self.opt.rotation_angle)
             img = TF.rotate(img=img, angle=angle, resample=Image.BICUBIC, expand=True)
             img = transforms.Resize((self.opt.imgH, self.opt.imgW), interpolation=Image.BICUBIC)(img)
-        if self.opt.warp:
-            pass
 
         img = transforms.ToTensor()(img)
         img.sub_(0.5).div_(0.5)
