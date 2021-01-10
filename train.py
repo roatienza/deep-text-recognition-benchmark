@@ -300,7 +300,7 @@ if __name__ == '__main__':
     parser.add_argument('--hidden_size', type=int, default=256, help='the size of the LSTM hidden state')
     parser.add_argument('--data_augment', action='store_true', help='If train data augmentation will be used')
     parser.add_argument('--rotation', action='store_true', help='Enable rotation dats aug')
-    parser.add_argument('--rotation_prob', default=0.5, help='Rotation prob')
+    parser.add_argument('--rotation_prob', default=0.3, help='Rotation prob')
     parser.add_argument('--rotation_angle', default=20., help='Rotation angle std in deg')
     parser.add_argument('--perspective', action='store_true', help='Perspective')
     parser.add_argument('--perspective_prob', default=0.3, help='Perspective probability')

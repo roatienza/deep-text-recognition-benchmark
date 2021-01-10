@@ -311,14 +311,16 @@ class DataAugment(object):
             self.tps.estimateTransformation(np.array(dstpt).reshape((-1, N, 2)), np.array(srcpt).reshape((-1, N, 2)), matches)
             img = self.tps.warpImage(img)
 
-        if self.opt.rotation and iswarp:
+        isrotation = np.random.uniform(0,1) < self.opt.rotation_prob
+        if self.opt.rotation and isrotation:
             angle = np.random.normal(loc=0., scale=self.opt.rotation_angle)
             if isinstance(img, np.ndarray):
                 img = Image.fromarray(img)
             img = TF.rotate(img=img, angle=angle, resample=Image.BICUBIC, expand=True)
             img = transforms.Resize((self.opt.imgH, self.opt.imgW), interpolation=Image.BICUBIC)(img)
 
-        if self.opt.perspective and np.random.uniform(0,1) < self.opt.perspective_prob:
+        isperspective = np.random.uniform(0,1) < self.opt.perspective_prob
+        if self.opt.perspective and isperspective:
             # upper-left, upper-right, lower-left, lower-right
             src =  np.float32([[0, 0], [self.opt.imgW, 0], [0, self.opt.imgH], [self.opt.imgW, self.opt.imgH]])
             if np.random.uniform(0, 1) > 0.5:
