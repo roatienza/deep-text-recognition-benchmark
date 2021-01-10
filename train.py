@@ -300,9 +300,9 @@ if __name__ == '__main__':
     parser.add_argument('--hidden_size', type=int, default=256, help='the size of the LSTM hidden state')
     parser.add_argument('--data_augment', action='store_true', help='If train data augmentation will be used')
     parser.add_argument('--rotation', action='store_true', help='Enable rotation dats aug')
-    parser.add_argument('--rotation_angle', default=22.5, help='Rotation angle in deg')
-    parser.add_argument('--finalH', default=224, help='Transformer input image height')
-    parser.add_argument('--finalW', default=224, help='Transformer input image width')
+    parser.add_argument('--rotation_angle', default=34., help='Rotation angle std in deg')
+    #parser.add_argument('--finalH', default=224, help='Transformer input image height')
+    #parser.add_argument('--finalW', default=224, help='Transformer input image width')
 
     opt = parser.parse_args()
 
