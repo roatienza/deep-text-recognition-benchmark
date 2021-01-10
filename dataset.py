@@ -272,6 +272,7 @@ class DataAugment(object):
 
     def __call__(self, img):
         img = transforms.Resize((self.opt.imgH, self.opt.imgW), interpolation=Image.BICUBIC)(img)
+        img.save("src.png")
         #img = img.resize((self.opt.imgH, self.opt.imgW), Image.BICUBIC)
         if self.opt.perspective:
             # upper-left, upper-right, lower-left, lower-right
@@ -289,10 +290,21 @@ class DataAugment(object):
             img = cv2.warpPerspective(img, M, (self.opt.imgW, self.opt.imgH) )
 
         if self.opt.warp:
-            pass
+            #size =  np.float32([[0, 0], [self.opt.imgW, 0], [0, self.opt.imgH], [self.opt.imgW, self.opt.imgH]])
+            img = np.array(img)
+            W = self.opt.imgW
+            H = self.opt.imgH
+            dstpt = [(0,0.2*H), (W,0.2*H), (0.2*W,(1-0.2)*H), ((1-0.2)*W,(1-0.2)*H), (0.5*W,0.6*H), (0.5*W,0),]
+            srcpt = [(0,0),     (W,0    ), (0,H),             (W,H),                 (0.5*W,H    ), (0.5*W,0),]
+            N = len(dstpt)
+            matches = [cv2.DMatch(i, i, 0) for i in range(N)]
+            self.tps.estimateTransformation(np.array(dstpt).reshape((-1, N, 2)), np.array(srcpt).reshape((-1, N, 2)), matches)
+            img = self.tps.warpImage(img)
 
         if self.opt.rotation:
             angle = np.random.normal(loc=0., scale=self.opt.rotation_angle)
+            if isinstance(img, np.ndarray):
+                img = Image.fromarray(img)
             img = TF.rotate(img=img, angle=angle, resample=Image.BICUBIC, expand=True)
             img = transforms.Resize((self.opt.imgH, self.opt.imgW), interpolation=Image.BICUBIC)(img)
 
@@ -305,7 +317,7 @@ class DataAugment(object):
         img = (((img + 1) * 0.5) * 255).astype(np.uint8)
         img = np.expand_dims(img, axis=2)
         img = np.repeat(img, 3, axis=2)
-        cv2.imwrite("data.png", img)
+        cv2.imwrite("dest.png", img)
         exit(0)
 
         return img
