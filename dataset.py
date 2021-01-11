@@ -270,11 +270,11 @@ class DataAugment(object):
 
     def __call__(self, img):
         img = transforms.Resize((self.opt.imgH, self.opt.imgW), interpolation=Image.BICUBIC)(img)
-        img.save("src.png" )
+        #img.save("src.png" )
         #img = img.resize((self.opt.imgH, self.opt.imgW), Image.BICUBIC)
         iswarp = np.random.uniform(0,1) < self.opt.warp_prob
-        if self.opt.warp and iswarp or True:
-            isflip = np.random.uniform(0,1) > 0.5
+        if self.opt.warp and iswarp:
+            isflip = np.random.uniform(0,1) < 0.5
             if isflip:
                 img = TF.vflip(img)
 
@@ -312,19 +312,22 @@ class DataAugment(object):
             matches = [cv2.DMatch(i, i, 0) for i in range(N)]
             self.tps.estimateTransformation(np.array(dstpt).reshape((-1, N, 2)), np.array(srcpt).reshape((-1, N, 2)), matches)
             img = self.tps.warpImage(img)
+            img = Image.fromarray(img)
             if isflip:
-                img = TF.vflip(Image.fromarray(img))
+                img = TF.vflip(img)
+            #img.save("curve.png" )
 
         isrotation = np.random.uniform(0,1) < self.opt.rotation_prob
-        if self.opt.rotation and isrotation or True:
+        if self.opt.rotation and isrotation:
             angle = np.random.normal(loc=0., scale=self.opt.rotation_angle)
             if isinstance(img, np.ndarray):
                 img = Image.fromarray(img)
             img = TF.rotate(img=img, angle=angle, resample=Image.BICUBIC, expand=True)
             img = transforms.Resize((self.opt.imgH, self.opt.imgW), interpolation=Image.BICUBIC)(img)
+            #img.save("rotation.png" )
 
         isperspective = np.random.uniform(0,1) < self.opt.perspective_prob
-        if self.opt.perspective and isperspective and False:
+        if self.opt.perspective and isperspective:
             # upper-left, upper-right, lower-left, lower-right
             src =  np.float32([[0, 0], [self.opt.imgW, 0], [0, self.opt.imgH], [self.opt.imgW, self.opt.imgH]])
             if np.random.uniform(0, 1) > 0.5:
@@ -338,24 +341,25 @@ class DataAugment(object):
             M = cv2.getPerspectiveTransform(src, dest)
             img = np.array(img)
             img = cv2.warpPerspective(img, M, (self.opt.imgW, self.opt.imgH) )
+            #cv2.imwrite("perspective.png", cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
 
         img = transforms.ToTensor()(img)
         img.sub_(0.5).div_(0.5)
 
-        print(img.size())
-        if self.opt.rgb:
-            img = img.permute(1,2,0)
-        else:
-            img = img[0].squeeze()
-        img = img.cpu().numpy()
-        img = (((img + 1) * 0.5) * 255).astype(np.uint8)
-        if self.opt.rgb:
-            cv2.imwrite("dest.png", cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
-        else:
-            img = np.expand_dims(img, axis=2)
-            img = np.repeat(img, 3, axis=2)
-            cv2.imwrite("dest.png" + name, img)
-        exit(0)
+        #print(img.size())
+        #if self.opt.rgb:
+        #    img = img.permute(1,2,0)
+        #else:
+        #    img = img[0].squeeze()
+        #img = img.cpu().numpy()
+        #img = (((img + 1) * 0.5) * 255).astype(np.uint8)
+        #if self.opt.rgb:
+        #    cv2.imwrite("dest.png", cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
+        #else:
+        #    img = np.expand_dims(img, axis=2)
+        #    img = np.repeat(img, 3, axis=2)
+        #    cv2.imwrite("dest.png" + name, img)
+        #exit(0)
 
         return img
 
