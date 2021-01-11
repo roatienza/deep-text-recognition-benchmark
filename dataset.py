@@ -254,8 +254,6 @@ class RawDataset(Dataset):
         return (img, self.image_path_list[index])
 
 
-
-
 class NormalRotationTransform:
     def __init__(self, angle_std):
         self.angle_std = angle_std
@@ -272,47 +270,53 @@ class DataAugment(object):
 
     def __call__(self, img):
         img = transforms.Resize((self.opt.imgH, self.opt.imgW), interpolation=Image.BICUBIC)(img)
-        #img.save("src.png")
+        img.save("src.png" )
         #img = img.resize((self.opt.imgH, self.opt.imgW), Image.BICUBIC)
         iswarp = np.random.uniform(0,1) < self.opt.warp_prob
-        if self.opt.warp and iswarp:
+        if self.opt.warp and iswarp or True:
+            isflip = np.random.uniform(0,1) > 0.5
+            if isflip:
+                img = TF.vflip(img)
+
             img = np.array(img)
             W = self.opt.imgW
             H = self.opt.imgH
-            r = np.random.uniform(H, 2*H)
-            x1 = (r**2 - (0.5*W)**2)**0.5
-            x2 = (r**2 - (0.25*W)**2)**0.5
+            W_25 = 0.25 * W
+            W_50 = 0.50 * W
+            W_75 = 0.75 * W
+            r = np.random.uniform(0.9, 1.2)*H
+            x1 = (r**2 - W_50**2)**0.5
             h1 = r - x1
-            h2 = r - x2
 
-            t = np.random.uniform(0.7,1)*H
-            wp = 0.5*W*t/r
-            hp = x1*t/r
-            h3 = h1 + hp  
+            t = np.random.uniform(0.4,0.8)*H
+            w2 = W_50*t/r
+            hi = x1*t/r
+            h2 = h1 + hi  
 
-            wi = 0.25*W*t/r
-            w1 = 0.25*W + wi
-            hi = x2*t/r
-            h4 = h2 + hi
+            sinb_2 = ((1 - x1/r)/2)**0.5
+            cosb_2 = ((1 + x1/r)/2)**0.5
+            w3 = W_50 - r*sinb_2
+            h3 = r - r*cosb_2
 
-            if np.random.uniform(0,1) > 0.5:
-                srcpt = [(0,0 ), (W,0 ), (0.5*W,0), (0.25*W,0 ), (0.75*W,0 ),  (0,H  ), (W,H    ), (0.5*W,H), (0.25*W,H), (0.75*W,H)]
-                dstpt = [(0,h1), (W,h1), (0.5*W,0), (0.25*W,h2), (0.75*W,h2),  (wp,h3), (W-wp,h3), (0.5*W,t), (w1,h4   ), (W-w1, h4)]
-            else:
-                h5 = H - h3
-                h6 = H - h4
-                h7 = H - h1
-                h8 = H - h2
-                srcpt = [(0,0  ), (W,0    ), (0.5*W,H), (0.25*W,0), (0.75*W,0),  (0,H ), (W,H),  (0.5*W,0  ), (0.25*W,H ), (0.75*W,H )]
-                dstpt = [(wp,h5), (W-wp,h5), (0.5*W,H), (w1,h6   ), (W-w1,h6 ),  (0,h7), (W,h7), (0.5*W,H-t), (0.25*W,h8), (0.75*W,h8)]
+            w4 = W_50 - (r-t)*sinb_2
+            h4 = r - (r-t)*cosb_2
+
+            w5 = 0.5*w2
+            h5 = h1 + 0.5*hi
+            H_50 = 0.50*H
+
+            srcpt = [(0,0 ), (W,0 ), (W_50,0), (0,H  ), (W,H    ), (W_25,0), (W_75,0 ),  (W_50,H), (W_25,H), (W_75,H ), (0,H_50), (W,H_50 )]
+            dstpt = [(0,h1), (W,h1), (W_50,0), (w2,h2), (W-w2,h2), (w3, h3), (W-w3,h3),  (W_50,t), (w4,h4 ), (W-w4,h4), (w5,h5 ), (W-w5,h5)]
 
             N = len(dstpt)
             matches = [cv2.DMatch(i, i, 0) for i in range(N)]
             self.tps.estimateTransformation(np.array(dstpt).reshape((-1, N, 2)), np.array(srcpt).reshape((-1, N, 2)), matches)
             img = self.tps.warpImage(img)
+            if isflip:
+                img = TF.vflip(Image.fromarray(img))
 
         isrotation = np.random.uniform(0,1) < self.opt.rotation_prob
-        if self.opt.rotation and isrotation:
+        if self.opt.rotation and isrotation or True:
             angle = np.random.normal(loc=0., scale=self.opt.rotation_angle)
             if isinstance(img, np.ndarray):
                 img = Image.fromarray(img)
@@ -320,7 +324,7 @@ class DataAugment(object):
             img = transforms.Resize((self.opt.imgH, self.opt.imgW), interpolation=Image.BICUBIC)(img)
 
         isperspective = np.random.uniform(0,1) < self.opt.perspective_prob
-        if self.opt.perspective and isperspective:
+        if self.opt.perspective and isperspective and False:
             # upper-left, upper-right, lower-left, lower-right
             src =  np.float32([[0, 0], [self.opt.imgW, 0], [0, self.opt.imgH], [self.opt.imgW, self.opt.imgH]])
             if np.random.uniform(0, 1) > 0.5:
@@ -338,14 +342,20 @@ class DataAugment(object):
         img = transforms.ToTensor()(img)
         img.sub_(0.5).div_(0.5)
 
-        #print(img.size())
-        #img = img[0].squeeze()
-        #img = img.cpu().numpy()
-        #img = (((img + 1) * 0.5) * 255).astype(np.uint8)
-        #img = np.expand_dims(img, axis=2)
-        #img = np.repeat(img, 3, axis=2)
-        #cv2.imwrite("dest.png", img)
-        #exit(0)
+        print(img.size())
+        if self.opt.rgb:
+            img = img.permute(1,2,0)
+        else:
+            img = img[0].squeeze()
+        img = img.cpu().numpy()
+        img = (((img + 1) * 0.5) * 255).astype(np.uint8)
+        if self.opt.rgb:
+            cv2.imwrite("dest.png", cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
+        else:
+            img = np.expand_dims(img, axis=2)
+            img = np.repeat(img, 3, axis=2)
+            cv2.imwrite("dest.png" + name, img)
+        exit(0)
 
         return img
 
