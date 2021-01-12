@@ -344,7 +344,8 @@ class DataAugment(object):
             #cv2.imwrite("perspective.png", cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
 
         img = transforms.ToTensor()(img)
-        img.sub_(0.5).div_(0.5)
+
+        #img.sub_(0.5).div_(0.5)
 
         #print(img.size())
         #if self.opt.rgb:
@@ -374,7 +375,7 @@ class ResizeNormalize(object):
     def __call__(self, img):
         img = img.resize(self.size, self.interpolation)
         img = self.toTensor(img)
-        img.sub_(0.5).div_(0.5)
+        #img.sub_(0.5).div_(0.5)
         return img
 
 
