@@ -354,7 +354,7 @@ def vit_base_patch16_224_str(pretrained=False, **kwargs):
 
 
 @register_model
-def deit_tiny_patch16_224_str(pretrained=False, **kwargs):
+def deit_tiny_patch16_224_str_gray(pretrained=False, **kwargs):
     kwargs['in_chans'] = 1
     model = VisionTransformer(
         patch_size=16, embed_dim=192, depth=12, num_heads=3, mlp_ratio=4, qkv_bias=True,
@@ -374,6 +374,20 @@ def deit_tiny_patch16_224_str(pretrained=False, **kwargs):
         #exit(0)
         load_pretrained(
             model, num_classes=model.num_classes, in_chans=kwargs.get('in_chans', 1), filter_fn=_conv_filter)
+    return model
+
+@register_model
+def deit_tiny_patch16_224_str(pretrained=False, **kwargs):
+    model = VisionTransformer(
+        patch_size=16, embed_dim=192, depth=12, num_heads=3, mlp_ratio=4, qkv_bias=True,
+        norm_layer=partial(nn.LayerNorm, eps=1e-6), **kwargs)
+    model.default_cfg = _cfg(
+            url='https://github.com/roatienza/public/releases/download/v0.1-deit-tiny/deit_tiny_patch16_224-a1311bcf.pth'
+    )
+
+    if pretrained:
+        load_pretrained(
+            model, num_classes=model.num_classes, in_chans=kwargs.get('in_chans', 3), filter_fn=_conv_filter)
     return model
 
 
