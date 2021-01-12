@@ -14,6 +14,18 @@ from torch.utils.data import Dataset, ConcatDataset, Subset
 from torch._utils import _accumulate
 import torchvision.transforms as transforms
 import torchvision.transforms.functional as TF
+import auto_augment as augment
+
+# fr https://github.com/kakaobrain/fast-autoaugment
+_IMAGENET_PCA = {
+    'eigval': [0.2175, 0.0188, 0.0045],
+    'eigvec': [
+        [-0.5675,  0.7192,  0.4009],
+        [-0.5808, -0.0045, -0.8140],
+        [-0.5836, -0.6948,  0.4203],
+    ]
+}
+
 
 class Batch_Balanced_Dataset(object):
 
@@ -267,13 +279,30 @@ class DataAugment(object):
     def __init__(self, opt):
         self.opt = opt
         self.tps = cv2.createThinPlateSplineShapeTransformer()
+        self.augment = augment.AutoAugment(dataset="imagenet")
+        self.lighting = augment.Lighting(0.1, _IMAGENET_PCA['eigval'], _IMAGENET_PCA['eigvec'])
 
     def __call__(self, img):
         #img = transforms.Resize((self.opt.imgH, self.opt.imgW), interpolation=Image.BICUBIC)(img)
         img = img.resize((self.opt.imgH, self.opt.imgW), Image.BICUBIC)
         if self.opt.eval:
-            return transforms.ToTensor()(img)
+            img = transforms.ToTensor()(img)
+            if self.opt.rgb:
+                img = self.lighting(img)
+                img = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                           std=[0.229, 0.224, 0.225])(img)
+            return img
+
         #img.save("src.png" )
+
+        if self.opt.auto_augment and self.opt.rgb:
+            img = self.augment(img)
+            img = transforms.ColorJitter(
+                    brightness=0.4,
+                    contrast=0.4,
+                    saturation=0.4,
+                    )(img)
+
         iswarp = np.random.uniform(0,1) < self.opt.warp_prob
         if self.opt.warp and iswarp:
             isflip = np.random.uniform(0,1) < 0.5
@@ -346,6 +375,11 @@ class DataAugment(object):
             #cv2.imwrite("perspective.png", cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
 
         img = transforms.ToTensor()(img)
+        if self.opt.rgb:
+            img = self.lighting(img)
+            img = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                       std=[0.229, 0.224, 0.225])(img)
+
 
         #img.sub_(0.5).div_(0.5)
 

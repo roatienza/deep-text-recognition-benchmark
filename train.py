@@ -308,6 +308,7 @@ if __name__ == '__main__':
     parser.add_argument('--perspective_prob', default=0.1, type=float, help='Perspective probability')
     parser.add_argument('--warp', action='store_true', help='Image warping')
     parser.add_argument('--warp_prob', default=0.1, type=float, help='Image warping prob')
+    parser.add_argument('--auto_augment', action='store_true', help='Auto augment')
 
     opt = parser.parse_args()
 
@@ -315,8 +316,9 @@ if __name__ == '__main__':
         opt.exp_name = f'Wordformer-{opt.TransformerModel}' if opt.Transformer else f'{opt.Transformation}-{opt.FeatureExtraction}-{opt.SequenceModeling}-{opt.Prediction}'
         if opt.data_augment:
             opt.exp_name += "-DataAugment"
-        opt.exp_name += f'-Seed{opt.manualSeed}'
-        # print(opt.exp_name)
+
+    opt.exp_name += f'-Seed{opt.manualSeed}'
+    # print(opt.exp_name)
 
     os.makedirs(f'./saved_models/{opt.exp_name}', exist_ok=True)
 
