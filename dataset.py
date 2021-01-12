@@ -269,9 +269,9 @@ class DataAugment(object):
         self.tps = cv2.createThinPlateSplineShapeTransformer()
 
     def __call__(self, img):
-        img = transforms.Resize((self.opt.imgH, self.opt.imgW), interpolation=Image.BICUBIC)(img)
+        #img = transforms.Resize((self.opt.imgH, self.opt.imgW), interpolation=Image.BICUBIC)(img)
+        img = img.resize((self.opt.imgH, self.opt.imgW), Image.BICUBIC)
         #img.save("src.png" )
-        #img = img.resize((self.opt.imgH, self.opt.imgW), Image.BICUBIC)
         iswarp = np.random.uniform(0,1) < self.opt.warp_prob
         if self.opt.warp and iswarp:
             isflip = np.random.uniform(0,1) < 0.5
