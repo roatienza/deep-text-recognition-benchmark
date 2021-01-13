@@ -300,7 +300,6 @@ if __name__ == '__main__':
     parser.add_argument('--output_channel', type=int, default=512,
                         help='the number of output channel of Feature extractor')
     parser.add_argument('--hidden_size', type=int, default=256, help='the size of the LSTM hidden state')
-    parser.add_argument('--data_augment', action='store_true', help='If train data augmentation will be used')
     parser.add_argument('--rotation', action='store_true', help='Enable rotation dats aug')
     parser.add_argument('--rotation_prob', default=0.5, type=float, help='Rotation prob')
     parser.add_argument('--rotation_angle', default=45., type=float, help='Rotation angle std in deg')
@@ -314,8 +313,6 @@ if __name__ == '__main__':
 
     if not opt.exp_name:
         opt.exp_name = f'Wordformer-{opt.TransformerModel}' if opt.Transformer else f'{opt.Transformation}-{opt.FeatureExtraction}-{opt.SequenceModeling}-{opt.Prediction}'
-        if opt.data_augment:
-            opt.exp_name += "-DataAugment"
 
     opt.exp_name += f'-Seed{opt.manualSeed}'
     # print(opt.exp_name)

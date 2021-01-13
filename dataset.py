@@ -279,7 +279,7 @@ class DataAugment(object):
     def __init__(self, opt):
         self.opt = opt
         self.tps = cv2.createThinPlateSplineShapeTransformer()
-        self.augment = augment.AutoAugment(dataset="imagenet")
+        self.augment = augment.AutoAugment(dataset="imagenet_str")
         #self.lighting = augment.Lighting(0.1, _IMAGENET_PCA['eigval'], _IMAGENET_PCA['eigvec'])
 
     def __call__(self, img):
