@@ -287,7 +287,7 @@ class DataAugment(object):
         img = img.resize((self.opt.imgH, self.opt.imgW), Image.BICUBIC)
         if self.opt.eval:
             img = transforms.ToTensor()(img)
-            if self.opt.rgb:
+            if self.opt.rgb and self.opt.auto_augment:
                 img = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                            std=[0.229, 0.224, 0.225])(img)
             return img
@@ -374,7 +374,7 @@ class DataAugment(object):
             #cv2.imwrite("perspective.png", cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
 
         img = transforms.ToTensor()(img)
-        if self.opt.rgb:
+        if self.opt.rgb and self.opt.auto_augment:
             #img = self.lighting(img)
             img = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                        std=[0.229, 0.224, 0.225])(img)
