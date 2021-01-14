@@ -117,8 +117,14 @@ def train(opt):
     # [print(name, p.numel()) for name, p in filter(lambda p: p[1].requires_grad, model.named_parameters())]
 
     # setup optimizer
+    scheduler = None
     if opt.adam:
-        optimizer = optim.Adam(filtered_parameters, lr=opt.lr, betas=(opt.beta1, 0.999))
+        optimizer = optim.Adam(model.parameters(),
+                               lr=opt.lr,
+                               weight_decay=1e-4)
+        # optimizer = optim.Adam(filtered_parameters, lr=opt.lr, betas=(opt.beta1, 0.999))
+        milestones = [100, 200, 250]
+        scheduler = MultiStepLR(optimizer, milestones=milestones, gamma=0.1)
     elif opt.sgd:
         optimizer = optim.SGD(model.parameters(),
                               lr=opt.lr,
@@ -246,6 +252,8 @@ def train(opt):
             print('end the training')
             sys.exit()
         iteration += 1
+        if scheduler is not None:
+            scheduler.step()
 
 
 if __name__ == '__main__':
@@ -309,6 +317,7 @@ if __name__ == '__main__':
     parser.add_argument('--warp_prob', default=0.5, type=float, help='Image warping prob')
     parser.add_argument('--auto_augment', action='store_true', help='Auto augment')
     parser.add_argument('--auto_augment_dataset', default="imagenet", help='Auto augment dataset')
+    parser.add_argument('--scheduler', action='store_true', help='Use lr scheduler')
 
     opt = parser.parse_args()
 
