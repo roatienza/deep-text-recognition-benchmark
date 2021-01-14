@@ -312,6 +312,7 @@ if __name__ == '__main__':
     parser.add_argument('--hidden_size', type=int, default=256, help='the size of the LSTM hidden state')
     parser.add_argument('--flops', action='store_true', help='calculates approx flops (may not work)')
     parser.add_argument('--auto_augment', action='store_true', help='Auto augment')
+    parser.add_argument('--auto_augment_dataset', default="imagenet", help='Auto augment dataset')
 
     opt = parser.parse_args()
 

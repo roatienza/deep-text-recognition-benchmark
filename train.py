@@ -308,6 +308,7 @@ if __name__ == '__main__':
     parser.add_argument('--warp', action='store_true', help='Image warping')
     parser.add_argument('--warp_prob', default=0.5, type=float, help='Image warping prob')
     parser.add_argument('--auto_augment', action='store_true', help='Auto augment')
+    parser.add_argument('--auto_augment_dataset', default="imagenet", help='Auto augment dataset')
 
     opt = parser.parse_args()
 

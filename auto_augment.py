@@ -90,7 +90,7 @@ policies = { "cifar10" :
                  [('Color', 0.6, 4), ('Contrast', 1.0, 8)],
                  [('Equalize', 0.8, 8), ('Equalize', 0.6, 3)],
              ],
-             "imagenet_str" :
+             "imagenet_no_rotation" :
              [
                  [('Solarize', 0.6, 5), ('AutoContrast', 0.6, 5)],
                  [('Equalize', 0.8, 8), ('Equalize', 0.6, 3)],
