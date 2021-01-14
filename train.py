@@ -16,6 +16,9 @@ from utils import CTCLabelConverter, CTCLabelConverterForBaiduWarpctc, AttnLabel
 from dataset import hierarchical_dataset, AlignCollate, Batch_Balanced_Dataset
 from model import Model
 from test import validation
+
+from torch.optim.lr_scheduler import CosineAnnealingLR, StepLR, MultiStepLR, ReduceLROnPlateau
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # python3 train.py --train_data data_lmdb_release/training --valid_data data_lmdb_release/validation --select_data MJ-ST --batch_ratio 0.5-0.5 --Transformation None --FeatureExtraction None --SequenceModeling None --Prediction None --Transformer --imgH 224 --imgW 224 --valInterval=200 
@@ -130,6 +133,7 @@ def train(opt):
                               lr=opt.lr,
                               momentum=0.9,
                               weight_decay=1e-4)
+        scheduler = CosineAnnealingLR(optimizer, T_max=opt.num_iter)
     else:
         optimizer = optim.Adadelta(filtered_parameters, lr=opt.lr, rho=opt.rho, eps=opt.eps)
     print("Optimizer:")
