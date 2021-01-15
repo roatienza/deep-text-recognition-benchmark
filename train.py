@@ -322,6 +322,7 @@ if __name__ == '__main__':
     parser.add_argument('--auto_augment', action='store_true', help='Auto augment')
     parser.add_argument('--auto_augment_dataset', default="imagenet", help='Auto augment dataset')
     parser.add_argument('--scheduler', action='store_true', help='Use lr scheduler')
+    parser.add_argument('--lighting', action='store_true', help='Use lighting')
 
     opt = parser.parse_args()
 

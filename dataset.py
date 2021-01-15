@@ -280,7 +280,7 @@ class DataAugment(object):
         self.opt = opt
         self.tps = cv2.createThinPlateSplineShapeTransformer()
         self.augment = augment.AutoAugment(dataset=opt.auto_augment_dataset)
-        #self.lighting = augment.Lighting(0.1, _IMAGENET_PCA['eigval'], _IMAGENET_PCA['eigvec'])
+        self.lighting = augment.Lighting(0.1, _IMAGENET_PCA['eigval'], _IMAGENET_PCA['eigvec'])
 
     def __call__(self, img):
         #img = transforms.Resize((self.opt.imgH, self.opt.imgW), interpolation=Image.BICUBIC)(img)
@@ -375,7 +375,8 @@ class DataAugment(object):
 
         img = transforms.ToTensor()(img)
         if self.opt.rgb and self.opt.auto_augment:
-            #img = self.lighting(img)
+            if self.opt.lighting:
+                img = self.lighting(img)
             img = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                        std=[0.229, 0.224, 0.225])(img)
 
