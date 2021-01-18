@@ -135,11 +135,11 @@ def train(opt):
                               momentum=0.9,
                               weight_decay=1e-4)
     else:
-        optimizer = optim.Adadelta(filtered_parameters, lr=opt.lr, rho=opt.rho, eps=opt.eps)
-        #optimizer = optim.Adadelta(model.parameters(),
-        #                           lr=opt.lr, 
-        #                           rho=opt.rho, 
-        #                           eps=opt.eps)
+        #optimizer = optim.Adadelta(filtered_parameters, lr=opt.lr, rho=opt.rho, eps=opt.eps)
+        optimizer = optim.Adadelta(model.parameters(),
+                                   lr=opt.lr, 
+                                   rho=opt.rho, 
+                                   eps=opt.eps)
 
     if opt.scheduler:
         scheduler = CosineAnnealingLR(optimizer, T_max=opt.num_iter)
@@ -334,7 +334,7 @@ if __name__ == '__main__':
     parser.add_argument('--warp', action='store_true', help='Image warping')
     parser.add_argument('--warp_prob', default=0.5, type=float, help='Image warping prob')
     parser.add_argument('--auto_augment', action='store_true', help='Auto augment')
-    parser.add_argument('--auto_augment_dataset', default="imagenet", help='Auto augment dataset')
+    parser.add_argument('--auto_augment_dataset', default="imagenet_no_rotation", help='Auto augment dataset')
     parser.add_argument('--scheduler', action='store_true', help='Use lr scheduler')
     parser.add_argument('--lighting', action='store_true', help='Use lighting')
 
