@@ -4,6 +4,7 @@ import time
 import random
 import string
 import argparse
+import re
 
 import torch
 import torch.backends.cudnn as cudnn
@@ -245,6 +246,15 @@ def train(opt):
                     elif 'Attn' in opt.Prediction:
                         gt = gt[:gt.find('[s]')]
                         pred = pred[:pred.find('[s]')]
+
+                    # To evaluate 'case sensitive model' with alphanumeric and case insensitve setting.
+                    if opt.sensitive and opt.data_filtering_off:
+                        pred = pred.lower()
+                        gt = gt.lower()
+                        alphanumeric_case_insensitve = '0123456789abcdefghijklmnopqrstuvwxyz'
+                        out_of_alphanumeric_case_insensitve = f'[^{alphanumeric_case_insensitve}]'
+                        pred = re.sub(out_of_alphanumeric_case_insensitve, '', pred)
+                        gt = re.sub(out_of_alphanumeric_case_insensitve, '', gt)
 
                     predicted_result_log += f'{gt:25s} | {pred:25s} | {confidence:0.4f}\t{str(pred == gt)}\n'
                 predicted_result_log += f'{dashed_line}'
