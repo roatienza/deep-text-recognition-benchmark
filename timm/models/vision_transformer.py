@@ -393,7 +393,7 @@ def deit_tiny_patch16_224_str(pretrained=False, **kwargs):
 
 @register_model
 def deit_small_patch16_224_str(pretrained=False, **kwargs):
-    kwargs['in_chans'] = 1
+    #kwargs['in_chans'] = 1
     model = VisionTransformer(
         patch_size=16, embed_dim=384, depth=12, num_heads=6, mlp_ratio=4, qkv_bias=True,
         norm_layer=partial(nn.LayerNorm, eps=1e-6), **kwargs)
@@ -407,7 +407,7 @@ def deit_small_patch16_224_str(pretrained=False, **kwargs):
         #)
         #model.load_state_dict(checkpoint["model"])
         load_pretrained(
-            model, num_classes=model.num_classes, in_chans=kwargs.get('in_chans', 1), filter_fn=_conv_filter)
+            model, num_classes=model.num_classes, in_chans=kwargs.get('in_chans', 3), filter_fn=_conv_filter)
     return model
 
 
