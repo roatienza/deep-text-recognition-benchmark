@@ -284,35 +284,23 @@ class DataAugment(object):
 
     def __call__(self, img):
         #img = transforms.Resize((self.opt.imgH, self.opt.imgW), interpolation=Image.BICUBIC)(img)
-        if self.opt.eval:
-            img = img.resize((self.opt.imgH, self.opt.imgW), Image.BICUBIC)
-            img = transforms.ToTensor()(img)
-            img.sub_(0.5).div_(0.5)
-
-            #if self.opt.rgb and self.opt.auto_augment:
-            #    img = transforms.Normalize(mean=[0.485, 0.456, 0.406],
-            #                               std=[0.229, 0.224, 0.225])(img)
-
-            return img
-
-        #img.save("src.png" )
-
-        #if self.opt.auto_augment and self.opt.rgb:
-        #    img = self.augment(img)
-        #    img = transforms.ColorJitter(
-        #            brightness=0.4,
-        #            contrast=0.4,
-        #            saturation=0.4,
-        #            )(img)
 
         iswarp = self.opt.warp and np.random.uniform(0,1) < self.opt.warp_prob
         isrotation = self.opt.rotation and np.random.uniform(0,1) < self.opt.rotation_prob
         isperspective = self.opt.perspective and np.random.uniform(0,1) < self.opt.perspective_prob
         isaug = iswarp or isrotation or isperspective
+            
+        if self.opt.eval or not isaug:
+            img = img.resize((self.opt.imgW, self.opt.imgH), Image.BICUBIC)
+            img = transforms.ToTensor()(img)
+            img.sub_(0.5).div_(0.5)
+
+            return img
+
         side = 224
         if isaug and self.opt.imgH!=side and self.opt.imgW!=side:
             img = img.resize((side, side), Image.BICUBIC)
-            
+
         if iswarp:
             isflip = np.random.uniform(0,1) < 0.5
             if isflip:
@@ -398,7 +386,15 @@ class DataAugment(object):
             img = Image.fromarray(img)
 
         #img = img.resize((self.opt.imgH, self.opt.imgW), Image.BICUBIC)
-        img = transforms.Resize((self.opt.imgH, self.opt.imgW), interpolation=Image.BICUBIC)(img)
+
+        # PIL size is (W,H) while Transforms (H, W)
+        if (self.opt.imgW, self.opt.imgH) != img.size:
+            img = transforms.Resize((self.opt.imgH, self.opt.imgW), interpolation=Image.BICUBIC)(img)
+
+        if (self.opt.imgW, self.opt.imgH) != img.size:
+            print(f"Target image size: {self.opt.imgH}, {self.opt.imgW}")
+            print("Actual image size:", img.size)
+
         img = transforms.ToTensor()(img)
 
         #if self.opt.rgb and self.opt.auto_augment:
