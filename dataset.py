@@ -295,7 +295,7 @@ class DataAugment(object):
 
             return img
 
-        img.save("src.png" )
+        #img.save("src.png" )
 
         #if self.opt.auto_augment and self.opt.rgb:
         #    img = self.augment(img)
@@ -363,7 +363,7 @@ class DataAugment(object):
                 rect = (0, 0, side, side//2)
 
             img = img.crop(rect)
-            img.save("curve.png" )
+            #img.save("curve.png" )
             img = img.resize((side, side), Image.BICUBIC)
 
         if isrotation:
@@ -376,8 +376,7 @@ class DataAugment(object):
             if iswarp:
                 expand = False
             img = TF.rotate(img=img, angle=angle, resample=Image.BICUBIC, expand=expand)
-            #img = transforms.Resize((self.opt.imgH, self.opt.imgW), interpolation=Image.BICUBIC)(img)
-            img.save("rotation.png" )
+            #img.save("rotation.png" )
 
         if isperspective and not isrotation:
             # upper-left, upper-right, lower-left, lower-right
@@ -395,7 +394,7 @@ class DataAugment(object):
             M = cv2.getPerspectiveTransform(src, dest)
             img = np.array(img)
             img = cv2.warpPerspective(img, M, (side, side) )
-            cv2.imwrite("perspective.png", cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
+            #cv2.imwrite("perspective.png", cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
             img = Image.fromarray(img)
 
         #img = img.resize((self.opt.imgH, self.opt.imgW), Image.BICUBIC)
@@ -410,19 +409,19 @@ class DataAugment(object):
 
         img.sub_(0.5).div_(0.5)
 
-        if self.opt.rgb:
-            img = img.permute(1,2,0)
-        else:
-            img = img[0].squeeze()
-        img = img.cpu().numpy()
-        img = (((img + 1) * 0.5) * 255).astype(np.uint8)
-        if self.opt.rgb:
-            cv2.imwrite("dest.png", cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
-        else:
-            img = np.expand_dims(img, axis=2)
-            img = np.repeat(img, 3, axis=2)
-            cv2.imwrite("dest-gray.png", img)
-        exit(0)
+        #if self.opt.rgb:
+        #    img = img.permute(1,2,0)
+        #else:
+        #    img = img[0].squeeze()
+        #img = img.cpu().numpy()
+        #img = (((img + 1) * 0.5) * 255).astype(np.uint8)
+        #if self.opt.rgb:
+        #    cv2.imwrite("dest.png", cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
+        #else:
+        #    img = np.expand_dims(img, axis=2)
+        #    img = np.repeat(img, 3, axis=2)
+        #    cv2.imwrite("dest-gray.png", img)
+        #exit(0)
 
         return img
 
