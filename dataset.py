@@ -368,6 +368,8 @@ class DataAugment(object):
 
         if isrotation:
             angle = np.random.normal(loc=0., scale=self.opt.rotation_angle)
+            angle = min(angle, self.opt.rotation_angle)
+            angle = max(angle, -self.opt.rotation_angle)
             if isinstance(img, np.ndarray):
                 img = Image.fromarray(img)
             expand = True
@@ -380,13 +382,15 @@ class DataAugment(object):
         if isperspective and not isrotation:
             # upper-left, upper-right, lower-left, lower-right
             src =  np.float32([[0, 0], [side, 0], [0, side], [side, side]])
+            low = 0.3 if iswarp else 0.4
+            high = 1 - low
             if np.random.uniform(0, 1) > 0.5:
-                toprightY = np.random.uniform(0, 0.2)*side
-                bottomrightY = np.random.uniform(0.8, 1.0)*side
+                toprightY = np.random.uniform(0, low)*side
+                bottomrightY = np.random.uniform(high, 1.0)*side
                 dest = np.float32([[0, 0], [side, toprightY], [0, side], [side, bottomrightY]])
             else:
-                topleftY = np.random.uniform(0, 0.2)*side
-                bottomleftY = np.random.uniform(0.8, 1.0)*side
+                topleftY = np.random.uniform(0, low)*side
+                bottomleftY = np.random.uniform(high, 1.0)*side
                 dest = np.float32([[0, topleftY], [side, 0], [0, bottomleftY], [side, side]])
             M = cv2.getPerspectiveTransform(src, dest)
             img = np.array(img)
@@ -406,7 +410,6 @@ class DataAugment(object):
 
         img.sub_(0.5).div_(0.5)
 
-        print(img.size())
         if self.opt.rgb:
             img = img.permute(1,2,0)
         else:
