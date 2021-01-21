@@ -391,10 +391,6 @@ class DataAugment(object):
         if (self.opt.imgW, self.opt.imgH) != img.size:
             img = transforms.Resize((self.opt.imgH, self.opt.imgW), interpolation=Image.BICUBIC)(img)
 
-        if (self.opt.imgW, self.opt.imgH) != img.size:
-            print(f"Target image size: {self.opt.imgH}, {self.opt.imgW}")
-            print("Actual image size:", img.size)
-
         img = transforms.ToTensor()(img)
 
         #if self.opt.rgb and self.opt.auto_augment:
