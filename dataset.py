@@ -279,46 +279,56 @@ class DataAugment(object):
     def __init__(self, opt):
         self.opt = opt
         self.tps = cv2.createThinPlateSplineShapeTransformer()
-        self.augment = augment.AutoAugment(dataset=opt.auto_augment_dataset)
-        self.lighting = augment.Lighting(0.1, _IMAGENET_PCA['eigval'], _IMAGENET_PCA['eigvec'])
+        #self.augment = augment.AutoAugment(dataset=opt.auto_augment_dataset)
+        #self.lighting = augment.Lighting(0.1, _IMAGENET_PCA['eigval'], _IMAGENET_PCA['eigvec'])
 
     def __call__(self, img):
         #img = transforms.Resize((self.opt.imgH, self.opt.imgW), interpolation=Image.BICUBIC)(img)
-        img = img.resize((self.opt.imgH, self.opt.imgW), Image.BICUBIC)
         if self.opt.eval:
+            img = img.resize((self.opt.imgH, self.opt.imgW), Image.BICUBIC)
             img = transforms.ToTensor()(img)
-            if self.opt.rgb and self.opt.auto_augment:
-                img = transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                           std=[0.229, 0.224, 0.225])(img)
+            img.sub_(0.5).div_(0.5)
+
+            #if self.opt.rgb and self.opt.auto_augment:
+            #    img = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+            #                               std=[0.229, 0.224, 0.225])(img)
+
             return img
 
-        #img.save("src.png" )
+        img.save("src.png" )
 
-        if self.opt.auto_augment and self.opt.rgb:
-            img = self.augment(img)
-            img = transforms.ColorJitter(
-                    brightness=0.4,
-                    contrast=0.4,
-                    saturation=0.4,
-                    )(img)
+        #if self.opt.auto_augment and self.opt.rgb:
+        #    img = self.augment(img)
+        #    img = transforms.ColorJitter(
+        #            brightness=0.4,
+        #            contrast=0.4,
+        #            saturation=0.4,
+        #            )(img)
 
-        iswarp = np.random.uniform(0,1) < self.opt.warp_prob
-        if self.opt.warp and iswarp:
+        iswarp = self.opt.warp and np.random.uniform(0,1) < self.opt.warp_prob
+        isrotation = self.opt.rotation and np.random.uniform(0,1) < self.opt.rotation_prob
+        isperspective = self.opt.perspective and np.random.uniform(0,1) < self.opt.perspective_prob
+        isaug = iswarp or isrotation or isperspective
+        side = 224
+        if isaug and self.opt.imgH!=side and self.opt.imgW!=side:
+            img = img.resize((side, side), Image.BICUBIC)
+            
+        if iswarp:
             isflip = np.random.uniform(0,1) < 0.5
             if isflip:
                 img = TF.vflip(img)
 
             img = np.array(img)
-            W = self.opt.imgW
-            H = self.opt.imgH
+            W = side
+            H = side
             W_25 = 0.25 * W
             W_50 = 0.50 * W
             W_75 = 0.75 * W
-            r = np.random.uniform(0.9, 1.2)*H
+            r = np.random.uniform(0.8, 1.2)*H
             x1 = (r**2 - W_50**2)**0.5
             h1 = r - x1
 
-            t = np.random.uniform(0.4,0.8)*H
+            t = np.random.uniform(0.4,0.5)*H
             w2 = W_50*t/r
             hi = x1*t/r
             h2 = h1 + hi  
@@ -340,63 +350,76 @@ class DataAugment(object):
 
             N = len(dstpt)
             matches = [cv2.DMatch(i, i, 0) for i in range(N)]
-            self.tps.estimateTransformation(np.array(dstpt).reshape((-1, N, 2)), np.array(srcpt).reshape((-1, N, 2)), matches)
+            dst_shape = np.array(dstpt).reshape((-1, N, 2))
+            src_shape = np.array(srcpt).reshape((-1, N, 2))
+            self.tps.estimateTransformation(dst_shape, src_shape, matches)
             img = self.tps.warpImage(img)
             img = Image.fromarray(img)
+
             if isflip:
                 img = TF.vflip(img)
-            #img.save("curve.png" )
+                rect = (0, side//2, side, side)
+            else:
+                rect = (0, 0, side, side//2)
 
-        isrotation = np.random.uniform(0,1) < self.opt.rotation_prob
-        if self.opt.rotation and isrotation:
+            img = img.crop(rect)
+            img.save("curve.png" )
+            img = img.resize((side, side), Image.BICUBIC)
+
+        if isrotation:
             angle = np.random.normal(loc=0., scale=self.opt.rotation_angle)
             if isinstance(img, np.ndarray):
                 img = Image.fromarray(img)
-            img = TF.rotate(img=img, angle=angle, resample=Image.BICUBIC, expand=True)
-            img = transforms.Resize((self.opt.imgH, self.opt.imgW), interpolation=Image.BICUBIC)(img)
-            #img.save("rotation.png" )
+            expand = True
+            if iswarp:
+                expand = False
+            img = TF.rotate(img=img, angle=angle, resample=Image.BICUBIC, expand=expand)
+            #img = transforms.Resize((self.opt.imgH, self.opt.imgW), interpolation=Image.BICUBIC)(img)
+            img.save("rotation.png" )
 
-        isperspective = np.random.uniform(0,1) < self.opt.perspective_prob
-        if self.opt.perspective and isperspective:
+        if isperspective and not isrotation:
             # upper-left, upper-right, lower-left, lower-right
-            src =  np.float32([[0, 0], [self.opt.imgW, 0], [0, self.opt.imgH], [self.opt.imgW, self.opt.imgH]])
+            src =  np.float32([[0, 0], [side, 0], [0, side], [side, side]])
             if np.random.uniform(0, 1) > 0.5:
-                toprightY = np.random.uniform(0, 0.4)*self.opt.imgH
-                bottomrightY = np.random.uniform(0.6, 1.0)*self.opt.imgH
-                dest = np.float32([[0, 0], [self.opt.imgW, toprightY], [0, self.opt.imgH], [self.opt.imgW, bottomrightY]])
+                toprightY = np.random.uniform(0, 0.2)*side
+                bottomrightY = np.random.uniform(0.8, 1.0)*side
+                dest = np.float32([[0, 0], [side, toprightY], [0, side], [side, bottomrightY]])
             else:
-                topleftY = np.random.uniform(0, 0.4)*self.opt.imgH
-                bottomleftY = np.random.uniform(0.6, 1.0)*self.opt.imgH
-                dest = np.float32([[0, topleftY], [self.opt.imgW, 0], [0, bottomleftY], [self.opt.imgW, self.opt.imgH]])
+                topleftY = np.random.uniform(0, 0.2)*side
+                bottomleftY = np.random.uniform(0.8, 1.0)*side
+                dest = np.float32([[0, topleftY], [side, 0], [0, bottomleftY], [side, side]])
             M = cv2.getPerspectiveTransform(src, dest)
             img = np.array(img)
-            img = cv2.warpPerspective(img, M, (self.opt.imgW, self.opt.imgH) )
-            #cv2.imwrite("perspective.png", cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
+            img = cv2.warpPerspective(img, M, (side, side) )
+            cv2.imwrite("perspective.png", cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
+            img = Image.fromarray(img)
 
+        #img = img.resize((self.opt.imgH, self.opt.imgW), Image.BICUBIC)
+        img = transforms.Resize((self.opt.imgH, self.opt.imgW), interpolation=Image.BICUBIC)(img)
         img = transforms.ToTensor()(img)
-        if self.opt.rgb and self.opt.auto_augment:
-            if self.opt.lighting:
-                img = self.lighting(img)
-            img = transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                       std=[0.229, 0.224, 0.225])(img)
 
+        #if self.opt.rgb and self.opt.auto_augment:
+        #    if self.opt.lighting:
+        #        img = self.lighting(img)
+        #    img = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+        #                               std=[0.229, 0.224, 0.225])(img)
 
-        #img.sub_(0.5).div_(0.5)
+        img.sub_(0.5).div_(0.5)
 
-        #print(img.size())
-        #if self.opt.rgb:
-        #    img = img.permute(1,2,0)
-        #else:
-        #    img = img[0].squeeze()
-        #img = img.cpu().numpy()
-        #img = (((img + 1) * 0.5) * 255).astype(np.uint8)
-        #if self.opt.rgb:
-        #    cv2.imwrite("dest.png", cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
-        #else:
-        #    img = np.expand_dims(img, axis=2)
-        #    img = np.repeat(img, 3, axis=2)
-        #    cv2.imwrite("dest.png" + name, img)
-        #exit(0)
+        print(img.size())
+        if self.opt.rgb:
+            img = img.permute(1,2,0)
+        else:
+            img = img[0].squeeze()
+        img = img.cpu().numpy()
+        img = (((img + 1) * 0.5) * 255).astype(np.uint8)
+        if self.opt.rgb:
+            cv2.imwrite("dest.png", cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
+        else:
+            img = np.expand_dims(img, axis=2)
+            img = np.repeat(img, 3, axis=2)
+            cv2.imwrite("dest-gray.png", img)
+        exit(0)
 
         return img
 
