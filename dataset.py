@@ -279,11 +279,13 @@ class DataAugment(object):
     def __init__(self, opt):
         self.opt = opt
         self.tps = cv2.createThinPlateSplineShapeTransformer()
-        #self.augment = augment.AutoAugment(dataset=opt.auto_augment_dataset)
-        #self.lighting = augment.Lighting(0.1, _IMAGENET_PCA['eigval'], _IMAGENET_PCA['eigvec'])
+        self.scale = False if opt.Transformer else True
 
     def __call__(self, img):
-        #img = transforms.Resize((self.opt.imgH, self.opt.imgW), interpolation=Image.BICUBIC)(img)
+        '''
+            PIL resize (W,H)
+            Torch resize is (H,W)
+        '''
 
         iswarp = self.opt.warp and np.random.uniform(0,1) < self.opt.warp_prob
         isrotation = self.opt.rotation and np.random.uniform(0,1) < self.opt.rotation_prob
@@ -293,7 +295,8 @@ class DataAugment(object):
         if self.opt.eval or not isaug:
             img = img.resize((self.opt.imgW, self.opt.imgH), Image.BICUBIC)
             img = transforms.ToTensor()(img)
-            img.sub_(0.5).div_(0.5)
+            if self.scale:
+                img.sub_(0.5).div_(0.5)
 
             return img
 
@@ -399,7 +402,8 @@ class DataAugment(object):
         #    img = transforms.Normalize(mean=[0.485, 0.456, 0.406],
         #                               std=[0.229, 0.224, 0.225])(img)
 
-        img.sub_(0.5).div_(0.5)
+        if self.scale:
+            img.sub_(0.5).div_(0.5)
 
         #if self.opt.rgb:
         #    img = img.permute(1,2,0)
