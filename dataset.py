@@ -7,7 +7,7 @@ import lmdb
 import torch
 import cv2
 from augmentation.augment import distort, stretch, perspective
-from augmentation.grid import GridMask
+from augmentation.grid import Grid
 
 from natsort import natsorted
 from PIL import Image
@@ -281,7 +281,7 @@ class DataAugment(object):
         self.opt = opt
         self.tps = cv2.createThinPlateSplineShapeTransformer()
         self.scale = False if opt.Transformer else True
-        self.grid = GridMask(25, 35)
+        self.grid = Grid(2, 8)
 
     def __call__(self, img):
         '''
@@ -293,7 +293,7 @@ class DataAugment(object):
         isstretch = self.opt.stretch and np.random.uniform(0,1) < self.opt.stretch_prob
         isrotation = self.opt.rotation and np.random.uniform(0,1) < self.opt.rotation_prob
         isperspective = self.opt.perspective and np.random.uniform(0,1) < self.opt.perspective_prob
-        isaug = iswarp or isrotation or isperspective or isstretch
+        isaug = iswarp or isrotation or isperspective or isstretch or self.opt.grid
             
         img = img.resize((self.opt.imgW, self.opt.imgH), Image.BICUBIC)
         img.save("src.png" )
@@ -306,20 +306,6 @@ class DataAugment(object):
 
         if self.opt.grid:
             img = self.grid(img)
-
-        if self.opt.rgb:
-            img = img.permute(1,2,0)
-        else:
-            img = img[0].squeeze()
-        img = img.cpu().numpy()
-        img = (((img + 1) * 0.5) * 255).astype(np.uint8)
-        if self.opt.rgb:
-            cv2.imwrite("grid.png", cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
-        else:
-            img = np.expand_dims(img, axis=2)
-            img = np.repeat(img, 3, axis=2)
-            cv2.imwrite("grid-gray.png", img)
-        exit(0)
 
         img = np.array(img)
         if iswarp:
