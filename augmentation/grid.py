@@ -71,8 +71,11 @@ class Grid:
         
         mask = np.expand_dims(mask, axis=2)
         img = np.array(img)
+        print(80 * "*")
+        print(img.shape)
         if img.shape[2] > 1: 
             mask = np.repeat(mask, img.shape[2], axis=2)
+        exit(0)
         #mask = mask.expand_as(img)
         #print(mask.shape)
         img = img * mask 
