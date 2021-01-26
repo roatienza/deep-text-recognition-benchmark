@@ -6,7 +6,8 @@ import math
 import lmdb
 import torch
 import cv2
-from augmentation.augment import distort, stretch, perspective, GridMask
+from augmentation.augment import distort, stretch, perspective
+from augmentation.grid import GridMask
 
 from natsort import natsorted
 from PIL import Image
@@ -280,7 +281,7 @@ class DataAugment(object):
         self.opt = opt
         self.tps = cv2.createThinPlateSplineShapeTransformer()
         self.scale = False if opt.Transformer else True
-        self.grid = GridMask(self.opt.d1, self.opt.d2)
+        self.grid = GridMask(25, 35)
 
     def __call__(self, img):
         '''

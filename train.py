@@ -337,6 +337,7 @@ if __name__ == '__main__':
     parser.add_argument('--stretch', action='store_true', help='Image warping')
     parser.add_argument('--stretch_prob', default=0.5, type=float, help='Image warping prob')
     parser.add_argument('--scheduler', action='store_true', help='Use lr scheduler')
+    parser.add_argument('--grid', action='store_true', help='GridMask')
     parser.add_argument('--lighting', action='store_true', help='Use lighting')
 
     opt = parser.parse_args()
