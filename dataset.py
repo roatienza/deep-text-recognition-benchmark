@@ -308,6 +308,9 @@ class DataAugment(object):
         if isstretch:
             img = stretch(img, 4)
 
+        if isperspective:
+            img = perspective(img)
+
         if isrotation:
             angle = np.random.normal(loc=0., scale=self.opt.rotation_angle)
             angle = min(angle, self.opt.rotation_angle)
@@ -315,13 +318,11 @@ class DataAugment(object):
             if isinstance(img, np.ndarray):
                 img = Image.fromarray(img)
             expand = True
-            if iswarp:
-                expand = False
+            #if iswarp:
+            #    expand = False
             img = TF.rotate(img=img, angle=angle, resample=Image.BICUBIC, expand=expand)
+            img = img.resize((self.opt.imgW, self.opt.imgH), Image.BICUBIC)
             #img.save("rotation.png" )
-
-        if isperspective:
-            img = perspective(img)
 
         img = transforms.ToTensor()(img)
 
