@@ -69,13 +69,12 @@ class Grid:
         if self.mode == 1:
             mask = 1-mask
         
-        mask = np.expand_dims(mask, axis=2)
         img = np.array(img)
-        print(80 * "*")
-        print(img.shape)
-        if img.shape[2] > 1: 
+        if len(img.shape)==3 and img.shape[2] > 1: 
+            mask = np.expand_dims(mask, axis=2)
             mask = np.repeat(mask, img.shape[2], axis=2)
-        exit(0)
+        else:
+            pass
         #mask = mask.expand_as(img)
         #print(mask.shape)
         img = img * mask 
