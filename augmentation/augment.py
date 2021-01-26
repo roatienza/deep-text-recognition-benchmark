@@ -4,7 +4,7 @@
 # import cv2
 import numpy as np
 # from transform import get_perspective_transform, warp_perspective
-from warp_mls import WarpMLS
+from .warp_mls import WarpMLS
 
 
 def distort(src, segment):

@@ -319,6 +319,8 @@ if __name__ == '__main__':
     parser.add_argument('--perspective_prob', default=0.5, type=float, help='Perspective probability')
     parser.add_argument('--warp', action='store_true', help='Image warping')
     parser.add_argument('--warp_prob', default=0.5, type=float, help='Image warping prob')
+    parser.add_argument('--stretch', action='store_true', help='Image warping')
+    parser.add_argument('--stretch_prob', default=0.5, type=float, help='Image warping prob')
     opt = parser.parse_args()
 
     """ vocab / character number configuration """

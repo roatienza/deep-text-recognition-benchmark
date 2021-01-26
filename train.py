@@ -20,6 +20,7 @@ from test import validation
 
 from torch.optim.lr_scheduler import CosineAnnealingLR, StepLR, MultiStepLR, ReduceLROnPlateau
 
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # python3 train.py --train_data data_lmdb_release/training --valid_data data_lmdb_release/validation --select_data MJ-ST --batch_ratio 0.5-0.5 --Transformation None --FeatureExtraction None --SequenceModeling None --Prediction None --Transformer --imgH 224 --imgW 224 --valInterval=200 
@@ -333,6 +334,8 @@ if __name__ == '__main__':
     parser.add_argument('--perspective_prob', default=0.5, type=float, help='Perspective probability')
     parser.add_argument('--warp', action='store_true', help='Image warping')
     parser.add_argument('--warp_prob', default=0.5, type=float, help='Image warping prob')
+    parser.add_argument('--stretch', action='store_true', help='Image warping')
+    parser.add_argument('--stretch_prob', default=0.5, type=float, help='Image warping prob')
     parser.add_argument('--scheduler', action='store_true', help='Use lr scheduler')
     parser.add_argument('--lighting', action='store_true', help='Use lighting')
 
