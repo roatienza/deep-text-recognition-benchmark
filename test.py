@@ -312,9 +312,9 @@ if __name__ == '__main__':
     parser.add_argument('--hidden_size', type=int, default=256, help='the size of the LSTM hidden state')
     parser.add_argument('--flops', action='store_true', help='calculates approx flops (may not work)')
 
-    parser.add_argument('--rotation', action='store_true', help='Enable rotation dats aug')
-    parser.add_argument('--rotation_prob', default=0.5, type=float, help='Rotation prob')
-    parser.add_argument('--rotation_angle', default=30., type=float, help='Rotation angle std in deg')
+    parser.add_argument('--rotate', action='store_true', help='Enable rotation dats aug')
+    parser.add_argument('--rotate_prob', default=0.5, type=float, help='Rotation prob')
+    parser.add_argument('--rotate_angle', default=30., type=float, help='Rotation angle std in deg')
     parser.add_argument('--perspective', action='store_true', help='Perspective')
     parser.add_argument('--perspective_prob', default=0.5, type=float, help='Perspective probability')
     parser.add_argument('--warp', action='store_true', help='Image warping')
@@ -322,6 +322,9 @@ if __name__ == '__main__':
     parser.add_argument('--stretch', action='store_true', help='Image warping')
     parser.add_argument('--stretch_prob', default=0.5, type=float, help='Image warping prob')
     parser.add_argument('--grid', action='store_true', help='GridMask')
+    parser.add_argument('--blur', action='store_true', help='Gaussian blur')
+    parser.add_argument('--noise', action='store_true', help='Gaussian noise')
+    parser.add_argument('--invert', action='store_true', help='Gaussian noise')
     opt = parser.parse_args()
 
     """ vocab / character number configuration """
