@@ -292,13 +292,13 @@ class DataAugment(object):
 
         iswarp = self.opt.warp and np.random.uniform(0,1) < self.opt.warp_prob
         isstretch = self.opt.stretch and np.random.uniform(0,1) < self.opt.stretch_prob
-        isrotation = self.opt.rotation and np.random.uniform(0,1) < self.opt.rotation_prob
+        isrotate = self.opt.rotate and np.random.uniform(0,1) < self.opt.rotate_prob
         isperspective = self.opt.perspective and np.random.uniform(0,1) < self.opt.perspective_prob
         isblur = self.opt.blur and np.random.uniform(0,1) < 0.5
         isnoise = self.opt.noise  and np.random.uniform(0,1) < 0.5
         isinvert = self.opt.invert and np.random.uniform(0,1) < 0.5
         isgrid = self.opt.grid and np.random.uniform(0,1) < 0.5
-        isaug = iswarp or isrotation or isperspective or isstretch or isgrid or isblur or isnoise or isinvert
+        isaug = iswarp or isrotate or isperspective or isstretch or isgrid or isblur or isnoise or isinvert
             
         img = img.resize((self.opt.imgW, self.opt.imgH), Image.BICUBIC)
 
@@ -327,10 +327,10 @@ class DataAugment(object):
         if isperspective:
             img = perspective(img)
 
-        if isrotation:
-            angle = np.random.normal(loc=0., scale=self.opt.rotation_angle)
-            angle = min(angle, self.opt.rotation_angle)
-            angle = max(angle, -self.opt.rotation_angle)
+        if isrotate:
+            angle = np.random.normal(loc=0., scale=self.opt.rotate_angle)
+            angle = min(angle, self.opt.rotate_angle)
+            angle = max(angle, -self.opt.rotate_angle)
             if isinstance(img, np.ndarray):
                 img = Image.fromarray(img)
             expand = True

@@ -327,9 +327,9 @@ if __name__ == '__main__':
     parser.add_argument('--output_channel', type=int, default=512,
                         help='the number of output channel of Feature extractor')
     parser.add_argument('--hidden_size', type=int, default=256, help='the size of the LSTM hidden state')
-    parser.add_argument('--rotation', action='store_true', help='Enable rotation dats aug')
-    parser.add_argument('--rotation_prob', default=0.5, type=float, help='Rotation prob')
-    parser.add_argument('--rotation_angle', default=30., type=float, help='Rotation angle std in deg')
+    parser.add_argument('--rotate', action='store_true', help='Enable rotation dats aug')
+    parser.add_argument('--rotate_prob', default=0.5, type=float, help='Rotation prob')
+    parser.add_argument('--rotate_angle', default=30., type=float, help='Rotation angle std in deg')
     parser.add_argument('--perspective', action='store_true', help='Perspective')
     parser.add_argument('--perspective_prob', default=0.5, type=float, help='Perspective probability')
     parser.add_argument('--warp', action='store_true', help='Image warping')
