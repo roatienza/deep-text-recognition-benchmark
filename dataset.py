@@ -11,6 +11,7 @@ from augmentation.grid import Grid
 
 from natsort import natsorted
 from PIL import Image
+import PIL.ImageOps
 import numpy as np
 from torch.utils.data import Dataset, ConcatDataset, Subset
 from torch._utils import _accumulate
@@ -281,7 +282,7 @@ class DataAugment(object):
         self.opt = opt
         self.tps = cv2.createThinPlateSplineShapeTransformer()
         self.scale = False if opt.Transformer else True
-        self.grid = Grid(2, 8)
+        self.grid = Grid(2, 5)
 
     def __call__(self, img):
         '''
@@ -293,10 +294,19 @@ class DataAugment(object):
         isstretch = self.opt.stretch and np.random.uniform(0,1) < self.opt.stretch_prob
         isrotation = self.opt.rotation and np.random.uniform(0,1) < self.opt.rotation_prob
         isperspective = self.opt.perspective and np.random.uniform(0,1) < self.opt.perspective_prob
-        isaug = iswarp or isrotation or isperspective or isstretch or self.opt.grid
+        isblur = self.opt.blur and np.random.uniform(0,1) < 0.5
+        isnoise = self.opt.noise  and np.random.uniform(0,1) < 0.5
+        isinvert = self.opt.invert and np.random.uniform(0,1) < 0.5
+        isgrid = self.opt.grid and np.random.uniform(0,1) < 0.5
+        isaug = iswarp or isrotation or isperspective or isstretch or isgrid or isblur or isnoise or isinvert
             
         img = img.resize((self.opt.imgW, self.opt.imgH), Image.BICUBIC)
-        img.save("src.png" )
+
+        """
+        Comment out
+        """
+        #img.save("src.png" )
+
         if self.opt.eval or not isaug:
             img = transforms.ToTensor()(img)
             if self.scale:
@@ -304,7 +314,7 @@ class DataAugment(object):
 
             return img
 
-        if self.opt.grid:
+        if isgrid:
             img = self.grid(img)
 
         img = np.array(img)
@@ -330,17 +340,30 @@ class DataAugment(object):
             img = img.resize((self.opt.imgW, self.opt.imgH), Image.BICUBIC)
             #img.save("rotation.png" )
 
-        img = transforms.ToTensor()(img)
+        if isblur:
+            if isinstance(img, np.ndarray):
+                img = Image.fromarray(img)
+            img = transforms.GaussianBlur((31,31))(img)
 
-        #if self.opt.rgb and self.opt.auto_augment:
-        #    if self.opt.lighting:
-        #        img = self.lighting(img)
-        #    img = transforms.Normalize(mean=[0.485, 0.456, 0.406],
-        #                               std=[0.229, 0.224, 0.225])(img)
+        if isnoise:
+            img = np.array(img)
+            img = img + np.random.normal(0, 32, img.shape).astype(np.uint8)
+            img = np.clip(img, 0, 255)
+            img = Image.fromarray(img)
+
+        if isinvert:
+            if isinstance(img, np.ndarray):
+                img = Image.fromarray(img)
+            img = PIL.ImageOps.invert(img)
+
+        img = transforms.ToTensor()(img)
 
         if self.scale:
             img.sub_(0.5).div_(0.5)
 
+        """
+        Comment out
+        """
         #if self.opt.rgb:
         #    img = img.permute(1,2,0)
         #else:

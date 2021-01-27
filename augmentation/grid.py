@@ -18,8 +18,8 @@ class Grid:
         self.prob = self.st_prob * min(1, epoch / max_epoch)
 
     def __call__(self, img):
-        if np.random.rand() > self.prob:
-            return img
+        #if np.random.rand() > self.prob:
+        #    return img
         #h = img.shape[0]
         #w = img.shape[1]
         w, h = img.size
@@ -44,13 +44,16 @@ class Grid:
         mask = np.ones((hh, hh), np.float32)
         st_h = np.random.randint(d//2, d)
         st_w = np.random.randint(d//2, d)
-        for i in range(-1, hh//d+1):
+
+        if np.random.uniform(0,1) < 0.5:
+            for i in range(-1, hh//d+1):
                 s = d*i + st_h
                 t = s+self.l
                 s = max(min(s, hh), 0)
                 t = max(min(t, hh), 0)
                 mask[s:t,:] *= 0
-        for i in range(-1, hh//d+1):
+        if np.random.uniform(0,1) < 0.5:
+            for i in range(-1, hh//d+1):
                 s = d*i + st_w
                 t = s+self.l
                 s = max(min(s, hh), 0)
