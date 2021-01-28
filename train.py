@@ -136,11 +136,13 @@ def train(opt):
                               momentum=0.9,
                               weight_decay=1e-4)
     else:
-        #optimizer = optim.Adadelta(filtered_parameters, lr=opt.lr, rho=opt.rho, eps=opt.eps)
-        optimizer = optim.Adadelta(model.parameters(),
-                                   lr=opt.lr, 
-                                   rho=opt.rho, 
-                                   eps=opt.eps)
+        if opt.Transformer:
+            optimizer = optim.Adadelta(model.parameters(),
+                                       lr=opt.lr, 
+                                       rho=opt.rho, 
+                                       eps=opt.eps)
+        else:
+            optimizer = optim.Adadelta(filtered_parameters, lr=opt.lr, rho=opt.rho, eps=opt.eps)
 
     if opt.scheduler:
         scheduler = CosineAnnealingLR(optimizer, T_max=opt.num_iter)
