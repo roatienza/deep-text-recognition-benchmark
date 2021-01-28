@@ -268,15 +268,6 @@ class RawDataset(Dataset):
         return (img, self.image_path_list[index])
 
 
-class NormalRotationTransform:
-    def __init__(self, angle_std):
-        self.angle_std = angle_std
-
-    def __call__(self, x):
-        # angle = torch.normal(mean=0., std=torch.Tensor([self.angle_std]))
-        angle = np.random.normal(loc=0., scale=self.angle_std)
-        return TF.rotate(x, angle)
-
 class DataAugment(object):
     def __init__(self, opt):
         self.opt = opt
