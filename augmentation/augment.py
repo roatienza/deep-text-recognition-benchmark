@@ -8,6 +8,7 @@ from .warp_mls import WarpMLS
 
 
 def distort(src, segment):
+    src = np.array(src)
     img_h, img_w = src.shape[:2]
 
     cut = img_w // segment
@@ -45,6 +46,7 @@ def distort(src, segment):
 
 
 def stretch(src, segment):
+    src = np.array(src)
     img_h, img_w = src.shape[:2]
 
     cut = img_w // segment

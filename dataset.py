@@ -6,8 +6,9 @@ import math
 import lmdb
 import torch
 import cv2
-from augmentation.augment import distort, stretch, perspective
+from augmentation.augment import distort, stretch #, perspective
 from augmentation.grid import Grid
+from augmentation.warp import Curve, Rotate, Perspective
 
 from natsort import natsorted
 from PIL import Image
@@ -17,16 +18,6 @@ from torch.utils.data import Dataset, ConcatDataset, Subset
 from torch._utils import _accumulate
 import torchvision.transforms as transforms
 import torchvision.transforms.functional as TF
-
-# fr https://github.com/kakaobrain/fast-autoaugment
-_IMAGENET_PCA = {
-    'eigval': [0.2175, 0.0188, 0.0045],
-    'eigvec': [
-        [-0.5675,  0.7192,  0.4009],
-        [-0.5808, -0.0045, -0.8140],
-        [-0.5836, -0.6948,  0.4203],
-    ]
-}
 
 
 class Batch_Balanced_Dataset(object):
@@ -268,35 +259,48 @@ class RawDataset(Dataset):
         return (img, self.image_path_list[index])
 
 
+def istrue(prob=0.5):
+    return True
+    #return np.random.uniform(0,1) < prob
+
 class DataAugment(object):
     def __init__(self, opt):
         self.opt = opt
-        self.tps = cv2.createThinPlateSplineShapeTransformer()
-        self.scale = False if opt.Transformer else True
+        self.curve = Curve(opt)
+        self.rotate = Rotate(opt)
+        self.perspective = Perspective(opt)
         self.grid = Grid(2, 5)
+        
+        self.scale = False if opt.Transformer else True
 
     def __call__(self, img):
         '''
             PIL resize (W,H)
             Torch resize is (H,W)
         '''
+        isgrid = self.opt.grid or istrue()
 
-        iswarp = self.opt.warp and np.random.uniform(0,1) < self.opt.warp_prob
-        isstretch = self.opt.stretch and np.random.uniform(0,1) < self.opt.stretch_prob
-        isrotate = self.opt.rotate and np.random.uniform(0,1) < self.opt.rotate_prob
-        isperspective = self.opt.perspective and np.random.uniform(0,1) < self.opt.perspective_prob
-        isblur = self.opt.blur and np.random.uniform(0,1) < 0.5
-        isnoise = self.opt.noise  and np.random.uniform(0,1) < 0.5
-        isinvert = self.opt.invert and np.random.uniform(0,1) < 0.5
-        isgrid = self.opt.grid and np.random.uniform(0,1) < 0.5
-        isaug = iswarp or isrotate or isperspective or isstretch or isgrid or isblur or isnoise or isinvert
+        iscurve = self.opt.curve or istrue()
+        isrotate = self.opt.rotate or istrue()
+        isperspective = self.opt.perspective or istrue()
+
+        isdistort = self.opt.distort or istrue()
+        isstretch = self.opt.stretch or istrue()
+
+        isblur = self.opt.blur or istrue()
+        isnoise = self.opt.noise  or istrue()
+        isinvert = self.opt.invert or istrue()
+
+        isaug = isgrid or iscurve or isrotate or isperspective or isdistort or isstretch or isblur or isnoise or isinvert
             
         img = img.resize((self.opt.imgW, self.opt.imgH), Image.BICUBIC)
 
         """
         Comment out
         """
-        #img.save("src.png" )
+        orig_img = img
+        img.save("src.png" )
+        img = orig_img
 
         if self.opt.eval or not isaug:
             img = transforms.ToTensor()(img)
@@ -307,45 +311,62 @@ class DataAugment(object):
 
         if isgrid:
             img = self.grid(img)
+            img.save("grid.png" )
+            img = orig_img
 
         img = np.array(img)
-        if iswarp:
+        if isdistort:
             img = distort(img, 4)
+            if isinstance(img, np.ndarray):
+                img = Image.fromarray(img)
+            img.save("distort.png" )
+            img = orig_img
 
         if isstretch:
             img = stretch(img, 4)
-
-        if isperspective:
-            img = perspective(img)
-
-        if isrotate:
-            angle = np.random.normal(loc=0., scale=self.opt.rotate_angle)
-            angle = min(angle, self.opt.rotate_angle)
-            angle = max(angle, -self.opt.rotate_angle)
             if isinstance(img, np.ndarray):
                 img = Image.fromarray(img)
-            expand = True
-            #if iswarp:
-            #    expand = False
-            img = TF.rotate(img=img, angle=angle, resample=Image.BICUBIC, expand=expand)
-            img = img.resize((self.opt.imgW, self.opt.imgH), Image.BICUBIC)
-            #img.save("rotation.png" )
+            img.save("stretch.png" )
+            img = orig_img
+
+        if iscurve:
+            img = self.curve(img)
+            img.save("curve.png" )
+            img = orig_img
+
+        if isrotate:
+            img = self.rotate(img, iscurve)
+            img.save("rotation.png" )
+            img = orig_img
+
+        if isperspective:
+            img = self.perspective(img, isrotate)
+            img.save("perspective.png" )
+            img = orig_img
 
         if isblur:
             if isinstance(img, np.ndarray):
                 img = Image.fromarray(img)
             img = transforms.GaussianBlur((31,31))(img)
+            img.save("blur.png" )
+            img = orig_img
 
         if isnoise:
             img = np.array(img)
             img = img + np.random.normal(0, 32, img.shape).astype(np.uint8)
             img = np.clip(img, 0, 255)
             img = Image.fromarray(img)
+            img.save("noise.png" )
+            img = orig_img
 
         if isinvert:
             if isinstance(img, np.ndarray):
                 img = Image.fromarray(img)
             img = PIL.ImageOps.invert(img)
+            img.save("invert.png" )
+            img = orig_img
+
+        exit(0)
 
         img = transforms.ToTensor()(img)
 

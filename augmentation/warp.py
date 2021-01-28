@@ -1,24 +1,16 @@
-import os
-import sys
-import re
-import six
-import math
-import lmdb
-import torch
 import cv2
 
-from PIL import Image
 import numpy as np
-from torch.utils.data import Dataset, ConcatDataset, Subset
-from torch._utils import _accumulate
-import torchvision.transforms as transforms
+import torch
 import torchvision.transforms.functional as TF
-import auto_augment as augment
 
-class Warp:
+from PIL import Image
+
+class Curve:
     def __init__(self, opt):
         self.opt = opt
         self.tps = cv2.createThinPlateSplineShapeTransformer()
+        self.side = 224
 
     def __call__(self, img):
         '''
@@ -26,18 +18,16 @@ class Warp:
             Torch resize is (H,W)
         '''
 
-        side = 224
-        if self.opt.imgH!=side and self.opt.imgW!=side:
-            img = img.resize((side, side), Image.BICUBIC)
+        if self.opt.imgH!=self.side and self.opt.imgW!=self.side:
+            img = img.resize((self.side, self.side), Image.BICUBIC)
 
-        if iswarp:
         isflip = np.random.uniform(0,1) < 0.5
         if isflip:
             img = TF.vflip(img)
 
         img = np.array(img)
-        W = side
-        H = side
+        W = self.side
+        H = self.side
         W_25 = 0.25 * W
         W_50 = 0.50 * W
         W_75 = 0.75 * W
@@ -75,75 +65,82 @@ class Warp:
 
         if isflip:
             img = TF.vflip(img)
-            rect = (0, side//2, side, side)
+            rect = (0, self.side//2, self.side, self.side)
         else:
-            rect = (0, 0, side, side//2)
+            rect = (0, 0, self.side, self.side//2)
 
         img = img.crop(rect)
         #img.save("curve.png" )
-        img = img.resize((side, side), Image.BICUBIC)
+        
+        #img = img.resize((self.side, self.side), Image.BICUBIC)
+        #if (self.opt.imgW, self.opt.imgH) != img.size:
+        # img = transforms.Resize((self.opt.imgH, self.opt.imgW), interpolation=Image.BICUBIC)(img)
+        img = img.resize((self.opt.imgW, self.opt.imgH), Image.BICUBIC)
+        return img
 
-        if isrotation:
-            angle = np.random.normal(loc=0., scale=self.opt.rotation_angle)
-            angle = min(angle, self.opt.rotation_angle)
-            angle = max(angle, -self.opt.rotation_angle)
-            if isinstance(img, np.ndarray):
-                img = Image.fromarray(img)
-            expand = True
-            if iswarp:
-                expand = False
-            img = TF.rotate(img=img, angle=angle, resample=Image.BICUBIC, expand=expand)
-            #img.save("rotation.png" )
 
-        if isperspective and not isrotation:
+class Rotate:
+    def __init__(self, opt):
+        self.opt = opt
+        self.side = 224
+
+    def __call__(self, img, iswarp=False):
+        '''
+            PIL resize (W,H)
+            Torch resize is (H,W)
+        '''
+
+        if self.opt.imgH!=self.side and self.opt.imgW!=self.side:
+            img = img.resize((self.side, self.side), Image.BICUBIC)
+
+        angle = np.random.normal(loc=0., scale=self.opt.rotate_angle)
+        angle = min(angle, self.opt.rotate_angle)
+        angle = max(angle, -self.opt.rotate_angle)
+        if isinstance(img, np.ndarray):
+            img = Image.fromarray(img)
+        expand = True
+        if iswarp:
+            expand = False
+        img = TF.rotate(img=img, angle=angle, resample=Image.BICUBIC, expand=expand)
+        #img.save("rotate.png" )
+        img = img.resize((self.opt.imgW, self.opt.imgH), Image.BICUBIC)
+
+        return img
+
+class Perspective:
+    def __init__(self, opt):
+        self.opt = opt
+        self.side = 224
+
+    def __call__(self, img, isrotate=False):
+        '''
+            PIL resize (W,H)
+            Torch resize is (H,W)
+        '''
+
+        if self.opt.imgH!=self.side and self.opt.imgW!=self.side:
+            img = img.resize((self.side, self.side), Image.BICUBIC)
+
+        if not isrotate:
             # upper-left, upper-right, lower-left, lower-right
-            src =  np.float32([[0, 0], [side, 0], [0, side], [side, side]])
-            low = 0.3 if iswarp else 0.4
+            src =  np.float32([[0, 0], [self.side, 0], [0, self.side], [self.side, self.side]])
+            low = 0.3 
             high = 1 - low
             if np.random.uniform(0, 1) > 0.5:
-                toprightY = np.random.uniform(0, low)*side
-                bottomrightY = np.random.uniform(high, 1.0)*side
-                dest = np.float32([[0, 0], [side, toprightY], [0, side], [side, bottomrightY]])
+                toprightY = np.random.uniform(0, low)*self.side
+                bottomrightY = np.random.uniform(high, 1.0)*self.side
+                dest = np.float32([[0, 0], [self.side, toprightY], [0, self.side], [self.side, bottomrightY]])
             else:
-                topleftY = np.random.uniform(0, low)*side
-                bottomleftY = np.random.uniform(high, 1.0)*side
-                dest = np.float32([[0, topleftY], [side, 0], [0, bottomleftY], [side, side]])
+                topleftY = np.random.uniform(0, low)*self.side
+                bottomleftY = np.random.uniform(high, 1.0)*self.side
+                dest = np.float32([[0, topleftY], [self.side, 0], [0, bottomleftY], [self.side, self.side]])
             M = cv2.getPerspectiveTransform(src, dest)
             img = np.array(img)
-            img = cv2.warpPerspective(img, M, (side, side) )
+            img = cv2.warpPerspective(img, M, (self.side, self.side) )
             #cv2.imwrite("perspective.png", cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
             img = Image.fromarray(img)
 
-        #img = img.resize((self.opt.imgH, self.opt.imgW), Image.BICUBIC)
-
-        # PIL size is (W,H) while Transforms (H, W)
-        if (self.opt.imgW, self.opt.imgH) != img.size:
-            img = transforms.Resize((self.opt.imgH, self.opt.imgW), interpolation=Image.BICUBIC)(img)
-
-        img = transforms.ToTensor()(img)
-
-        #if self.opt.rgb and self.opt.auto_augment:
-        #    if self.opt.lighting:
-        #        img = self.lighting(img)
-        #    img = transforms.Normalize(mean=[0.485, 0.456, 0.406],
-        #                               std=[0.229, 0.224, 0.225])(img)
-
-        if self.scale:
-            img.sub_(0.5).div_(0.5)
-
-        #if self.opt.rgb:
-        #    img = img.permute(1,2,0)
-        #else:
-        #    img = img[0].squeeze()
-        #img = img.cpu().numpy()
-        #img = (((img + 1) * 0.5) * 255).astype(np.uint8)
-        #if self.opt.rgb:
-        #    cv2.imwrite("dest.png", cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
-        #else:
-        #    img = np.expand_dims(img, axis=2)
-        #    img = np.repeat(img, 3, axis=2)
-        #    cv2.imwrite("dest-gray.png", img)
-        #exit(0)
+        img = img.resize((self.opt.imgW, self.opt.imgH), Image.BICUBIC)
 
         return img
 
