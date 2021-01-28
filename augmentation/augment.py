@@ -62,12 +62,24 @@ def stretch(src, segment):
     src_pts.append([img_w, img_h])
     src_pts.append([0, img_h])
 
-    dst_pts.append([0, 0])
-    dst_pts.append([img_w, 0])
-    dst_pts.append([img_w, img_h])
-    dst_pts.append([0, img_h])
+    P = np.random.randint(2, 15)
+    x = np.random.randint(P) 
+    y = np.random.randint(P) 
+    dst_pts.append([x, y])
 
-    half_thresh = thresh * 0.5
+    x = np.random.randint(P) 
+    y = np.random.randint(P) 
+    dst_pts.append([img_w-x, y])
+
+    x = np.random.randint(P) 
+    y = np.random.randint(P) 
+    dst_pts.append([img_w-x, img_h-y])
+
+    x = np.random.randint(P) 
+    y = np.random.randint(P) 
+    dst_pts.append([x, img_h-y])
+
+    half_thresh = thresh // 2
 
     for cut_idx in np.arange(1, segment, 1):
         move = np.random.randint(thresh) - half_thresh

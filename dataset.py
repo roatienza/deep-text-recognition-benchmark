@@ -272,6 +272,7 @@ class DataAugment(object):
         self.grid = Grid(2, 5)
         
         self.scale = False if opt.Transformer else True
+        self.count = 0
 
     def __call__(self, img):
         '''
@@ -316,14 +317,14 @@ class DataAugment(object):
 
         img = np.array(img)
         if isdistort:
-            img = distort(img, 4)
+            img = distort(img, 3)
             if isinstance(img, np.ndarray):
                 img = Image.fromarray(img)
             img.save("distort.png" )
             img = orig_img
 
         if isstretch:
-            img = stretch(img, 4)
+            img = stretch(img, 3)
             if isinstance(img, np.ndarray):
                 img = Image.fromarray(img)
             img.save("stretch.png" )
@@ -335,25 +336,28 @@ class DataAugment(object):
             img = orig_img
 
         if isrotate:
-            img = self.rotate(img, iscurve)
+            img = self.rotate(img, iscurve=False)
             img.save("rotation.png" )
             img = orig_img
 
         if isperspective:
-            img = self.perspective(img, isrotate)
+            img = self.perspective(img, isrotate=False)
             img.save("perspective.png" )
             img = orig_img
 
         if isblur:
             if isinstance(img, np.ndarray):
                 img = Image.fromarray(img)
-            img = transforms.GaussianBlur((31,31))(img)
+            kernel = [(15,15), (19, 19), (23, 23), (27, 27), (31, 31)]
+            index = np.random.randint(0, len(kernel))
+            kernel = kernel[index]
+            img = transforms.GaussianBlur(kernel)(img)
             img.save("blur.png" )
             img = orig_img
 
         if isnoise:
             img = np.array(img)
-            img = img + np.random.normal(0, 32, img.shape).astype(np.uint8)
+            img = img + np.random.normal(0, 6, img.shape).astype(np.uint8)
             img = np.clip(img, 0, 255)
             img = Image.fromarray(img)
             img.save("noise.png" )
@@ -365,8 +369,6 @@ class DataAugment(object):
             img = PIL.ImageOps.invert(img)
             img.save("invert.png" )
             img = orig_img
-
-        exit(0)
 
         img = transforms.ToTensor()(img)
 
@@ -461,8 +463,16 @@ class AlignCollate(object):
 
         else:
             transform = DataAugment(self.opt)
+            i = 0
+            for image in images:
+                transform(image)
+                if i == 7:
+                    exit(0)
+                else: 
+                    i = i + 1
             image_tensors = [transform(image) for image in images]
             image_tensors = torch.cat([t.unsqueeze(0) for t in image_tensors], 0)
+        
         #else:
         #    transform = ResizeNormalize((self.imgW, self.imgH))
         #    image_tensors = [transform(image) for image in images]

@@ -5,6 +5,93 @@ import torch
 import torchvision.transforms.functional as TF
 
 from PIL import Image
+from .warp_mls import WarpMLS
+
+class Curve1:
+    def __init__(self, opt):
+        self.opt = opt
+        self.tps = cv2.createThinPlateSplineShapeTransformer()
+        self.side = 224
+
+    def __call__(self, img):
+        '''
+            PIL resize (W,H)
+            Torch resize is (H,W)
+        '''
+
+        if self.opt.imgH!=self.side and self.opt.imgW!=self.side:
+            img = img.resize((self.side, self.side), Image.BICUBIC)
+
+        isflip = np.random.uniform(0,1) < 0.5
+        if isflip:
+            img = TF.vflip(img)
+
+        img = np.array(img)
+        W = self.side
+        H = self.side
+        W_25 = 0.25 * W
+        W_50 = 0.50 * W
+        W_75 = 0.75 * W
+        r = np.random.uniform(0.8, 1.2)*H
+        x1 = (r**2 - W_50**2)**0.5
+        h1 = r - x1
+
+        t = np.random.uniform(0.4,0.5)*H
+        w2 = W_50*t/r
+        hi = x1*t/r
+        h2 = h1 + hi  
+
+        sinb_2 = ((1 - x1/r)/2)**0.5
+        cosb_2 = ((1 + x1/r)/2)**0.5
+        w3 = W_50 - r*sinb_2
+        h3 = r - r*cosb_2
+
+        w4 = W_50 - (r-t)*sinb_2
+        h4 = r - (r-t)*cosb_2
+
+        w5 = 0.5*w2
+        h5 = h1 + 0.5*hi
+        H_50 = 0.50*H
+        
+        P = 5
+        srcpt = [(P,P ), (W,P ), (W_50,P), (P,H  ), (W,H    ), (W_25,P), (W_75,P ),  (W_50,H), (W_25,H), (W_75,H ), (P,H_50), (W,H_50 )]
+        dstpt = [(P,h1), (W,h1), (W_50,P), (w2,h2), (W-w2,h2), (w3, h3), (W-w3,h3),  (W_50,t), (w4,h4 ), (W-w4,h4), (w5,h5 ), (W-w5,h5)]
+    
+        src_pts = list()
+        dst_pts = list()
+
+        src_pts.append([0, 0])
+        src_pts.append([W, 0])
+        src_pts.append([W, H])
+        src_pts.append([0, H])
+
+        dst_pts.append([0, 0])
+        dst_pts.append([W, 0])
+        dst_pts.append([W, H])
+
+        for s in srcpt:
+            src_pts.append(s)
+
+        for d in dstpt:
+            dst_pts.append(d)
+
+        trans = WarpMLS(img, src_pts, dst_pts, W, H)
+        img = trans.generate()
+
+        #N = len(dstpt)
+        #matches = [cv2.DMatch(i, i, 0) for i in range(N)]
+        #dst_shape = np.array(dstpt).reshape((-1, N, 2))
+        #src_shape = np.array(srcpt).reshape((-1, N, 2))
+        #self.tps.estimateTransformation(dst_shape, src_shape, matches)
+        #img = self.tps.warpImage(img)
+        img = Image.fromarray(img)
+
+        if isflip:
+            img = TF.vflip(img)
+
+        img = img.resize((self.opt.imgW, self.opt.imgH), Image.BICUBIC)
+        return img
+
 
 class Curve:
     def __init__(self, opt):
@@ -84,7 +171,7 @@ class Rotate:
         self.opt = opt
         self.side = 224
 
-    def __call__(self, img, iswarp=False):
+    def __call__(self, img, iscurve=False):
         '''
             PIL resize (W,H)
             Torch resize is (H,W)
@@ -99,7 +186,7 @@ class Rotate:
         if isinstance(img, np.ndarray):
             img = Image.fromarray(img)
         expand = True
-        if iswarp:
+        if iscurve:
             expand = False
         img = TF.rotate(img=img, angle=angle, resample=Image.BICUBIC, expand=expand)
         #img.save("rotate.png" )

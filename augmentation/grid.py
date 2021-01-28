@@ -45,14 +45,14 @@ class Grid:
         st_h = np.random.randint(d//2, d)
         st_w = np.random.randint(d//2, d)
 
-        if np.random.uniform(0,1) < 0.5:
+        if np.random.uniform(0,1) < 0.71:
             for i in range(-1, hh//d+1):
                 s = d*i + st_h
                 t = s+self.l
                 s = max(min(s, hh), 0)
                 t = max(min(t, hh), 0)
                 mask[s:t,:] *= 0
-        if np.random.uniform(0,1) < 0.5:
+        if np.random.uniform(0,1) < 0.71:
             for i in range(-1, hh//d+1):
                 s = d*i + st_w
                 t = s+self.l
