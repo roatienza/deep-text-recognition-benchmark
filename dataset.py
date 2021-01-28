@@ -327,6 +327,8 @@ class DataAugment(object):
             #img.save("stretch.png" )
             #img = orig_img
 
+        if isinstance(img, np.ndarray):
+            img = Image.fromarray(img)
         if iscurve:
             img = self.curve(img)
             #img.save("curve.png" )
