@@ -9,6 +9,66 @@ from PIL import Image, ImageOps
     PIL resize (W,H)
     Torch resize is (H,W)
 '''
+class Stretch:
+    def __init__(self):
+        self.tps = cv2.createThinPlateSplineShapeTransformer()
+
+    def __call__(self, img, prob=1.):
+        if np.random.uniform(0,1) > prob:
+            return img
+
+        W, H = img.size
+        img = np.array(img)
+        srcpt = list()
+        dstpt = list()
+
+        W_33 = 0.33 * W
+        W_50 = 0.50 * W
+        W_66 = 0.66 * W
+
+        H_50 = 0.50 * H
+
+        P = 0
+        frac = 0.4
+
+        # left-most
+        srcpt.append([P, P])
+        srcpt.append([P, H-P])
+        x = np.random.uniform(0, frac)*W_33 if np.random.uniform(0,1) > 0.5 else 0
+        dstpt.append([P+x, P])
+        dstpt.append([P+x, H-P])
+        
+        # 2nd left-most 
+        srcpt.append([P+W_33, P])
+        srcpt.append([P+W_33, H-P])
+        x = np.random.uniform(-frac, frac)*W_33
+        dstpt.append([P+W_33+x, P])
+        dstpt.append([P+W_33+x, H-P])
+        
+        # 3rd left-most 
+        srcpt.append([P+W_66, P])
+        srcpt.append([P+W_66, H-P])
+        x = np.random.uniform(-frac, frac)*W_33
+        dstpt.append([P+W_66+x, P])
+        dstpt.append([P+W_66+x, H-P])
+        
+        # right-most 
+        srcpt.append([W-P, P])
+        srcpt.append([W-P, H-P])
+        x = np.random.uniform(-frac, 0)*W_33
+        dstpt.append([W-P+x, P])
+        dstpt.append([W-P+x, H-P])
+
+        N = len(dstpt)
+        matches = [cv2.DMatch(i, i, 0) for i in range(N)]
+        dst_shape = np.array(dstpt).reshape((-1, N, 2))
+        src_shape = np.array(srcpt).reshape((-1, N, 2))
+        self.tps.estimateTransformation(dst_shape, src_shape, matches)
+        img = self.tps.warpImage(img)
+        img = Image.fromarray(img)
+
+        return img
+
 class Distort:
     def __init__(self):
         self.tps = cv2.createThinPlateSplineShapeTransformer()

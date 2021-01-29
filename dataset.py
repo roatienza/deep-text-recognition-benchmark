@@ -8,7 +8,7 @@ import torch
 import cv2
 from augmentation.augment import distort, stretch #, perspective
 from augmentation.grid import Grid
-from augmentation.warp import Curve, Rotate, Perspective, Distort
+from augmentation.warp import Curve, Rotate, Perspective, Distort, Stretch
 
 from natsort import natsorted
 from PIL import Image
@@ -266,6 +266,7 @@ def istrue(prob=0.5):
 class DataAugment(object):
     def __init__(self, opt):
         self.opt = opt
+        self.stretch = Stretch()
         self.distort = Distort()
         self.curve = Curve()
         self.rotate = Rotate()
@@ -323,7 +324,7 @@ class DataAugment(object):
 
         #img = np.array(img)
         if isstretch:
-            #img = self.stretch(img)
+            img = self.stretch(img)
 
             img.save("stretch.png" )
             img = orig_img
