@@ -8,7 +8,7 @@ import torch
 import cv2
 #from augmentation.grid import Grid
 from augmentation.warp import Curve, Rotate, Perspective, Distort, Stretch, Shrink
-from augmentation.pattern import VGrid, HGrid, Grid, RectGrid
+from augmentation.pattern import VGrid, HGrid, Grid, RectGrid, EllipseGrid
 
 from natsort import natsorted
 from PIL import Image
@@ -276,6 +276,7 @@ class DataAugment(object):
         self.hgrid = HGrid()
         self.grid = Grid()
         self.rectgrid = RectGrid()
+        self.ellipsegrid = EllipseGrid()
         self.scale = False if opt.Transformer else True
 
     def __call__(self, img):
@@ -336,6 +337,12 @@ class DataAugment(object):
             img = self.rectgrid(img.copy())
 
             img.save("rectgrid.png" )
+            img = orig_img
+
+        if isgrid:
+            img = self.ellipsegrid(img.copy())
+
+            img.save("ellipsegrid.png" )
             img = orig_img
 
         if isdistort:

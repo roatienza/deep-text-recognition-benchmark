@@ -61,16 +61,15 @@ class RectGrid:
     def __init__(self):
         pass
 
-    def __call__(self, img, prob=1.):
+    def __call__(self, img, isellipse=False, prob=1.):
         if np.random.uniform(0,1) > prob:
             return img
 
         W, H = img.size
-        #side = 224
-        #img = img.resize((side, side), Image.BICUBIC)
-        line_width = 1 #np.random.randint(1, 3) 
-        image_stripe = 1 #np.random.randint(1, 3) 
-        n_lines = ((H//2) // (line_width + image_stripe)) + 1
+        line_width = 1 
+        image_stripe = 1 
+        offset = 4 if isellipse else 1
+        n_lines = ((H//2) // (line_width + image_stripe)) + offset
         draw = ImageDraw.Draw(img)
         x_center = W // 2
         y_center = H // 2
@@ -81,7 +80,20 @@ class RectGrid:
             y1 = y_center - dy
             x2 = x_center + (dx * W/H) 
             y2 = y_center + dy
-            draw.rectangle([(x1,y1), (x2, y2)], width=line_width)
+            if isellipse:
+                draw.ellipse([(x1,y1), (x2, y2)], width=line_width)
+            else:
+                draw.rectangle([(x1,y1), (x2, y2)], width=line_width)
 
-        #img = img.resize((W, H), Image.BICUBIC)
+        return img
+
+class EllipseGrid:
+    def __init__(self):
+        pass
+
+    def __call__(self, img, prob=1.):
+        if np.random.uniform(0,1) > prob:
+            return img
+
+        img = RectGrid()(img, isellipse=True, prob=prob)
         return img
