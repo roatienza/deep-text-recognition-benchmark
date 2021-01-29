@@ -24,20 +24,46 @@ def distort(src, segment):
     src_pts.append([img_w, img_h])
     src_pts.append([0, img_h])
 
-    dst_pts.append([np.random.randint(thresh), np.random.randint(thresh)])
-    dst_pts.append([img_w - np.random.randint(thresh), np.random.randint(thresh)])
-    dst_pts.append([img_w - np.random.randint(thresh), img_h - np.random.randint(thresh)])
-    dst_pts.append([np.random.randint(thresh), img_h - np.random.randint(thresh)])
 
-    half_thresh = thresh * 0.5
+    #dst_pts.append([0, 0])
+    #dst_pts.append([img_w, 0])
+    #dst_pts.append([img_w, img_h])
+    #dst_pts.append([0, img_h])
+
+    half_thresh = thresh // 2
+    P = np.random.randint(0, thresh)
+    x = np.random.randint(0, P) 
+    y = np.random.randint(0, P) 
+    dst_pts.append([x, y])
+
+    P = np.random.randint(0, thresh)
+    x = np.random.randint(0, P) 
+    y = np.random.randint(0, P) 
+    dst_pts.append([img_w-x, y])
+
+    P = np.random.randint(0, thresh)
+    x = np.random.randint(0, P) 
+    y = np.random.randint(0, P) 
+    dst_pts.append([img_w-x, img_h-y])
+
+    P = np.random.randint(0, thresh)
+    x = np.random.randint(0, P) 
+    y = np.random.randint(0, P) 
+    dst_pts.append([x, img_h-y])
+
+    #dst_pts.append([np.random.randint(thresh), np.random.randint(thresh)])
+    #dst_pts.append([img_w - np.random.randint(thresh), np.random.randint(thresh)])
+    #dst_pts.append([img_w - np.random.randint(thresh), img_h - np.random.randint(thresh)])
+    #dst_pts.append([np.random.randint(thresh), img_h - np.random.randint(thresh)])
+
 
     for cut_idx in np.arange(1, segment, 1):
         src_pts.append([cut * cut_idx, 0])
         src_pts.append([cut * cut_idx, img_h])
-        dst_pts.append([cut * cut_idx + np.random.randint(thresh) - half_thresh,
-                        np.random.randint(thresh) - half_thresh])
-        dst_pts.append([cut * cut_idx + np.random.randint(thresh) - half_thresh,
-                        img_h + np.random.randint(thresh) - half_thresh])
+        dst_pts.append([cut * cut_idx - np.random.randint(0, half_thresh),
+                        np.random.randint(half_thresh, thresh) - half_thresh])
+        dst_pts.append([cut * cut_idx - np.random.randint(0, half_thresh),
+                        img_h - np.random.randint(0, half_thresh)])
 
     trans = WarpMLS(src, src_pts, dst_pts, img_w, img_h)
     dst = trans.generate()
@@ -53,36 +79,37 @@ def stretch(src, segment):
     thresh = cut * 4 // 5
     # thresh = img_h // segment // 3
     # thresh = img_h // 5
+    thresh = cut
 
     src_pts = list()
     dst_pts = list()
+
+    half_thresh = thresh // 2
 
     src_pts.append([0, 0])
     src_pts.append([img_w, 0])
     src_pts.append([img_w, img_h])
     src_pts.append([0, img_h])
 
-    P = np.random.randint(2, 15)
-    x = np.random.randint(P) 
-    y = np.random.randint(P) 
+    P = np.random.randint(5, half_thresh)
+    x = np.random.randint(0, P) 
+    y = np.random.randint(0, P) 
     dst_pts.append([x, y])
 
-    x = np.random.randint(P) 
-    y = np.random.randint(P) 
+    x = np.random.randint(0, P) 
+    y = np.random.randint(0, P) 
     dst_pts.append([img_w-x, y])
 
-    x = np.random.randint(P) 
-    y = np.random.randint(P) 
+    x = np.random.randint(0, P) 
+    y = np.random.randint(0, P) 
     dst_pts.append([img_w-x, img_h-y])
 
-    x = np.random.randint(P) 
-    y = np.random.randint(P) 
+    x = np.random.randint(0, P) 
+    y = np.random.randint(0, P) 
     dst_pts.append([x, img_h-y])
 
-    half_thresh = thresh // 2
-
     for cut_idx in np.arange(1, segment, 1):
-        move = np.random.randint(thresh) - half_thresh
+        move = np.random.randint(0, thresh) - half_thresh
         src_pts.append([cut * cut_idx, 0])
         src_pts.append([cut * cut_idx, img_h])
         dst_pts.append([cut * cut_idx + move, 0])

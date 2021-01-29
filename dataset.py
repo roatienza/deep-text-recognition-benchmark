@@ -8,7 +8,7 @@ import torch
 import cv2
 from augmentation.augment import distort, stretch #, perspective
 from augmentation.grid import Grid
-from augmentation.warp import Curve, Rotate, Perspective
+from augmentation.warp import Curve, Rotate, Perspective, Distort
 
 from natsort import natsorted
 from PIL import Image
@@ -260,14 +260,16 @@ class RawDataset(Dataset):
 
 
 def istrue(prob=0.5):
-    return np.random.uniform(0,1) < prob
+    return True
+    #return np.random.uniform(0,1) < prob
 
 class DataAugment(object):
     def __init__(self, opt):
         self.opt = opt
-        self.curve = Curve(opt)
-        self.rotate = Rotate(opt)
-        self.perspective = Perspective(opt)
+        self.distort = Distort()
+        self.curve = Curve()
+        self.rotate = Rotate()
+        self.perspective = Perspective()
         self.grid = Grid(2, 4)
         self.scale = False if opt.Transformer else True
 
@@ -276,18 +278,18 @@ class DataAugment(object):
             PIL resize (W,H)
             Torch resize is (H,W)
         '''
-        isgrid = self.opt.grid and istrue()
+        isgrid = self.opt.grid or istrue()
 
-        iscurve = self.opt.curve and istrue()
-        isrotate = self.opt.rotate and istrue()
-        isperspective = self.opt.perspective and istrue()
+        iscurve = self.opt.curve or istrue()
+        isrotate = self.opt.rotate or istrue()
+        isperspective = self.opt.perspective or istrue()
 
-        isdistort = self.opt.distort and istrue()
-        isstretch = self.opt.stretch and istrue()
+        isdistort = self.opt.distort or istrue()
+        isstretch = self.opt.stretch or istrue()
 
-        isblur = self.opt.blur and istrue()
-        isnoise = self.opt.noise  and istrue()
-        isinvert = self.opt.invert and istrue()
+        isblur = self.opt.blur or istrue()
+        isnoise = self.opt.noise  or istrue()
+        isinvert = self.opt.invert or istrue()
 
         isaug = isgrid or iscurve or isrotate or isperspective or isdistort or isstretch or isblur or isnoise or isinvert
 
@@ -296,11 +298,10 @@ class DataAugment(object):
         """
         Comment out
         """
-        #orig_img = img
-        #img.save("src.png" )
-        #img = orig_img
+        orig_img = img
+        img.save("src.png" )
 
-        if self.opt.eval or not isaug or istrue():
+        if self.opt.eval or not isaug:# or istrue():
             img = transforms.ToTensor()(img)
             if self.scale:
                 img.sub_(0.5).div_(0.5)
@@ -309,65 +310,65 @@ class DataAugment(object):
 
         if isgrid:
             img = self.grid(img)
-            #img.save("grid.png" )
-            #img = orig_img
 
-        img = np.array(img)
+            img.save("grid.png" )
+            img = orig_img
+
         if isdistort:
-            img = distort(img, 3)
-            #if isinstance(img, np.ndarray):
-            #    img = Image.fromarray(img)
-            #img.save("distort.png" )
-            #img = orig_img
+            #img = distort(img, 3)
+            img = self.distort(img)
 
+            img.save("distort.png" )
+            img = orig_img
+
+        #img = np.array(img)
         if isstretch:
-            img = stretch(img, 3)
-            #if isinstance(img, np.ndarray):
-            #    img = Image.fromarray(img)
-            #img.save("stretch.png" )
-            #img = orig_img
+            #img = self.stretch(img)
 
-        if isinstance(img, np.ndarray):
-            img = Image.fromarray(img)
+            img.save("stretch.png" )
+            img = orig_img
+
         if iscurve:
             img = self.curve(img)
-            #img.save("curve.png" )
-            #img = orig_img
+
+            img.save("curve.png" )
+            img = orig_img
 
         if isrotate:
-            img = self.rotate(img, iscurve=iscurve)
-            #img.save("rotation.png" )
-            #img = orig_img
+            img = self.rotate(img, iscurve=False)
+
+            img.save("rotation.png" )
+            img = orig_img
 
         if isperspective:
-            img = self.perspective(img, isrotate=isrotate)
-            #img.save("perspective.png" )
-            #img = orig_img
+            img = self.perspective(img)
+
+            img.save("perspective.png" )
+            img = orig_img
 
         if isblur:
-            if isinstance(img, np.ndarray):
-                img = Image.fromarray(img)
-            kernel = [(23, 23), (27, 27), (31, 31)]
+            kernel = [(27, 27), (29, 29), (31, 31)]
             index = np.random.randint(0, len(kernel))
             kernel = kernel[index]
             img = transforms.GaussianBlur(kernel)(img)
-            #img.save("blur.png" )
-            #img = orig_img
 
-        if isnoise:
+            img.save("blur.png" )
+            img = orig_img
+
+        if isnoise or True:
             img = np.array(img)
-            img = img + np.random.normal(0, 7, img.shape).astype(np.uint8)
+            img = img + np.random.normal(0, 16, img.shape) #.astype(np.uint8)
             img = np.clip(img, 0, 255).astype(np.uint8)
             img = Image.fromarray(img)
-            #img.save("noise.png" )
-            #img = orig_img
+
+            img.save("noise.png" )
+            img = orig_img
 
         if isinvert:
-            if isinstance(img, np.ndarray):
-                img = Image.fromarray(img)
             img = PIL.ImageOps.invert(img)
-            #img.save("invert.png" )
-            #img = orig_img
+
+            img.save("invert.png" )
+            img = orig_img
 
         img = transforms.ToTensor()(img)
 
@@ -462,13 +463,13 @@ class AlignCollate(object):
 
         else:
             transform = DataAugment(self.opt)
-            #i = 0
-            #for image in images:
-            #    transform(image)
-            #    if i == 58:
-            #        exit(0)
-            #    else: 
-            #        i = i + 1
+            i = 0
+            for image in images:
+                transform(image)
+                if i == 1:
+                    exit(0)
+                else: 
+                    i = i + 1
             image_tensors = [transform(image) for image in images]
             image_tensors = torch.cat([t.unsqueeze(0) for t in image_tensors], 0)
         
