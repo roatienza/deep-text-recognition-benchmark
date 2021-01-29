@@ -18,16 +18,7 @@ class Grid:
         self.prob = self.st_prob * min(1, epoch / max_epoch)
 
     def __call__(self, img):
-        #if np.random.rand() > self.prob:
-        #    return img
-        #h = img.shape[0]
-        #w = img.shape[1]
         w, h = img.size
-        #print("w: ", w)
-        #print("h: ", h)
-        #exit(0)
-        
-        # 1.5 * h, 1.5 * w works fine with the squared images
         # But with rectangular input, the mask might not be able to recover back to the input image shape
         # A square mask with edge length equal to the diagnoal of the input image 
         # will be able to cover all the image spot after the rotation. This is also the minimum square.

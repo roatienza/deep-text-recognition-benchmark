@@ -6,9 +6,9 @@ import math
 import lmdb
 import torch
 import cv2
-from augmentation.augment import distort, stretch #, perspective
-from augmentation.grid import Grid
+#from augmentation.grid import Grid
 from augmentation.warp import Curve, Rotate, Perspective, Distort, Stretch, Shrink
+from augmentation.pattern import VGrid, HGrid, Grid
 
 from natsort import natsorted
 from PIL import Image
@@ -272,7 +272,9 @@ class DataAugment(object):
         self.curve = Curve()
         self.rotate = Rotate()
         self.perspective = Perspective()
-        self.grid = Grid(2, 4)
+        self.vgrid = VGrid()
+        self.hgrid = HGrid()
+        self.grid = Grid()
         self.scale = False if opt.Transformer else True
 
     def __call__(self, img):
@@ -312,9 +314,21 @@ class DataAugment(object):
             return img
 
         if isgrid:
-            img = self.grid(img)
+            img = self.grid(img.copy())
 
             img.save("grid.png" )
+            img = orig_img
+
+        if isgrid:
+            img = self.vgrid(img.copy())
+
+            img.save("vgrid.png" )
+            img = orig_img
+
+        if isgrid:
+            img = self.hgrid(img.copy())
+
+            img.save("hgrid.png" )
             img = orig_img
 
         if isdistort:
