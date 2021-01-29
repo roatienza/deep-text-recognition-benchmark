@@ -321,6 +321,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--distort', action='store_true', help='Image distort - Luo et al 2020')
     parser.add_argument('--stretch', action='store_true', help='Image stretching - Luo et al 2020')
+    parser.add_argument('--shrink', action='store_true', help='Image shrink')
 
     parser.add_argument('--blur', action='store_true', help='Gaussian blur')
     parser.add_argument('--invert', action='store_true', help='Image invert')

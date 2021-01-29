@@ -8,7 +8,7 @@ import torch
 import cv2
 from augmentation.augment import distort, stretch #, perspective
 from augmentation.grid import Grid
-from augmentation.warp import Curve, Rotate, Perspective, Distort, Stretch
+from augmentation.warp import Curve, Rotate, Perspective, Distort, Stretch, Shrink
 
 from natsort import natsorted
 from PIL import Image
@@ -266,6 +266,7 @@ def istrue(prob=0.5):
 class DataAugment(object):
     def __init__(self, opt):
         self.opt = opt
+        self.shrink = Shrink()
         self.stretch = Stretch()
         self.distort = Distort()
         self.curve = Curve()
@@ -287,12 +288,13 @@ class DataAugment(object):
 
         isdistort = self.opt.distort or istrue()
         isstretch = self.opt.stretch or istrue()
+        isshrink = self.opt.shrink or istrue()
 
         isblur = self.opt.blur or istrue()
         isnoise = self.opt.noise  or istrue()
         isinvert = self.opt.invert or istrue()
 
-        isaug = isgrid or iscurve or isrotate or isperspective or isdistort or isstretch or isblur or isnoise or isinvert
+        isaug = isgrid or iscurve or isrotate or isperspective or isdistort or isstretch or isshrink or isblur or isnoise or isinvert
 
         img = img.resize((self.opt.imgW, self.opt.imgH), Image.BICUBIC)
 
@@ -316,17 +318,21 @@ class DataAugment(object):
             img = orig_img
 
         if isdistort:
-            #img = distort(img, 3)
             img = self.distort(img)
 
             img.save("distort.png" )
             img = orig_img
 
-        #img = np.array(img)
         if isstretch:
             img = self.stretch(img)
 
             img.save("stretch.png" )
+            img = orig_img
+
+        if isshrink:
+            img = self.shrink(img)
+
+            img.save("shrink.png" )
             img = orig_img
 
         if iscurve:
