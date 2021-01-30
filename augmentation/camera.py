@@ -5,6 +5,7 @@ import skimage as sk
 from PIL import Image
 from io import BytesIO
 
+from skimage import color
 '''
     PIL resize (W,H)
     cv2 image is BGR
@@ -55,11 +56,13 @@ class Brightness:
         img[:, :, 2] = np.clip(img[:, :, 2] + c, 0, 1)
         img = sk.color.hsv2rgb(img)
 
-        if isgray:
-            img = img[:,:,0]
-            img = np.squeeze(img)
+        #if isgray:
+        #    img = img[:,:,0]
+        #    img = np.squeeze(img)
 
         img = np.clip(img, 0, 1) * 255
+        if isgray:
+            img = color.rgb2gray(img)
 
         return Image.fromarray(img.astype(np.uint8))
 
