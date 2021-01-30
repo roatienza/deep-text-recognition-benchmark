@@ -9,6 +9,7 @@ import cv2
 #from augmentation.grid import Grid
 from augmentation.warp import Curve, Rotate, Perspective, Distort, Stretch, Shrink
 from augmentation.pattern import VGrid, HGrid, Grid, RectGrid, EllipseGrid
+from augmentation.noise import GaussianNoise, ShotNoise, ImpulseNoise, SpeckleNoise
 
 from natsort import natsorted
 from PIL import Image
@@ -266,17 +267,27 @@ def istrue(prob=0.5):
 class DataAugment(object):
     def __init__(self, opt):
         self.opt = opt
+
         self.shrink = Shrink()
         self.stretch = Stretch()
         self.distort = Distort()
+
         self.curve = Curve()
+
         self.rotate = Rotate()
         self.perspective = Perspective()
+
         self.vgrid = VGrid()
         self.hgrid = HGrid()
         self.grid = Grid()
-        self.rectgrid = RectGrid()
-        self.ellipsegrid = EllipseGrid()
+        self.rect_grid = RectGrid()
+        self.ellipse_grid = EllipseGrid()
+
+        self.gaussian_noise = GaussianNoise()
+        self.shot_noise = ShotNoise()
+        self.impulse_noise = ImpulseNoise()
+        self.speckle_noise = SpeckleNoise()
+
         self.scale = False if opt.Transformer else True
 
     def __call__(self, img):
@@ -334,13 +345,13 @@ class DataAugment(object):
             img = orig_img
 
         if isgrid:
-            img = self.rectgrid(img.copy())
+            img = self.rect_grid(img.copy())
 
             img.save("rectgrid.png" )
             img = orig_img
 
         if isgrid:
-            img = self.ellipsegrid(img.copy())
+            img = self.ellipse_grid(img.copy())
 
             img.save("ellipsegrid.png" )
             img = orig_img
@@ -391,13 +402,37 @@ class DataAugment(object):
             img = orig_img
 
         if isnoise or True:
-            img = np.array(img)
-            img = img + np.random.normal(0, 16, img.shape) #.astype(np.uint8)
-            img = np.clip(img, 0, 255).astype(np.uint8)
-            img = Image.fromarray(img)
+            img = self.gaussian_noise(img)
 
-            img.save("noise.png" )
+            img.save("gaussian_noise.png" )
             img = orig_img
+
+        if isnoise or True:
+            img = self.shot_noise(img)
+
+            img.save("shot_noise.png" )
+            img = orig_img
+
+        if isnoise or True:
+            img = self.impulse_noise(img)
+
+            img.save("impulse_noise.png" )
+            img = orig_img
+
+        if isnoise or True:
+            img = self.speckle_noise(img)
+
+            img.save("speckle_noise.png" )
+            img = orig_img
+
+        #if isnoise or True:
+            #img = np.array(img)
+            #img = img + np.random.normal(0, 16, img.shape) #.astype(np.uint8)
+            #img = np.clip(img, 0, 255).astype(np.uint8)
+            #img = Image.fromarray(img)
+
+            #img.save("noise.png" )
+            #img = orig_img
 
         if isinvert:
             img = PIL.ImageOps.invert(img)
