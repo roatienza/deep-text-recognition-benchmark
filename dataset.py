@@ -11,6 +11,7 @@ from augmentation.warp import Curve, Rotate, Perspective, Distort, Stretch, Shri
 from augmentation.pattern import VGrid, HGrid, Grid, RectGrid, EllipseGrid
 from augmentation.noise import GaussianNoise, ShotNoise, ImpulseNoise, SpeckleNoise
 from augmentation.blur import GaussianBlur, DefocusBlur, MotionBlur, GlassBlur
+from augmentation.camera import Contrast, Brightness, JpegCompression, Pixelate
 
 from natsort import natsorted
 from PIL import Image
@@ -294,6 +295,11 @@ class DataAugment(object):
         self.motion_blur = MotionBlur()
         self.glass_blur = GlassBlur()
 
+        self.contrast = Contrast()
+        self.brightness = Brightness()
+        self.jpeg_compression = JpegCompression()
+        self.pixelate = Pixelate()
+
         self.scale = False if opt.Transformer else True
 
     def __call__(self, img):
@@ -450,14 +456,22 @@ class DataAugment(object):
             img.save("speckle_noise.png" )
             img = orig_img
 
-        #if isnoise or True:
-            #img = np.array(img)
-            #img = img + np.random.normal(0, 16, img.shape) #.astype(np.uint8)
-            #img = np.clip(img, 0, 255).astype(np.uint8)
-            #img = Image.fromarray(img)
+        if True:
+            img = self.contrast(img)
+            img.save("contast.png" )
+            img = orig_img
 
-            #img.save("noise.png" )
-            #img = orig_img
+            img = self.brightness(img)
+            img.save("brightness.png" )
+            img = orig_img
+
+            img = self.jpeg_compression(img)
+            img.save("jpeg_compression.png" )
+            img = orig_img
+
+            img = self.pixelate(img)
+            img.save("pixelate.png" )
+            img = orig_img
 
         if isinvert:
             img = PIL.ImageOps.invert(img)
