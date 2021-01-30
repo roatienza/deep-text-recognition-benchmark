@@ -22,7 +22,7 @@ class VGrid:
         draw = ImageDraw.Draw(img)
         for i in range(1, n_lines):
             x = image_stripe*i + line_width*(i-1)
-            draw.line([(x,0), (x,H)], width=line_width)
+            draw.line([(x,0), (x,H)], width=line_width, fill='black')
 
         return img
 
@@ -41,7 +41,7 @@ class HGrid:
         draw = ImageDraw.Draw(img)
         for i in range(1, n_lines):
             y = image_stripe*i + line_width*(i-1)
-            draw.line([(0,y), (W, y)], width=line_width)
+            draw.line([(0,y), (W, y)], width=line_width, fill='black')
 
         return img
 
@@ -81,9 +81,9 @@ class RectGrid:
             x2 = x_center + (dx * W/H) 
             y2 = y_center + dy
             if isellipse:
-                draw.ellipse([(x1,y1), (x2, y2)], width=line_width)
+                draw.ellipse([(x1,y1), (x2, y2)], width=line_width, outline='black')
             else:
-                draw.rectangle([(x1,y1), (x2, y2)], width=line_width)
+                draw.rectangle([(x1,y1), (x2, y2)], width=line_width, outline='black')
 
         return img
 
