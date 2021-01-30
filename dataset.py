@@ -10,6 +10,7 @@ import cv2
 from augmentation.warp import Curve, Rotate, Perspective, Distort, Stretch, Shrink
 from augmentation.pattern import VGrid, HGrid, Grid, RectGrid, EllipseGrid
 from augmentation.noise import GaussianNoise, ShotNoise, ImpulseNoise, SpeckleNoise
+from augmentation.blur import GaussianBlur, DefocusBlur
 
 from natsort import natsorted
 from PIL import Image
@@ -288,6 +289,9 @@ class DataAugment(object):
         self.impulse_noise = ImpulseNoise()
         self.speckle_noise = SpeckleNoise()
 
+        self.gaussian_blur = GaussianBlur()
+        self.defocus_blur = DefocusBlur()
+
         self.scale = False if opt.Transformer else True
 
     def __call__(self, img):
@@ -392,13 +396,20 @@ class DataAugment(object):
             img.save("perspective.png" )
             img = orig_img
 
+            #kernel = [(27, 27), (29, 29), (31, 31)]
+            #index = np.random.randint(0, len(kernel))
+            #kernel = kernel[index]
+            #img = transforms.GaussianBlur(kernel)(img)
         if isblur:
-            kernel = [(27, 27), (29, 29), (31, 31)]
-            index = np.random.randint(0, len(kernel))
-            kernel = kernel[index]
-            img = transforms.GaussianBlur(kernel)(img)
+            img = self.gaussian_blur(img)
 
-            img.save("blur.png" )
+            img.save("gaussian_blur.png" )
+            img = orig_img
+
+        if isblur:
+            img = self.defocus_blur(img)
+
+            img.save("defocus_blur.png" )
             img = orig_img
 
         if isnoise or True:
