@@ -1,7 +1,7 @@
 
 import cv2
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageOps
 import torchvision.transforms as transforms
 from wand.image import Image as WandImage
 from scipy.ndimage import zoom as scizoom
@@ -9,7 +9,7 @@ from skimage.filters import gaussian
 from wand.api import library as wandlibrary
 from io import BytesIO
 
-from skimage import color
+#from skimage import color
 from .ops import MotionImage, clipped_zoom, disk, plasma_fractal
 '''
     PIL resize (W,H)
@@ -59,10 +59,11 @@ class DefocusBlur:
         #    img = np.squeeze(img)
 
         img = np.clip(channels, 0, 1) * 255
+        img = Image.fromarray(img.astype(np.uint8))
         if isgray:
-            img = color.rgb2gray(img)
+            img = ImageOps.grayscale(img)
 
-        return Image.fromarray(img.astype(np.uint8))
+        return img
 
 
 class MotionBlur:
@@ -150,8 +151,13 @@ class ZoomBlur:
         #    img = np.squeeze(img)
 
         img = np.clip(img, 0, 1) * 255
+        img = Image.fromarray(img.astype(np.uint8))
         if isgray:
-            img = color.rgb2gray(img)
+            img = ImageOps.grayscale(img)
 
-        return Image.fromarray(img.astype(np.uint8))
+        return img
+        #if isgray:
+        #    img = color.rgb2gray(img)
+
+        #return Image.fromarray(img.astype(np.uint8))
 

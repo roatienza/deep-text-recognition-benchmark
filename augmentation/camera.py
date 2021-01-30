@@ -2,7 +2,7 @@
 import cv2
 import numpy as np
 import skimage as sk
-from PIL import Image
+from PIL import Image, ImageOps
 from io import BytesIO
 
 from skimage import color
@@ -61,10 +61,16 @@ class Brightness:
         #    img = np.squeeze(img)
 
         img = np.clip(img, 0, 1) * 255
+        img = Image.fromarray(img.astype(np.uint8))
         if isgray:
-            img = color.rgb2gray(img)
+            img = ImageOps.grayscale(img)
 
-        return Image.fromarray(img.astype(np.uint8))
+        return img
+        #if isgray:
+        #if isgray:
+        #    img = color.rgb2gray(img)
+
+        #return Image.fromarray(img.astype(np.uint8))
 
 
 class JpegCompression:

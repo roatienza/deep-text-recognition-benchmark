@@ -12,6 +12,7 @@ from augmentation.pattern import VGrid, HGrid, Grid, RectGrid, EllipseGrid
 from augmentation.noise import GaussianNoise, ShotNoise, ImpulseNoise, SpeckleNoise
 from augmentation.blur import GaussianBlur, DefocusBlur, MotionBlur, GlassBlur
 from augmentation.camera import Contrast, Brightness, JpegCompression, Pixelate
+from augmentation.weather import Fog, Snow, Frost
 
 from natsort import natsorted
 from PIL import Image
@@ -270,35 +271,45 @@ class DataAugment(object):
     def __init__(self, opt):
         self.opt = opt
 
-        self.shrink = Shrink()
+        # distort group
         self.stretch = Stretch()
+        self.curve = Curve()
         self.distort = Distort()
 
-        self.curve = Curve()
-
+        # geometry group 
+        self.shrink = Shrink()
         self.rotate = Rotate()
         self.perspective = Perspective()
 
+        # pattern group
         self.vgrid = VGrid()
         self.hgrid = HGrid()
         self.grid = Grid()
         self.rect_grid = RectGrid()
         self.ellipse_grid = EllipseGrid()
 
+        # noise group
         self.gaussian_noise = GaussianNoise()
         self.shot_noise = ShotNoise()
         self.impulse_noise = ImpulseNoise()
         self.speckle_noise = SpeckleNoise()
 
+        # blur group
         self.gaussian_blur = GaussianBlur()
         self.defocus_blur = DefocusBlur()
         self.motion_blur = MotionBlur()
         self.glass_blur = GlassBlur()
 
+        # camera group
         self.contrast = Contrast()
         self.brightness = Brightness()
         self.jpeg_compression = JpegCompression()
         self.pixelate = Pixelate()
+
+        # weather group
+        self.fog = Fog()
+        self.frost = Frost()
+        self.snow = Snow()
 
         self.scale = False if opt.Transformer else True
 
@@ -472,6 +483,19 @@ class DataAugment(object):
             img = self.pixelate(img)
             img.save("pixelate.png" )
             img = orig_img
+
+
+            img = self.fog(img)
+            img.save("fog.png" )
+            img = orig_img
+
+            img = self.frost(img)
+            img.save("frost.png" )
+            img = orig_img
+
+            #img = self.snow(img)
+            #img.save("snow.png" )
+            #img = orig_img
 
         if isinvert:
             img = PIL.ImageOps.invert(img)
