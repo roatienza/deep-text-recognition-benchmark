@@ -10,7 +10,7 @@ import cv2
 from augmentation.warp import Curve, Rotate, Perspective, Distort, Stretch, Shrink
 from augmentation.pattern import VGrid, HGrid, Grid, RectGrid, EllipseGrid
 from augmentation.noise import GaussianNoise, ShotNoise, ImpulseNoise, SpeckleNoise
-from augmentation.blur import GaussianBlur, DefocusBlur, MotionBlur
+from augmentation.blur import GaussianBlur, DefocusBlur, MotionBlur, GlassBlur
 
 from natsort import natsorted
 from PIL import Image
@@ -292,6 +292,7 @@ class DataAugment(object):
         self.gaussian_blur = GaussianBlur()
         self.defocus_blur = DefocusBlur()
         self.motion_blur = MotionBlur()
+        self.glass_blur = GlassBlur()
 
         self.scale = False if opt.Transformer else True
 
@@ -417,6 +418,12 @@ class DataAugment(object):
             img = self.motion_blur(img)
 
             img.save("motion_blur.png" )
+            img = orig_img
+
+        if isblur:
+            img = self.glass_blur(img)
+
+            img.save("glass_blur.png" )
             img = orig_img
 
         if isnoise or True:

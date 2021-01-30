@@ -32,7 +32,7 @@ class ShotNoise:
 
         W, H = img.size
         #c = np.random.uniform(3, 60)
-        c = np.random.uniform(3, 30)
+        c = np.random.uniform(3, 20)
         img = np.array(img) / 255.
         img = np.clip(np.random.poisson(img * c) / float(c), 0, 1) * 255
         return Image.fromarray(img.astype(np.uint8))
