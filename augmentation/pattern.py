@@ -67,7 +67,7 @@ class RectGrid:
 
         W, H = img.size
         line_width = 1 
-        image_stripe = 1 
+        image_stripe = 1 #np.random.randint(2, 6)
         offset = 4 if isellipse else 1
         n_lines = ((H//2) // (line_width + image_stripe)) + offset
         draw = ImageDraw.Draw(img)
