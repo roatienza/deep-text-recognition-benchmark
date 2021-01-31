@@ -493,9 +493,9 @@ class DataAugment(object):
             img.save("frost.png" )
             img = orig_img
 
-            #img = self.snow(img)
-            #img.save("snow.png" )
-            #img = orig_img
+            img = self.snow(img)
+            img.save("snow.png" )
+            img = orig_img
 
         if isinvert:
             img = PIL.ImageOps.invert(img)
