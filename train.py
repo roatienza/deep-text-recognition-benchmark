@@ -124,25 +124,15 @@ def train(opt):
     # setup optimizer
     scheduler = None
     if opt.adam:
-        optimizer = optim.Adam(model.parameters(),
-                               lr=opt.lr,
-                               weight_decay=1e-4)
-        # optimizer = optim.Adam(filtered_parameters, lr=opt.lr, betas=(opt.beta1, 0.999))
-        #milestones = [100, 200, 250]
-        #scheduler = MultiStepLR(optimizer, milestones=milestones, gamma=0.1)
-    elif opt.sgd:
-        optimizer = optim.SGD(model.parameters(),
-                              lr=opt.lr,
-                              momentum=0.9,
-                              weight_decay=1e-4)
+        optimizer = optim.Adam(filtered_parameters, lr=opt.lr, betas=(opt.beta1, 0.999))
     else:
-        if opt.Transformer:
-            optimizer = optim.Adadelta(model.parameters(),
-                                       lr=opt.lr, 
-                                       rho=opt.rho, 
-                                       eps=opt.eps)
-        else:
-            optimizer = optim.Adadelta(filtered_parameters, lr=opt.lr, rho=opt.rho, eps=opt.eps)
+        optimizer = optim.Adadelta(filtered_parameters, lr=opt.lr, rho=opt.rho, eps=opt.eps)
+        #if opt.Transformer:
+        #    optimizer = optim.Adadelta(model.parameters(),
+        #                               lr=opt.lr, 
+        #                               rho=opt.rho, 
+        #                               eps=opt.eps)
+        #else:
 
     if opt.scheduler:
         scheduler = CosineAnnealingLR(optimizer, T_max=opt.num_iter)

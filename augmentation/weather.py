@@ -29,13 +29,14 @@ class Fog:
         img = np.array(img) / 255.
         max_val = img.max()
         fog = c[0] * plasma_fractal(wibbledecay=c[1])[:H, :W][..., np.newaxis]
+        #x += c[0] * plasma_fractal(wibbledecay=c[1])[:224, :224][..., np.newaxis]
+        #return np.clip(x * max_val / (max_val + c[0]), 0, 1) * 255
         if isgray:
             fog = np.squeeze(fog)
         else:
             fog = np.repeat(fog, 3, axis=2)
 
-        print("fog", fog.shape)
-        print("img", img.shape)
+        img += fog
         img = np.clip(img * max_val / (max_val + c[0]), 0, 1) * 255
         return Image.fromarray(img.astype(np.uint8))
 
