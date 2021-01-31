@@ -265,8 +265,7 @@ class RawDataset(Dataset):
 
 
 def istrue(prob=0.5):
-    return True
-    #return np.random.uniform(0,1) < prob
+    return np.random.uniform(0,1) < prob
 
 class DataAugment(object):
     def __init__(self, opt):
@@ -287,14 +286,14 @@ class DataAugment(object):
         '''
             Must call img.copy() if pattern, Rain or Shadow is used
         '''
-        iswarp = self.opt.warp or istrue()
-        ispattern = self.opt.pattern or istrue()
-        isgeometry = self.opt.geometry or istrue()
-        isnoise = self.opt.noise or istrue()
-        isblur = self.opt.blur or istrue()
-        iscamera = self.opt.camera or istrue()
-        isweather = self.opt.weather or istrue()
-        isinvert = self.opt.invert or istrue()
+        iswarp = self.opt.warp and istrue()
+        ispattern = self.opt.pattern and istrue()
+        isgeometry = self.opt.geometry and istrue()
+        isnoise = self.opt.noise and istrue()
+        isblur = self.opt.blur and istrue()
+        iscamera = self.opt.camera and istrue()
+        isweather = self.opt.weather and istrue()
+        isinvert = self.opt.invert and istrue()
 
         isaug = iswarp or ispattern or isgeometry or isnoise or isblur or iscamera or isweather or isinvert
 
@@ -303,68 +302,60 @@ class DataAugment(object):
         """
         Comment out
         """
-        orig_img = img
-        img.save("Source.png" )
+        #orig_img = img
+        #img.save("Source.png" )
 
-        if self.opt.eval or not isaug:# or istrue():
+        if self.opt.eval or not isaug or istrue():
             img = transforms.ToTensor()(img)
             if self.scale:
                 img.sub_(0.5).div_(0.5)
 
             return img
 
-        if iswarp:
-            for op in self.warp:
-                img = op(img)
-                filename = type(op).__name__ + ".png"
-                img.save(filename )
-                img = orig_img
-
-        if ispattern:
-            for op in self.pattern:
-                img = op(img.copy())
-                filename = type(op).__name__ + ".png"
-                img.save(filename )
-                img = orig_img
-
-        if isgeometry:
-            for op in self.geometry:
-                img = op(img)
-                filename = type(op).__name__ + ".png"
-                img.save(filename )
-                img = orig_img
-
-        if isnoise:
-            for op in self.noise:
-                img = op(img)
-                filename = type(op).__name__ + ".png"
-                img.save(filename )
-                img = orig_img
-
-        if isblur:
-            for op in self.blur:
-                img = op(img)
-                filename = type(op).__name__ + ".png"
-                img.save(filename )
-                img = orig_img
-
-        if isweather:
-            for op in self.weather:
-                img = op(img.copy())
-                filename = type(op).__name__ + ".png"
-                img.save(filename )
-                img = orig_img
-
-        if iscamera:
-            for op in self.camera:
-                img = op(img.copy())
-                filename = type(op).__name__ + ".png"
-                img.save(filename )
-                img = orig_img
-
         if isinvert:
             img = self.invert(img)
-            img.save("Invert.png" )
+            #img.save("Invert.png" )
+
+        if isblur:
+            index = np.random.randint(0, len(self.blur))
+            op = self.blur[index]
+            img = op(img)
+
+        if isnoise:
+            index = np.random.randint(0, len(self.noise))
+            op = self.noise[index]
+            img = op(img)
+
+        if iscamera:
+            index = np.random.randint(0, len(self.camera))
+            op = self.camera[index]
+            img = op(img)
+
+        if iswarp:
+            index = np.random.randint(0, len(self.warp))
+            op = self.warp[index]
+            img = op(img)
+            
+            #for op in self.pattern:
+            #    img = op(img.copy())
+            #    filename = type(op).__name__ + ".png"
+            #    img.save(filename )
+            #    img = orig_img
+
+        if isgeometry:
+            index = np.random.randint(0, len(self.geometry))
+            op = self.geometry[index]
+            img = op(img)
+
+        if isweather:
+            index = np.random.randint(0, len(self.weather))
+            op = self.weather[index]
+            img = op(img)
+
+        if ispattern:
+            index = np.random.randint(0, len(self.pattern))
+            op = self.pattern[index]
+            img = op(img)
 
         img = transforms.ToTensor()(img)
 
@@ -459,13 +450,13 @@ class AlignCollate(object):
 
         else:
             transform = DataAugment(self.opt)
-            i = 0
-            for image in images:
-                transform(image)
-                if i == 1:
-                    exit(0)
-                else: 
-                    i = i + 1
+            #i = 0
+            #for image in images:
+            #    transform(image)
+            #    if i == 1:
+            #        exit(0)
+            #    else: 
+            #        i = i + 1
             image_tensors = [transform(image) for image in images]
             image_tensors = torch.cat([t.unsqueeze(0) for t in image_tensors], 0)
         
