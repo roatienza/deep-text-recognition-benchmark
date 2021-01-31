@@ -1,7 +1,8 @@
 
 import cv2
 import numpy as np
-from PIL import Image, ImageOps
+import math
+from PIL import Image, ImageOps, ImageDraw
 from skimage import color
 from pkg_resources import resource_filename
 from io import BytesIO
@@ -137,3 +138,58 @@ class Snow:
 
         return img
 
+class Rain:
+    def __init__(self):
+        pass
+
+    def __call__(self, img, max_width=3, prob=1.):
+        if np.random.uniform(0,1) > prob:
+            return img
+
+        W, H = img.size
+        line_width = np.random.randint(1, 2)
+        n_rains = np.random.randint(50, 100)
+        slant = np.random.randint(-60, 60)
+
+        draw = ImageDraw.Draw(img)
+        for i in range(1, n_rains):
+            length = np.random.randint(5, 10)
+            x1 = np.random.randint(0, W-length)
+            y1 = np.random.randint(0, H-length)
+            x2 = x1 + length*math.sin(slant*math.pi/180.)
+            y2 = y1 + length*math.cos(slant*math.pi/180.)
+            draw.line([(x1,y1), (x2,y2)], width=line_width, fill=(200,200,200))
+
+        return img
+
+class Shadow:
+    def __init__(self):
+        pass
+
+    def __call__(self, img, max_width=3, prob=1.):
+        if np.random.uniform(0,1) > prob:
+            return img
+
+        W, H = img.size
+        img = img.convert('RGBA')
+        overlay = Image.new('RGBA', img.size, (255,255,255,0))
+        draw = ImageDraw.Draw(overlay) 
+        transparency = np.random.randint(128, 228)
+        x1 = np.random.randint(0, W//2)
+        y1 = 0
+
+        x2 = np.random.randint(W//2, W)
+        y2 = 0
+
+        x3 = np.random.randint(W//2, W)
+        y3 = H - 1
+
+        x4 = np.random.randint(0, W//2)
+        y4 = H - 1
+
+        draw.polygon([(x1,y1), (x2,y2), (x3,y3), (x4,y4)], fill=(0,0,0,transparency))
+
+        img = Image.alpha_composite(img, overlay)
+        img = img.convert("RGB")
+
+        return img

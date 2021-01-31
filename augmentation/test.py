@@ -6,7 +6,7 @@ from pattern import VGrid, HGrid, Grid, RectGrid, EllipseGrid
 from noise import GaussianNoise, ShotNoise, ImpulseNoise, SpeckleNoise
 from blur import GaussianBlur, DefocusBlur, MotionBlur, GlassBlur, ZoomBlur
 from camera import Contrast, Brightness, JpegCompression, Pixelate
-from weather import Fog, Snow, Frost
+from weather import Fog, Snow, Frost, Rain, Shadow
 
 from PIL import Image
 import PIL.ImageOps
@@ -27,7 +27,7 @@ if __name__ == '__main__':
     ops.extend([GaussianNoise(), ShotNoise(), ImpulseNoise(), SpeckleNoise()])
     ops.extend([GaussianBlur(), DefocusBlur(), MotionBlur(), GlassBlur(), ZoomBlur()])
     ops.extend([Contrast(), Brightness(), JpegCompression(), Pixelate()])
-    ops.extend([Fog(), Snow(), Frost()])
+    ops.extend([Fog(), Snow(), Frost(), Rain(), Shadow()])
     ops.extend([PIL.ImageOps.invert])
     for op in ops:
         out_img = op(img.copy())

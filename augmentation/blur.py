@@ -23,7 +23,7 @@ class GaussianBlur:
             return img
 
         W, H = img.size
-        kernel = [(27, 27), (29, 29), (31,31)]
+        kernel = [(31,31)]
         index = np.random.randint(0, len(kernel))
         return transforms.GaussianBlur(kernel[index])(img)
 
@@ -38,7 +38,7 @@ class DefocusBlur:
         n_channels = len(img.getbands())
         isgray = n_channels == 1
         #c = [(3, 0.1), (4, 0.5), (6, 0.5), (8, 0.5), (10, 0.5)]
-        c = [(3, 0.1), (4, 0.5), (6, 0.5)]
+        c = [(3, 0.1), (4, 0.5)] #, (6, 0.5)]
         index = np.random.randint(0, len(c))
         c = c[index]
 
@@ -99,7 +99,7 @@ class GlassBlur:
 
         W, H = img.size
         #c = [(0.7, 1, 2), (0.9, 2, 1), (1, 2, 3), (1.1, 3, 2), (1.5, 4, 2)][severity - 1]
-        c = [(0.7, 1, 2), (0.9, 2, 1), (1, 2, 3)]
+        c = [(0.7, 1, 2), (0.9, 2, 1)] # , (1, 2, 3)]
         index = np.random.randint(0, len(c))
         c = c[index]
 
