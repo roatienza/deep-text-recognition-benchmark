@@ -6,7 +6,7 @@ from PIL import Image, ImageOps, ImageDraw
 from skimage import color
 from pkg_resources import resource_filename
 from io import BytesIO
-from ops import plasma_fractal, clipped_zoom, MotionImage
+from .ops import plasma_fractal, clipped_zoom, MotionImage
 
 '''
     PIL resize (W,H)
@@ -147,9 +147,12 @@ class Rain:
             return img
 
         W, H = img.size
+        n_channels = len(img.getbands())
+        isgray = n_channels == 1
         line_width = np.random.randint(1, 2)
         n_rains = np.random.randint(50, 100)
         slant = np.random.randint(-60, 60)
+        fillcolor = 200 if isgray else (200,200,200)
 
         draw = ImageDraw.Draw(img)
         for i in range(1, n_rains):
@@ -158,7 +161,9 @@ class Rain:
             y1 = np.random.randint(0, H-length)
             x2 = x1 + length*math.sin(slant*math.pi/180.)
             y2 = y1 + length*math.cos(slant*math.pi/180.)
-            draw.line([(x1,y1), (x2,y2)], width=line_width, fill=(200,200,200))
+            x2 = int(x2)
+            y2 = int(y2)
+            draw.line([(x1,y1), (x2,y2)], width=line_width, fill=fillcolor)
 
         return img
 
@@ -174,7 +179,7 @@ class Shadow:
         img = img.convert('RGBA')
         overlay = Image.new('RGBA', img.size, (255,255,255,0))
         draw = ImageDraw.Draw(overlay) 
-        transparency = np.random.randint(128, 228)
+        transparency = np.random.randint(128, 128+32)
         x1 = np.random.randint(0, W//2)
         y1 = 0
 

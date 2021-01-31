@@ -10,7 +10,7 @@ from wand.api import library as wandlibrary
 from io import BytesIO
 
 #from skimage import color
-from ops import MotionImage, clipped_zoom, disk, plasma_fractal
+from .ops import MotionImage, clipped_zoom, disk, plasma_fractal
 '''
     PIL resize (W,H)
 '''

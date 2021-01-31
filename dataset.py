@@ -6,13 +6,14 @@ import math
 import lmdb
 import torch
 import cv2
-#from augmentation.grid import Grid
+
+from augmentation.weather import Fog, Snow, Frost
 from augmentation.warp import Curve, Rotate, Perspective, Distort, Stretch, Shrink
 from augmentation.pattern import VGrid, HGrid, Grid, RectGrid, EllipseGrid
 from augmentation.noise import GaussianNoise, ShotNoise, ImpulseNoise, SpeckleNoise
 from augmentation.blur import GaussianBlur, DefocusBlur, MotionBlur, GlassBlur, ZoomBlur
 from augmentation.camera import Contrast, Brightness, JpegCompression, Pixelate
-from augmentation.weather import Fog, Snow, Frost
+from augmentation.weather import Fog, Snow, Frost, Rain, Shadow
 
 from natsort import natsorted
 from PIL import Image
@@ -271,69 +272,31 @@ class DataAugment(object):
     def __init__(self, opt):
         self.opt = opt
 
-        # distort group
-        self.stretch = Stretch()
-        self.curve = Curve()
-        self.distort = Distort()
-
-        # geometry group 
-        self.shrink = Shrink()
-        self.rotate = Rotate()
-        self.perspective = Perspective()
-
-        # pattern group
-        self.vgrid = VGrid()
-        self.hgrid = HGrid()
-        self.grid = Grid()
-        self.rect_grid = RectGrid()
-        self.ellipse_grid = EllipseGrid()
-
-        # noise group
-        self.gaussian_noise = GaussianNoise()
-        self.shot_noise = ShotNoise()
-        self.impulse_noise = ImpulseNoise()
-        self.speckle_noise = SpeckleNoise()
-
-        # blur group
-        self.gaussian_blur = GaussianBlur()
-        self.defocus_blur = DefocusBlur()
-        self.motion_blur = MotionBlur()
-        self.glass_blur = GlassBlur()
-        self.zoom_blur = ZoomBlur()
-
-        # camera group
-        self.contrast = Contrast()
-        self.brightness = Brightness()
-        self.jpeg_compression = JpegCompression()
-        self.pixelate = Pixelate()
-
-        # weather group
-        self.fog = Fog()
-        self.frost = Frost()
-        self.snow = Snow()
+        self.warp = [Curve(), Distort(), Stretch(), Shrink()]
+        self.pattern = [VGrid(), HGrid(), Grid(), RectGrid(), EllipseGrid()]
+        self.geometry = [Rotate(), Perspective()]
+        self.noise = [GaussianNoise(), ShotNoise(), ImpulseNoise(), SpeckleNoise()]
+        self.blur = [GaussianBlur(), DefocusBlur(), MotionBlur(), GlassBlur(), ZoomBlur()]
+        self.camera = [Contrast(), Brightness(), JpegCompression(), Pixelate()]
+        self.weather = [Fog(), Snow(), Frost(), Rain(), Shadow()]
+        self.invert = PIL.ImageOps.invert
 
         self.scale = False if opt.Transformer else True
 
     def __call__(self, img):
         '''
-            PIL resize (W,H)
-            Torch resize is (H,W)
+            Must call img.copy() if pattern, Rain or Shadow is used
         '''
-        isgrid = self.opt.grid or istrue()
-
-        iscurve = self.opt.curve or istrue()
-        isrotate = self.opt.rotate or istrue()
-        isperspective = self.opt.perspective or istrue()
-
-        isdistort = self.opt.distort or istrue()
-        isstretch = self.opt.stretch or istrue()
-        isshrink = self.opt.shrink or istrue()
-
+        iswarp = self.opt.warp or istrue()
+        ispattern = self.opt.pattern or istrue()
+        isgeometry = self.opt.geometry or istrue()
+        isnoise = self.opt.noise or istrue()
         isblur = self.opt.blur or istrue()
-        isnoise = self.opt.noise  or istrue()
+        iscamera = self.opt.camera or istrue()
+        isweather = self.opt.weather or istrue()
         isinvert = self.opt.invert or istrue()
 
-        isaug = isgrid or iscurve or isrotate or isperspective or isdistort or isstretch or isshrink or isblur or isnoise or isinvert
+        isaug = iswarp or ispattern or isgeometry or isnoise or isblur or iscamera or isweather or isinvert
 
         img = img.resize((self.opt.imgW, self.opt.imgH), Image.BICUBIC)
 
@@ -341,7 +304,7 @@ class DataAugment(object):
         Comment out
         """
         orig_img = img
-        img.save("src.png" )
+        img.save("Source.png" )
 
         if self.opt.eval or not isaug:# or istrue():
             img = transforms.ToTensor()(img)
@@ -350,164 +313,58 @@ class DataAugment(object):
 
             return img
 
-        if isgrid:
-            img = self.grid(img.copy())
+        if iswarp:
+            for op in self.warp:
+                img = op(img)
+                filename = type(op).__name__ + ".png"
+                img.save(filename )
+                img = orig_img
 
-            img.save("grid.png" )
-            img = orig_img
+        if ispattern:
+            for op in self.pattern:
+                img = op(img.copy())
+                filename = type(op).__name__ + ".png"
+                img.save(filename )
+                img = orig_img
 
-        if isgrid:
-            img = self.vgrid(img.copy())
+        if isgeometry:
+            for op in self.geometry:
+                img = op(img)
+                filename = type(op).__name__ + ".png"
+                img.save(filename )
+                img = orig_img
 
-            img.save("vgrid.png" )
-            img = orig_img
-
-        if isgrid:
-            img = self.hgrid(img.copy())
-
-            img.save("hgrid.png" )
-            img = orig_img
-
-        if isgrid:
-            img = self.rect_grid(img.copy())
-
-            img.save("rectgrid.png" )
-            img = orig_img
-
-        if isgrid:
-            img = self.ellipse_grid(img.copy())
-
-            img.save("ellipsegrid.png" )
-            img = orig_img
-
-        if isdistort:
-            img = self.distort(img)
-
-            img.save("distort.png" )
-            img = orig_img
-
-        if isstretch:
-            img = self.stretch(img)
-
-            img.save("stretch.png" )
-            img = orig_img
-
-        if isshrink:
-            img = self.shrink(img)
-
-            img.save("shrink.png" )
-            img = orig_img
-
-        if iscurve:
-            img = self.curve(img)
-
-            img.save("curve.png" )
-            img = orig_img
-
-        if isrotate:
-            img = self.rotate(img, iscurve=False)
-
-            img.save("rotation.png" )
-            img = orig_img
-
-        if isperspective:
-            img = self.perspective(img)
-
-            img.save("perspective.png" )
-            img = orig_img
-
-            #kernel = [(27, 27), (29, 29), (31, 31)]
-            #index = np.random.randint(0, len(kernel))
-            #kernel = kernel[index]
-            #img = transforms.GaussianBlur(kernel)(img)
-        if isblur:
-            img = self.gaussian_blur(img)
-
-            img.save("gaussian_blur.png" )
-            img = orig_img
+        if isnoise:
+            for op in self.noise:
+                img = op(img)
+                filename = type(op).__name__ + ".png"
+                img.save(filename )
+                img = orig_img
 
         if isblur:
-            img = self.defocus_blur(img)
+            for op in self.blur:
+                img = op(img)
+                filename = type(op).__name__ + ".png"
+                img.save(filename )
+                img = orig_img
 
-            img.save("defocus_blur.png" )
-            img = orig_img
+        if isweather:
+            for op in self.weather:
+                img = op(img.copy())
+                filename = type(op).__name__ + ".png"
+                img.save(filename )
+                img = orig_img
 
-        if isblur:
-            img = self.motion_blur(img)
-
-            img.save("motion_blur.png" )
-            img = orig_img
-
-        if isblur:
-            img = self.glass_blur(img)
-
-            img.save("glass_blur.png" )
-            img = orig_img
-
-            img = self.zoom_blur(img)
-
-            img.save("zoom_blur.png" )
-            img = orig_img
-
-        if isnoise or True:
-            img = self.gaussian_noise(img)
-
-            img.save("gaussian_noise.png" )
-            img = orig_img
-
-        if isnoise or True:
-            img = self.shot_noise(img)
-
-            img.save("shot_noise.png" )
-            img = orig_img
-
-        if isnoise or True:
-            img = self.impulse_noise(img)
-
-            img.save("impulse_noise.png" )
-            img = orig_img
-
-        if isnoise or True:
-            img = self.speckle_noise(img)
-
-            img.save("speckle_noise.png" )
-            img = orig_img
-
-        if True:
-            img = self.contrast(img)
-            img.save("contast.png" )
-            img = orig_img
-
-            img = self.brightness(img)
-            img.save("brightness.png" )
-            img = orig_img
-
-            img = self.jpeg_compression(img)
-            img.save("jpeg_compression.png" )
-            img = orig_img
-
-            img = self.pixelate(img)
-            img.save("pixelate.png" )
-            img = orig_img
-
-
-            img = self.fog(img)
-            img.save("fog.png" )
-            img = orig_img
-
-            img = self.frost(img)
-            img.save("frost.png" )
-            img = orig_img
-
-            img = self.snow(img)
-            img.save("snow.png" )
-            img = orig_img
+        if iscamera:
+            for op in self.camera:
+                img = op(img.copy())
+                filename = type(op).__name__ + ".png"
+                img.save(filename )
+                img = orig_img
 
         if isinvert:
-            img = PIL.ImageOps.invert(img)
-
-            img.save("invert.png" )
-            img = orig_img
+            img = self.invert(img)
+            img.save("Invert.png" )
 
         img = transforms.ToTensor()(img)
 
@@ -515,7 +372,7 @@ class DataAugment(object):
             img.sub_(0.5).div_(0.5)
 
         """
-        Comment out
+        Comment 
         """
         #if self.opt.rgb:
         #    img = img.permute(1,2,0)
