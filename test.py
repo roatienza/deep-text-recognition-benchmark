@@ -312,20 +312,14 @@ if __name__ == '__main__':
     parser.add_argument('--hidden_size', type=int, default=256, help='the size of the LSTM hidden state')
     parser.add_argument('--flops', action='store_true', help='calculates approx flops (may not work)')
 
-    parser.add_argument('--grid', action='store_true', help='GridMask - modified GridMask')
-
-    parser.add_argument('--curve', action='store_true', help='Image curve')
-    parser.add_argument('--rotate', action='store_true', help='Image rotate')
-    parser.add_argument('--rotate_angle', default=30., type=float, help='Rotation angle std in deg')
-    parser.add_argument('--perspective', action='store_true', help='Image perspective')
-
-    parser.add_argument('--distort', action='store_true', help='Image distort - Luo et al 2020')
-    parser.add_argument('--stretch', action='store_true', help='Image stretching - Luo et al 2020')
-    parser.add_argument('--shrink', action='store_true', help='Image shrink')
-
-    parser.add_argument('--blur', action='store_true', help='Gaussian blur')
+    parser.add_argument('--pattern', action='store_true', help='Pattern group')
+    parser.add_argument('--warp', action='store_true', help='Warp group')
+    parser.add_argument('--geometry', action='store_true', help='Geometry group')
+    parser.add_argument('--weather', action='store_true', help='Weather group')
+    parser.add_argument('--noise', action='store_true', help='Noise group')
+    parser.add_argument('--blur', action='store_true', help='Blur group')
+    parser.add_argument('--camera', action='store_true', help='Camera group')
     parser.add_argument('--invert', action='store_true', help='Image invert')
-    parser.add_argument('--noise', action='store_true', help='Gaussian noise')
 
     parser.add_argument('--scheduler', action='store_true', help='Use lr scheduler')
 
