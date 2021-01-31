@@ -74,6 +74,8 @@ class MotionBlur:
         if np.random.uniform(0,1) > prob:
             return img
 
+        n_channels = len(img.getbands())
+        isgray = n_channels == 1
         #c = [(10, 3), (15, 5), (15, 8), (15, 12), (20, 15)]
         c = [(10, 3), (15, 5), (15, 8)]
         index = np.random.randint(0, len(c))
@@ -87,7 +89,12 @@ class MotionBlur:
         img = cv2.imdecode(np.fromstring(img.make_blob(), np.uint8), cv2.IMREAD_UNCHANGED)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-        return Image.fromarray(img.astype(np.uint8))
+        img = Image.fromarray(img.astype(np.uint8))
+
+        if isgray:
+            img = ImageOps.grayscale(img)
+
+        return img
 
 class GlassBlur:
     def __init__(self):

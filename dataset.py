@@ -350,12 +350,12 @@ class DataAugment(object):
         if isweather:
             index = np.random.randint(0, len(self.weather))
             op = self.weather[index]
-            img = op(img)
+            img = op(img.copy())
 
         if ispattern:
             index = np.random.randint(0, len(self.pattern))
             op = self.pattern[index]
-            img = op(img)
+            img = op(img.copy())
 
         img = transforms.ToTensor()(img)
 

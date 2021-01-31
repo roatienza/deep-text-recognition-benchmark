@@ -176,6 +176,9 @@ class Shadow:
             return img
 
         W, H = img.size
+        n_channels = len(img.getbands())
+        isgray = n_channels == 1
+
         img = img.convert('RGBA')
         overlay = Image.new('RGBA', img.size, (255,255,255,0))
         draw = ImageDraw.Draw(overlay) 
@@ -196,5 +199,7 @@ class Shadow:
 
         img = Image.alpha_composite(img, overlay)
         img = img.convert("RGB")
+        if isgray:
+            img = ImageOps.grayscale(img)
 
         return img
