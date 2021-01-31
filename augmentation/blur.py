@@ -126,38 +126,35 @@ class ZoomBlur:
         if np.random.uniform(0,1) > prob:
             return img
 
-        c = [np.arange(1, 1.11, 0.01),
-             np.arange(1, 1.16, 0.01),
-             np.arange(1, 1.21, 0.02)]
+        W, H = img.size
+        c = [np.arange(1.05, 1.11, 1.16),
+             np.arange(1.05, 1.16, 1.21),
+             np.arange(1.05, 1.21, 1.26)]
         index = np.random.randint(0, len(c))
         c = c[index]
 
         n_channels = len(img.getbands())
         isgray = n_channels == 1
 
+        uint8_img = img
         img = (np.array(img) / 255.).astype(np.float32)
-        if isgray:
-            img = np.expand_dims(img, axis=2)
-            img = np.repeat(img, 3, axis=2)
 
         out = np.zeros_like(img)
-        #for zoom_factor in c:
-        #    out += clipped_zoom(img, zoom_factor)
+        for zoom_factor in c:
+            ZW = int(W*zoom_factor)
+            ZH = int(H*zoom_factor)
+            zoom_img = uint8_img.resize((ZW, ZH), Image.BICUBIC)
+            x1 = (ZW - W) // 2
+            y1 = (ZH - H) // 2
+            x2 = x1 + W
+            y2 = y1 + H
+            zoom_img = zoom_img.crop((x1,y1,x2,y2))
+            out += (np.array(zoom_img) / 255.).astype(np.float32)
 
         img = (img + out) / (len(c) + 1)
 
-        #if isgray:
-        #    img = img[:,:,0]
-        #    img = np.squeeze(img)
-
         img = np.clip(img, 0, 1) * 255
         img = Image.fromarray(img.astype(np.uint8))
-        if isgray:
-            img = ImageOps.grayscale(img)
 
         return img
-        #if isgray:
-        #    img = color.rgb2gray(img)
-
-        #return Image.fromarray(img.astype(np.uint8))
 

@@ -10,7 +10,7 @@ import cv2
 from augmentation.warp import Curve, Rotate, Perspective, Distort, Stretch, Shrink
 from augmentation.pattern import VGrid, HGrid, Grid, RectGrid, EllipseGrid
 from augmentation.noise import GaussianNoise, ShotNoise, ImpulseNoise, SpeckleNoise
-from augmentation.blur import GaussianBlur, DefocusBlur, MotionBlur, GlassBlur
+from augmentation.blur import GaussianBlur, DefocusBlur, MotionBlur, GlassBlur, ZoomBlur
 from augmentation.camera import Contrast, Brightness, JpegCompression, Pixelate
 from augmentation.weather import Fog, Snow, Frost
 
@@ -299,6 +299,7 @@ class DataAugment(object):
         self.defocus_blur = DefocusBlur()
         self.motion_blur = MotionBlur()
         self.glass_blur = GlassBlur()
+        self.zoom_blur = ZoomBlur()
 
         # camera group
         self.contrast = Contrast()
@@ -441,6 +442,11 @@ class DataAugment(object):
             img = self.glass_blur(img)
 
             img.save("glass_blur.png" )
+            img = orig_img
+
+            img = self.zoom_blur(img)
+
+            img.save("zoom_blur.png" )
             img = orig_img
 
         if isnoise or True:
