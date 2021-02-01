@@ -326,6 +326,11 @@ class DataAugment(object):
             op = self.noise[index]
             img = op(img)
 
+        if isweather:
+            index = np.random.randint(0, len(self.weather))
+            op = self.weather[index]
+            img = op(img.copy())
+
         if iscamera:
             index = np.random.randint(0, len(self.camera))
             op = self.camera[index]
@@ -336,21 +341,10 @@ class DataAugment(object):
             op = self.warp[index]
             img = op(img)
             
-            #for op in self.pattern:
-            #    img = op(img.copy())
-            #    filename = type(op).__name__ + ".png"
-            #    img.save(filename )
-            #    img = orig_img
-
         if isgeometry:
             index = np.random.randint(0, len(self.geometry))
             op = self.geometry[index]
             img = op(img)
-
-        if isweather:
-            index = np.random.randint(0, len(self.weather))
-            op = self.weather[index]
-            img = op(img.copy())
 
         if ispattern:
             index = np.random.randint(0, len(self.pattern))
@@ -361,6 +355,13 @@ class DataAugment(object):
 
         if self.scale:
             img.sub_(0.5).div_(0.5)
+
+        return img
+            #for op in self.pattern:
+            #    img = op(img.copy())
+            #    filename = type(op).__name__ + ".png"
+            #    img.save(filename )
+            #    img = orig_img
 
         """
         Comment 
@@ -379,7 +380,6 @@ class DataAugment(object):
         #    cv2.imwrite("dest-gray.png", img)
         #exit(0)
 
-        return img
 
 
 class ResizeNormalize(object):
