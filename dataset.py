@@ -286,14 +286,14 @@ class DataAugment(object):
         '''
             Must call img.copy() if pattern, Rain or Shadow is used
         '''
-        iswarp = self.opt.warp and istrue()
-        ispattern = self.opt.pattern and istrue()
-        isgeometry = self.opt.geometry and istrue()
-        isnoise = self.opt.noise and istrue()
-        isblur = self.opt.blur and istrue()
-        iscamera = self.opt.camera and istrue()
-        isweather = self.opt.weather and istrue()
-        isinvert = self.opt.invert and istrue()
+        iswarp = self.opt.warp #and istrue()
+        ispattern = self.opt.pattern #and istrue()
+        isgeometry = self.opt.geometry #and istrue()
+        isnoise = self.opt.noise #and istrue()
+        isblur = self.opt.blur #and istrue()
+        iscamera = self.opt.camera #and istrue()
+        isweather = self.opt.weather #and istrue()
+        isinvert = self.opt.invert #and istrue()
 
         isaug = iswarp or ispattern or isgeometry or isnoise or isblur or iscamera or isweather or isinvert
 
@@ -305,7 +305,7 @@ class DataAugment(object):
         #orig_img = img
         #img.save("Source.png" )
 
-        if self.opt.eval or not isaug or istrue():
+        if self.opt.eval: # or not isaug: # or istrue():
             img = transforms.ToTensor()(img)
             if self.scale:
                 img.sub_(0.5).div_(0.5)
