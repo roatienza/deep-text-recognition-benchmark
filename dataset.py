@@ -305,7 +305,7 @@ class DataAugment(object):
         #orig_img = img
         #img.save("Source.png" )
 
-        if self.opt.eval: # or not isaug: # or istrue():
+        if self.opt.eval or not isaug or istrue():
             img = transforms.ToTensor()(img)
             if self.scale:
                 img.sub_(0.5).div_(0.5)
