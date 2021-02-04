@@ -283,7 +283,7 @@ class DataAugment(object):
         self.aug_prob = opt.aug_prob
         if not opt.eval:
             self.num_aug = opt.num_aug
-            self.aug = [self.noise, self.blur, self.weather, self.invert, self.warp, self.pattern, self.geometry, self.camera]
+            self.aug = [self.invert, self.noise, self.blur, self.weather, self.camera, self.pattern, self.warp, self.geometry]
             prob = 1/(1.5*len(self.aug))
             self.prob = []
             for i in range(len(self.aug)//2):
@@ -315,11 +315,11 @@ class DataAugment(object):
 
         prob = 1
         augs = np.random.choice(self.aug, self.num_aug, replace=False, p=self.prob)
-        for aug in augs:
-            index = np.random.randint(0, len(aug))
-            op = aug[index]
-            img = op(img, prob=prob)
-
+        for aug in self.aug:
+            if aug in augs:
+                index = np.random.randint(0, len(aug))
+                op = aug[index]
+                img = op(img, prob=prob)
 
         #if self.opt.invert and istrue(prob):
         #    img = self.invert(img)
