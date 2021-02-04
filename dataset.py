@@ -283,14 +283,11 @@ class DataAugment(object):
         self.aug_prob = opt.aug_prob
         if not opt.eval:
             self.num_aug = opt.num_aug
-            self.aug = [self.invert, self.noise, self.blur, self.weather, self.camera, self.pattern, self.warp, self.geometry]
-            prob = 1/(1.5*len(self.aug))
-            self.prob = []
-            for i in range(len(self.aug)//2):
-                self.prob.append(2*prob)
-
-            for i in range(len(self.aug)//2):
-                self.prob.append(prob)
+            self.aug =  [self.invert, self.noise, self.blur, self.weather, self.camera, self.pattern, self.warp, self.geometry]
+            prio_aug =  [self.invert, self.noise, self.blur, self.weather, self.warp]
+            p = 1.0 / (len(prio_aug) + len(self.aug))
+            pp = 2*p
+            self.prob = [pp,          pp,          pp,       pp,           p,           p,            pp,        p]
 
         self.scale = False if opt.Transformer else True
 
