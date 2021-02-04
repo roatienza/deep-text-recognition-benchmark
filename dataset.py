@@ -271,9 +271,9 @@ class DataAugment(object):
     def __init__(self, opt):
         self.opt = opt
 
-        self.warp = [Curve(), Distort(), Stretch(), Shrink()]
+        self.warp = [Curve(), Distort(), Stretch()]
         self.pattern = [VGrid(), HGrid(), Grid(), RectGrid(), EllipseGrid()]
-        self.geometry = [Rotate(), Perspective()]
+        self.geometry = [Rotate(), Perspective(), Shrink()]
         self.noise = [GaussianNoise(), ShotNoise(), ImpulseNoise(), SpeckleNoise()]
         self.blur = [GaussianBlur(), DefocusBlur(), MotionBlur(), GlassBlur(), ZoomBlur()]
         self.camera = [Contrast(), Brightness(), JpegCompression(), Pixelate()]
