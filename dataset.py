@@ -286,17 +286,6 @@ class DataAugment(object):
         '''
             Must call img.copy() if pattern, Rain or Shadow is used
         '''
-        iswarp = self.opt.warp #and istrue()
-        ispattern = self.opt.pattern #and istrue()
-        isgeometry = self.opt.geometry #and istrue()
-        isnoise = self.opt.noise #and istrue()
-        isblur = self.opt.blur #and istrue()
-        iscamera = self.opt.camera #and istrue()
-        isweather = self.opt.weather #and istrue()
-        isinvert = self.opt.invert #and istrue()
-
-        isaug = iswarp or ispattern or isgeometry or isnoise or isblur or iscamera or isweather or isinvert
-
         img = img.resize((self.opt.imgW, self.opt.imgH), Image.BICUBIC)
 
         """
@@ -305,51 +294,51 @@ class DataAugment(object):
         #orig_img = img
         #img.save("Source.png" )
 
-        if self.opt.eval or not isaug or istrue():
+        if self.opt.eval or istrue():
             img = transforms.ToTensor()(img)
             if self.scale:
                 img.sub_(0.5).div_(0.5)
 
             return img
 
-        if isinvert:
+        prob = 1
+        if self.opt.invert and istrue(prob):
             img = self.invert(img)
-            #img.save("Invert.png" )
 
-        if isblur:
+        if self.opt.blur:
             index = np.random.randint(0, len(self.blur))
             op = self.blur[index]
-            img = op(img)
+            img = op(img, prob=prob)
 
-        if isnoise:
+        if self.opt.noise:
             index = np.random.randint(0, len(self.noise))
             op = self.noise[index]
-            img = op(img)
+            img = op(img, prob=prob)
 
-        if isweather:
+        if self.opt.weather:
             index = np.random.randint(0, len(self.weather))
             op = self.weather[index]
-            img = op(img.copy())
+            img = op(img.copy(), prob=prob)
 
-        if iscamera:
+        if self.opt.camera:
             index = np.random.randint(0, len(self.camera))
             op = self.camera[index]
-            img = op(img)
+            img = op(img, prob=prob)
 
-        if iswarp:
+        if self.opt.warp:
             index = np.random.randint(0, len(self.warp))
             op = self.warp[index]
-            img = op(img)
+            img = op(img, prob=prob)
             
-        if isgeometry:
+        if self.opt.geometry:
             index = np.random.randint(0, len(self.geometry))
             op = self.geometry[index]
-            img = op(img)
+            img = op(img, prob=prob)
 
-        if ispattern:
+        if self.opt.pattern:
             index = np.random.randint(0, len(self.pattern))
             op = self.pattern[index]
-            img = op(img.copy())
+            img = op(img.copy(), prob=prob)
 
         img = transforms.ToTensor()(img)
 

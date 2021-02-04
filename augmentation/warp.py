@@ -288,8 +288,8 @@ class Rotate:
             img = img.resize((self.side, self.side), Image.BICUBIC)
 
         angle = np.random.normal(loc=0., scale=rotate_angle)
-        angle = min(angle, rotate_angle)
-        angle = max(angle, -rotate_angle)
+        angle = min(angle, 2*rotate_angle)
+        angle = max(angle, -2*rotate_angle)
         expand = False if iscurve else True
         img = img.rotate(angle=angle, resample=Image.BICUBIC, expand=expand)
         img = img.resize((W, H), Image.BICUBIC)
