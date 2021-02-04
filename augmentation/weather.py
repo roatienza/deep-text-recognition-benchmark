@@ -146,6 +146,7 @@ class Rain:
         if np.random.uniform(0,1) > prob:
             return img
 
+        img = img.copy()
         W, H = img.size
         n_channels = len(img.getbands())
         isgray = n_channels == 1
@@ -175,6 +176,7 @@ class Shadow:
         if np.random.uniform(0,1) > prob:
             return img
 
+        #img = img.copy()
         W, H = img.size
         n_channels = len(img.getbands())
         isgray = n_channels == 1

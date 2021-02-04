@@ -11,10 +11,12 @@ class VGrid:
     def __init__(self):
         pass
 
-    def __call__(self, img, max_width=3, prob=1.):
+    def __call__(self, img, copy=True, max_width=3, prob=1.):
         if np.random.uniform(0,1) > prob:
             return img
 
+        if copy:
+            img = img.copy()
         W, H = img.size
         line_width = np.random.randint(1, max_width)
         image_stripe = np.random.randint(1, 4)
@@ -30,10 +32,12 @@ class HGrid:
     def __init__(self):
         pass
 
-    def __call__(self, img, max_width=3, prob=1.):
+    def __call__(self, img, copy=True, max_width=3, prob=1.):
         if np.random.uniform(0,1) > prob:
             return img
 
+        if copy:
+            img = img.copy()
         W, H = img.size
         line_width = np.random.randint(1, max_width)
         image_stripe = np.random.randint(1, 4)
@@ -53,8 +57,8 @@ class Grid:
         if np.random.uniform(0,1) > prob:
             return img
 
-        img = VGrid()(img, max_width=2)
-        img = HGrid()(img, max_width=2)
+        img = VGrid()(img, copy=True, max_width=2)
+        img = HGrid()(img, copy=False, max_width=2)
         return img
 
 class RectGrid:
@@ -65,6 +69,7 @@ class RectGrid:
         if np.random.uniform(0,1) > prob:
             return img
 
+        img = img.copy()
         W, H = img.size
         line_width = 1 
         image_stripe = 1 #np.random.randint(2, 6)

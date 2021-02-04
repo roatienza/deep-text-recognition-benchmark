@@ -331,6 +331,8 @@ if __name__ == '__main__':
 
     parser.add_argument('--scheduler', action='store_true', help='Use lr scheduler')
 
+    parser.add_argument('--num_aug', type=int, default=1, help='Number of data augment groups to apply')
+    parser.add_argument('--aug_prob', type=float, default=0.5, help='Probability of applying STR aug')
     opt = parser.parse_args()
 
     if not opt.exp_name:

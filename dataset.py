@@ -265,7 +265,7 @@ class RawDataset(Dataset):
 
 
 def istrue(prob=0.5):
-    return np.random.uniform(0,1) < prob
+    return np.random.uniform(0,1) > prob
 
 class DataAugment(object):
     def __init__(self, opt):
@@ -278,7 +278,19 @@ class DataAugment(object):
         self.blur = [GaussianBlur(), DefocusBlur(), MotionBlur(), GlassBlur(), ZoomBlur()]
         self.camera = [Contrast(), Brightness(), JpegCompression(), Pixelate()]
         self.weather = [Fog(), Snow(), Frost(), Rain(), Shadow()]
-        self.invert = PIL.ImageOps.invert
+        self.invert = [PIL.ImageOps.invert]
+
+        self.aug_prob = opt.aug_prob
+        if not opt.eval:
+            self.num_aug = opt.num_aug
+            self.aug = [self.noise, self.blur, self.weather, self.invert, self.warp, self.pattern, self.geometry, self.camera]
+            prob = 1/(1.5*len(self.aug))
+            self.prob = []
+            for i in range(len(self.aug)//2):
+                self.prob.append(2*prob)
+
+            for i in range(len(self.aug)//2):
+                self.prob.append(prob)
 
         self.scale = False if opt.Transformer else True
 
@@ -294,7 +306,7 @@ class DataAugment(object):
         #orig_img = img
         #img.save("Source.png" )
 
-        if self.opt.eval or istrue():
+        if self.opt.eval or istrue(self.aug_prob):
             img = transforms.ToTensor()(img)
             if self.scale:
                 img.sub_(0.5).div_(0.5)
@@ -302,43 +314,50 @@ class DataAugment(object):
             return img
 
         prob = 1
-        if self.opt.invert and istrue(prob):
-            img = self.invert(img)
-
-        if self.opt.blur:
-            index = np.random.randint(0, len(self.blur))
-            op = self.blur[index]
+        augs = np.random.choice(self.aug, self.num_aug, replace=False, p=self.prob)
+        for aug in augs:
+            index = np.random.randint(0, len(aug))
+            op = aug[index]
             img = op(img, prob=prob)
 
-        if self.opt.noise:
-            index = np.random.randint(0, len(self.noise))
-            op = self.noise[index]
-            img = op(img, prob=prob)
 
-        if self.opt.weather:
-            index = np.random.randint(0, len(self.weather))
-            op = self.weather[index]
-            img = op(img.copy(), prob=prob)
+        #if self.opt.invert and istrue(prob):
+        #    img = self.invert(img)
 
-        if self.opt.camera:
-            index = np.random.randint(0, len(self.camera))
-            op = self.camera[index]
-            img = op(img, prob=prob)
+        #if self.opt.blur:
+        #    index = np.random.randint(0, len(self.blur))
+        #    op = self.blur[index]
+        #    img = op(img, prob=prob)
 
-        if self.opt.warp:
-            index = np.random.randint(0, len(self.warp))
-            op = self.warp[index]
-            img = op(img, prob=prob)
+        #if self.opt.noise:
+        #    index = np.random.randint(0, len(self.noise))
+        #    op = self.noise[index]
+        #    img = op(img, prob=prob)
+
+        #if self.opt.weather:
+        #    index = np.random.randint(0, len(self.weather))
+        #    op = self.weather[index]
+        #    img = op(img.copy(), prob=prob)
+
+        #if self.opt.camera:
+        #    index = np.random.randint(0, len(self.camera))
+        #    op = self.camera[index]
+        #    img = op(img, prob=prob)
+
+        #if self.opt.warp:
+        #    index = np.random.randint(0, len(self.warp))
+        #    op = self.warp[index]
+        #    img = op(img, prob=prob)
             
-        if self.opt.geometry:
-            index = np.random.randint(0, len(self.geometry))
-            op = self.geometry[index]
-            img = op(img, prob=prob)
+        #if self.opt.geometry:
+        #    index = np.random.randint(0, len(self.geometry))
+        #    op = self.geometry[index]
+        #    img = op(img, prob=prob)
 
-        if self.opt.pattern:
-            index = np.random.randint(0, len(self.pattern))
-            op = self.pattern[index]
-            img = op(img.copy(), prob=prob)
+        #if self.opt.pattern:
+        #    index = np.random.randint(0, len(self.pattern))
+        #    op = self.pattern[index]
+        #    img = op(img.copy(), prob=prob)
 
         img = transforms.ToTensor()(img)
 

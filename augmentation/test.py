@@ -30,7 +30,7 @@ if __name__ == '__main__':
     ops.extend([Fog(), Snow(), Frost(), Rain(), Shadow()])
     ops.extend([PIL.ImageOps.invert])
     for op in ops:
-        out_img = op(img.copy())
+        out_img = op(img)
         filename = type(op).__name__ + ".png"
         out_img.save(os.path.join(opt.results, filename))
 
