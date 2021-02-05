@@ -271,26 +271,25 @@ class DataAugment(object):
     def __init__(self, opt):
         self.opt = opt
 
-        self.warp = [Curve(), Distort(), Stretch()]
+        self.warp = [Curve(), Distort(), Stretch(), None]
+        self.invert = [PIL.ImageOps.invert, None]
 
         self.pattern = [VGrid(), HGrid(), Grid(), RectGrid(), EllipseGrid()]
         self.camera = [Contrast(), Brightness(), JpegCompression(), Pixelate()]
+        self.geometry = [Rotate(), Perspective(), Shrink()]
 
-        self.geometry = [Rotate()] #, Perspective()]) #, Shrink()]
+        self.noise = [GaussianNoise(), ShotNoise(), ImpulseNoise(), SpeckleNoise(), None]
+        self.blur = [GaussianBlur(), DefocusBlur(), MotionBlur(), GlassBlur(), ZoomBlur(), None]
+        self.weather = [Fog(), Snow(), Frost(), Rain(), Shadow(), None]
 
-        self.invert = [PIL.ImageOps.invert]
-
-        self.noise = [GaussianNoise(), ShotNoise(), ImpulseNoise(), SpeckleNoise()]
-        self.blur = [GaussianBlur(), DefocusBlur(), MotionBlur(), GlassBlur(), ZoomBlur()]
-        self.weather = [Fog(), Snow(), Frost(), Rain(), Shadow()]
-
-        self.noises =    [self.noise, self.blur, self.weather]
-        self.noises_p =  [0.58, 0.25, 0.17]
+        self.noises =    [self.noise, self.blur, self.weather, None]
+        #self.noises_p =  [0.58, 0.25, 0.17]
 
         self.aug_prob = opt.aug_prob
-        self.invert_prob = opt.invert_prob
-        self.noise_prob = opt.noise_prob
-        self.geometry_prob = opt.geometry_prob
+
+        #self.invert_prob = opt.invert_prob
+        #self.noise_prob = opt.noise_prob
+        #self.geometry_prob = opt.geometry_prob
 
         self.scale = False if opt.Transformer else True
 
@@ -307,29 +306,31 @@ class DataAugment(object):
         #img.save("Source.png" )
 
         if self.opt.eval or isless(self.aug_prob):
-            if not self.opt.eval and isless(self.invert_prob):
-                img = self.invert[0](img)
             img = transforms.ToTensor()(img)
             if self.scale:
                 img.sub_(0.5).div_(0.5)
             return img
 
         prob = 1
+        #np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
 
-        if isless(self.invert_prob):
-            img = self.invert[0](img)
+        #index = np.random.randint(0, len(self.invert))
+        #op = self.invert[index]
+        #if op is not None:
+        #    img = op(img)
 
-        if isless(self.noise_prob):
-            np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
-            noises = np.random.choice(self.noises, 1, replace=False, p=self.noises_p)
-            for noise in noises:
-                index = np.random.randint(0, len(noise))
-                op = noise[index]
+        index = np.random.randint(0, len(self.noises))
+        noises = self.noises[index]
+        if noises is not None:
+            index = np.random.randint(0, len(noises))
+            op = noises[index]
+            if op is not None:
                 img = op(img, prob=prob)
 
         index = np.random.randint(0, len(self.warp))
         op = self.warp[index]
-        img = op(img, prob=prob)
+        if op is not None:
+            img = op(img, prob=prob)
 
         #if isless(self.geometry_prob):
         #    geometries = np.random.choice(self.geometry, 1, replace=False, p=self.geometry_p)
