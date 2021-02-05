@@ -307,12 +307,17 @@ class DataAugment(object):
         #img.save("Source.png" )
 
         if self.opt.eval or isless(self.aug_prob):
+            if not self.opt.eval and isless(self.invert_prob):
+                img = self.invert[0](img)
             img = transforms.ToTensor()(img)
             if self.scale:
                 img.sub_(0.5).div_(0.5)
             return img
 
         prob = 1
+
+        if isless(self.invert_prob):
+            img = self.invert[0](img)
 
         if isless(self.noise_prob):
             np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
