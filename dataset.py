@@ -264,30 +264,33 @@ class RawDataset(Dataset):
         return (img, self.image_path_list[index])
 
 
-def istrue(prob=0.5):
-    return np.random.uniform(0,1) > prob
+def isless(prob=0.5):
+    return np.random.uniform(0,1) < prob
 
 class DataAugment(object):
     def __init__(self, opt):
         self.opt = opt
 
         self.warp = [Curve(), Distort(), Stretch()]
+
         self.pattern = [VGrid(), HGrid(), Grid(), RectGrid(), EllipseGrid()]
-        self.geometry = [Rotate(), Perspective(), Shrink()]
-        self.noise = [GaussianNoise(), ShotNoise(), ImpulseNoise(), SpeckleNoise()]
-        self.blur = [GaussianBlur(), DefocusBlur(), MotionBlur(), GlassBlur(), ZoomBlur()]
         self.camera = [Contrast(), Brightness(), JpegCompression(), Pixelate()]
-        self.weather = [Fog(), Snow(), Frost(), Rain(), Shadow()]
+
+        self.geometry = [Rotate()] #, Perspective()]) #, Shrink()]
+
         self.invert = [PIL.ImageOps.invert]
 
+        self.noise = [GaussianNoise(), ShotNoise(), ImpulseNoise(), SpeckleNoise()]
+        self.blur = [GaussianBlur(), DefocusBlur(), MotionBlur(), GlassBlur(), ZoomBlur()]
+        self.weather = [Fog(), Snow(), Frost(), Rain(), Shadow()]
+
+        self.noises =    [self.noise, self.blur, self.weather]
+        self.noises_p =  [0.58, 0.25, 0.17]
+
         self.aug_prob = opt.aug_prob
-        if not opt.eval:
-            self.num_aug = opt.num_aug
-            self.aug =  [self.invert, self.noise, self.blur, self.weather, self.camera, self.pattern, self.warp, self.geometry]
-            prio_aug =  [self.invert, self.noise, self.blur, self.weather, self.warp]
-            p = 1.0 / (len(prio_aug) + len(self.aug))
-            pp = 2*p
-            self.prob = [pp,          pp,          pp,       pp,           p,           p,            pp,        p]
+        self.invert_prob = opt.invert_prob
+        self.noise_prob = opt.noise_prob
+        self.geometry_prob = opt.geometry_prob
 
         self.scale = False if opt.Transformer else True
 
@@ -303,20 +306,30 @@ class DataAugment(object):
         #orig_img = img
         #img.save("Source.png" )
 
-        if self.opt.eval or istrue(self.aug_prob):
+        if self.opt.eval or isless(self.aug_prob):
             img = transforms.ToTensor()(img)
             if self.scale:
                 img.sub_(0.5).div_(0.5)
-
             return img
 
         prob = 1
-        augs = np.random.choice(self.aug, self.num_aug, replace=False, p=self.prob)
-        for aug in self.aug:
-            if aug in augs:
-                index = np.random.randint(0, len(aug))
-                op = aug[index]
+
+        if isless(self.noise_prob):
+            np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
+            noises = np.random.choice(self.noises, 1, replace=False, p=self.noises_p)
+            for noise in noises:
+                index = np.random.randint(0, len(noise))
+                op = noise[index]
                 img = op(img, prob=prob)
+
+        index = np.random.randint(0, len(self.warp))
+        op = self.warp[index]
+        img = op(img, prob=prob)
+
+        #if isless(self.geometry_prob):
+        #    geometries = np.random.choice(self.geometry, 1, replace=False, p=self.geometry_p)
+        #    for op in geometries:
+        #        img = op(img, prob=prob)
 
         #if self.opt.invert and istrue(prob):
         #    img = self.invert(img)
