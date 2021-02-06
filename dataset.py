@@ -315,7 +315,7 @@ class DataAugment(object):
             op = self.invert[index]
             img = op(img)
 
-        inoise = False
+        isnoise = False
         if isless(0.7):
             index = np.random.randint(0, len(self.noises))
             noise = self.noises[index]
