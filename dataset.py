@@ -285,7 +285,7 @@ class DataAugment(object):
         self.warp = [Curve(), Distort(), Stretch()]
         self.geometry = [Rotate(), Perspective(), Shrink()]
 
-        self.aug_prob = opt.aug_prob
+        self.intact_prob = opt.intact_prob
 
         self.scale = False if opt.Transformer else True
 
@@ -301,7 +301,7 @@ class DataAugment(object):
         #orig_img = img
         #img.save("Source.png" )
 
-        if self.opt.eval or isless(self.aug_prob):
+        if self.opt.eval or isless(self.intact_prob):
             img = transforms.ToTensor()(img)
             if self.scale:
                 img.sub_(0.5).div_(0.5)
