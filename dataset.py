@@ -277,6 +277,8 @@ class DataAugment(object):
         self.blur = [GaussianBlur(), DefocusBlur(), MotionBlur(), GlassBlur(), ZoomBlur()]
         self.weather = [Fog(), Snow(), Frost(), Rain(), Shadow()]
 
+        self.noises = [self.noise, self.blur, self.weather]
+
         self.pattern = [VGrid(), HGrid(), Grid(), RectGrid(), EllipseGrid()]
         self.camera = [Contrast(), Brightness(), JpegCompression(), Pixelate()]
 
@@ -308,27 +310,34 @@ class DataAugment(object):
         prob = 1
         #np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
 
-        if isless(0.2):
+        if isless(0.1):
             index = np.random.randint(0, len(self.invert))
             op = self.invert[index]
             img = op(img)
 
-        if isless(1./3.):
-            index = np.random.randint(0, len(self.blur))
-            op = self.blur[index]
-            img = op(img, prob=prob)
+        inoise = False
+        if isless(0.7):
+            index = np.random.randint(0, len(self.noises))
+            noise = self.noises[index]
+            index = np.random.randint(0, len(noise))
+            op = noise[index]
+            if type(op).__name__ == "Rain":
+                img = op(img.copy(), prob=prob)
+            else:
+                img = op(img, prob=prob)
+            isnoise = True
 
-        if isless(1./3.):
-            index = np.random.randint(0, len(self.noise))
-            op = self.noise[index]
-            img = op(img, prob=prob)
+        #if isless(1./3.):
+        #    index = np.random.randint(0, len(self.noise))
+        #    op = self.noise[index]
+        #    img = op(img, prob=prob)
 
-        if isless(1./3.):
-            index = np.random.randint(0, len(self.weather))
-            op = self.weather[index]
-            img = op(img.copy(), prob=prob)
+        #if isless(1./3.):
+        #    index = np.random.randint(0, len(self.weather))
+        #    op = self.weather[index]
+        #    img = op(img.copy(), prob=prob)
 
-        if isless(0.1):
+        if isless(0.1) and not isnoise:
             index = np.random.randint(0, len(self.camera))
             op = self.camera[index]
             img = op(img, prob=prob)
@@ -336,10 +345,7 @@ class DataAugment(object):
         if isless(0.1):
             index = np.random.randint(0, len(self.pattern))
             op = self.pattern[index]
-            if type(op).__name__ == "Rain":
-                img = op(img.copy(), prob=prob)
-            else:
-                img = op(img, prob=prob)
+            img = op(img.copy(), prob=prob)
 
         iscurve = False
         index = np.random.randint(0, len(self.warp))
@@ -348,7 +354,7 @@ class DataAugment(object):
             iscurve = True
         img = op(img, prob=prob)
             
-        if isless(0.2):
+        if isless(0.1):
             index = np.random.randint(0, len(self.geometry))
             op = self.geometry[index]
             if type(op).__name__ == "Rotate":
