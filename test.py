@@ -324,10 +324,7 @@ if __name__ == '__main__':
     parser.add_argument('--scheduler', action='store_true', help='Use lr scheduler')
 
     parser.add_argument('--aug_prob', type=float, default=0.5, help='Probability of applying STR aug')
-    parser.add_argument('--noise_prob', type=float, default=0.3, help='Probability of applying noise aug')
-
-    parser.add_argument('--invert_prob', type=float, default=0.5, help='Probability of applying invert aug')
-    parser.add_argument('--geometry_prob', type=float, default=0.3, help='Probability of applying geometry aug')
+    parser.add_argument('--num_aug', type=int, default=1, help='Number of data augment groups to apply')
     opt = parser.parse_args()
 
     """ vocab / character number configuration """
