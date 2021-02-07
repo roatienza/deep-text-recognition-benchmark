@@ -279,12 +279,20 @@ class DataAugment(object):
         self.camera = [Contrast(), Brightness(), JpegCompression(), Pixelate()]
         self.pattern = [VGrid(), HGrid(), Grid(), RectGrid(), EllipseGrid()]
 
-        self.noises = [self.noise, self.noise, self.noise, self.noise, self.blur, self.blur, self.weather, self.weather, self.camera, self.pattern]
-
         self.warp = [Curve(), Distort(), Stretch()]
         self.geometry = [Rotate(), Perspective(), Shrink()]
 
         self.intact_prob = opt.intact_prob
+        self.isrand_aug = opt.isrand_aug
+
+        if self.isrand_aug:
+            self.isprio_rand_aug = opt.isprio_rand_aug
+            self.augs = [self.invert, self.noise, self.blur, self.weather, self.camera, self.pattern, self.warp, self.geometry]
+            self.augs_num = opt.augs_num
+            if self.isprio_rand_aug:
+                self.augs_prob = [0.05, 0.1, 0.1, 0.1, 0.05, 0.05, 0.5, 0.05]
+        else:
+            self.noises = [self.noise, self.noise, self.noise, self.noise, self.blur, self.blur, self.weather, self.weather, self.camera, self.pattern]
 
         self.scale = False if opt.Transformer else True
 
@@ -306,6 +314,9 @@ class DataAugment(object):
                 img.sub_(0.5).div_(0.5)
             return img
 
+        if self.isrand_aug:
+            return self.rand_aug(img)
+
         prob = 1
         #np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
 
@@ -314,8 +325,6 @@ class DataAugment(object):
             op = self.invert[index]
             img = op(img)
 
-        #isnoise = False
-        #if isless(1.0):
         index = np.random.randint(0, len(self.noises))
         noise = self.noises[index]
         index = np.random.randint(0, len(noise))
@@ -324,27 +333,6 @@ class DataAugment(object):
             img = op(img.copy(), prob=prob)
         else:
             img = op(img, prob=prob)
-            #isnoise = True
-
-        #if isless(1./3.):
-        #    index = np.random.randint(0, len(self.noise))
-        #    op = self.noise[index]
-        #    img = op(img, prob=prob)
-
-        #if isless(1./3.):
-        #    index = np.random.randint(0, len(self.weather))
-        #    op = self.weather[index]
-        #    img = op(img.copy(), prob=prob)
-
-        #if isless(0.1): # and not isnoise:
-        #    index = np.random.randint(0, len(self.camera))
-        #    op = self.camera[index]
-        #    img = op(img, prob=prob)
-
-        #if isless(0.1):
-        #    index = np.random.randint(0, len(self.pattern))
-        #    op = self.pattern[index]
-        #    img = op(img.copy(), prob=prob)
 
         iscurve = False
         index = np.random.randint(0, len(self.warp))
@@ -367,11 +355,6 @@ class DataAugment(object):
             img.sub_(0.5).div_(0.5)
 
         return img
-            #for op in self.pattern:
-            #    img = op(img.copy())
-            #    filename = type(op).__name__ + ".png"
-            #    img.save(filename )
-            #    img = orig_img
 
         """
         Comment 
@@ -390,6 +373,24 @@ class DataAugment(object):
         #    cv2.imwrite("dest-gray.png", img)
         #exit(0)
 
+    def rand_aug(self, img):
+        if self.isprio_rand_aug:
+            augs = np.random.choice(self.augs, self.augs_num, replace=False, p=self.augs_prob)
+        else:
+            augs = np.random.choice(self.augs, self.augs_num, replace=False)
+        for aug in self.augs:
+            if aug in augs:
+                index = np.random.randint(0, len(aug))
+                op = aug[index]
+                if type(op).__name__ == "Rain" or "Grid" in type(op).__name__ :
+                    img = op(img.copy(), prob=prob)
+                else:
+                    img = op(img, prob=prob)
+
+        img = transforms.ToTensor()(img)
+        if self.scale:
+            img.sub_(0.5).div_(0.5)
+        return img
 
 
 class ResizeNormalize(object):

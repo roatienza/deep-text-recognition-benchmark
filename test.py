@@ -312,19 +312,21 @@ if __name__ == '__main__':
     parser.add_argument('--hidden_size', type=int, default=256, help='the size of the LSTM hidden state')
     parser.add_argument('--flops', action='store_true', help='calculates approx flops (may not work)')
 
-    parser.add_argument('--pattern', action='store_true', help='Pattern group')
-    parser.add_argument('--warp', action='store_true', help='Warp group')
-    parser.add_argument('--geometry', action='store_true', help='Geometry group')
-    parser.add_argument('--weather', action='store_true', help='Weather group')
-    parser.add_argument('--noise', action='store_true', help='Noise group')
-    parser.add_argument('--blur', action='store_true', help='Blur group')
-    parser.add_argument('--camera', action='store_true', help='Camera group')
-    parser.add_argument('--invert', action='store_true', help='Image invert')
+    #parser.add_argument('--pattern', action='store_true', help='Pattern group')
+    #parser.add_argument('--warp', action='store_true', help='Warp group')
+    #parser.add_argument('--geometry', action='store_true', help='Geometry group')
+    #parser.add_argument('--weather', action='store_true', help='Weather group')
+    #parser.add_argument('--noise', action='store_true', help='Noise group')
+    #parser.add_argument('--blur', action='store_true', help='Blur group')
+    #parser.add_argument('--camera', action='store_true', help='Camera group')
+    #parser.add_argument('--invert', action='store_true', help='Image invert')
 
     parser.add_argument('--scheduler', action='store_true', help='Use lr scheduler')
 
-    parser.add_argument('--intact_prob', type=float, default=0.2, help='Probability of not applying augmentation')
-    parser.add_argument('--num_aug', type=int, default=1, help='Number of data augment groups to apply')
+    parser.add_argument('--intact_prob', type=float, default=0.25, help='Probability of not applying augmentation')
+    parser.add_argument('--augs_num', type=int, default=7, help='Number of data augment groups to apply')
+    parser.add_argument('--isrand_aug', action='store_true', help='Use RandAug')
+    parser.add_argument('--isprio_rand_aug', action='store_true', help='Use prioritized RandAug')
     opt = parser.parse_args()
 
     """ vocab / character number configuration """
