@@ -292,7 +292,7 @@ class DataAugment(object):
             if self.isprio_rand_aug:
                 self.augs_prob = [0.05, 0.1, 0.1, 0.1, 0.05, 0.05, 0.5, 0.05]
         else:
-            self.noises = [self.noise, self.noise, self.noise, self.noise, self.blur, self.blur, self.weather, self.weather] #, self.camera, self.pattern]
+            self.noises = [self.noise, self.blur, self.weather] #, self.camera, self.pattern]
 
         self.scale = False if opt.Transformer else True
 
