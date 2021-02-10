@@ -16,8 +16,8 @@ acc_vs_param = {
         "GCRNN": { "Accuracy": 77.5, "Parameters": 4.8},
         "R2AM": { "Accuracy": 78.4, "Parameters": 2.9},
         "CRNN": { "Accuracy": 76.1, "Parameters": 8.5},
-        "TSTR-Tiny(Ours)": { "Accuracy": 80.1, "Parameters": 5.4},
-        "TSTR-Small(Ours)": { "Accuracy": 82.3, "Parameters": 21.5},
+        "ViTSTR-Tiny(Ours)": { "Accuracy": 80.1, "Parameters": 5.4},
+        "ViTSTR-Small(Ours)": { "Accuracy": 82.3, "Parameters": 21.5},
         }
 
 acc_vs_param_env = [ (2.9, 5.4, 10.9, 21.5, 49.6), (78.4, 80.1, 81.2, 82.3, 83.5)]
@@ -30,8 +30,8 @@ acc_vs_time = {
         "GCRNN": { "Accuracy": 77.5, "Speed (msec/image)": 11.2},
         "R2AM": { "Accuracy": 78.4, "Speed (msec/image)": 22.9},
         "CRNN": { "Accuracy": 76.1, "Speed (msec/image)": 3.7},
-        "TSTR-Tiny(Ours)": { "Accuracy": 80.1, "Speed (msec/image)": 9.3},
-        "TSTR-Small(Ours)": { "Accuracy": 82.3, "Speed (msec/image)": 9.5},
+        "ViTSTR-Tiny(Ours)": { "Accuracy": 80.1, "Speed (msec/image)": 9.3},
+        "ViTSTR-Small(Ours)": { "Accuracy": 82.3, "Speed (msec/image)": 9.5},
         }
 
 acc_vs_time_env = [ (3.7, 5.3, 8.8, 9.5, 22.8), (76.1, 77.8, 80.1, 82.3, 83.5)]
@@ -44,14 +44,14 @@ acc_vs_flops = {
         "GCRNN": { "Accuracy": 77.5, "FLOPS": 1.8},
         "R2AM": { "Accuracy": 78.4, "FLOPS": 2.0},
         "CRNN": { "Accuracy": 76.1, "FLOPS": 1.4},
-        "TSTR-Tiny(Ours)": { "Accuracy": 80.1, "FLOPS": 2.1},
-        "TSTR-Small(Ours)": { "Accuracy": 82.3, "FLOPS": 8.4},
+        "ViTSTR-Tiny(Ours)": { "Accuracy": 80.1, "FLOPS": 2.1},
+        "ViTSTR-Small(Ours)": { "Accuracy": 82.3, "FLOPS": 8.4},
         }
 
 acc_vs_flops_env  = [ (1.4, 1.8, 2.0, 8.4, 10.9), (76.1, 77.5, 81.2, 82.3, 83.5)]
 
 def plot_(data, envelope, title, ylabel="Accuracy", xlabel="Parameters"):
-    plt.rc('font', size=12) 
+    plt.rc('font', size=14) 
     plt.rc('axes', titlesize=16)
     plt.rc('xtick', labelsize=14)
 
@@ -79,15 +79,23 @@ def plot_(data, envelope, title, ylabel="Accuracy", xlabel="Parameters"):
 
         ax.scatter(par, acc, marker=markers[i], s=100, label=label, color=color)
         xytext = (8, -5)
-        if par == 44.3 or par == 48.9:
+        if par == 44.3:
             xytext = (-35, -18)
+        elif par == 48.9:
+            xytext = (-45, -20)
         elif par == 49.6:
-            xytext = (-20, -18)
+            xytext = (-25, -20)
+        elif par == 10.9 and "FLOPS" in xlabel:
+            xytext = (-24, -25)
+        elif par == 10.9:
+            xytext = (10, -5)
+        elif par == 10.7:
+            xytext = (-45, -20)
         elif par == 21.5 or par == 2.0:
             xytext = (10, -10)
         elif par == 8.8:
-            xytext = (-65, -5)
-        elif par == 22.8 or par == 22.9 or par == 8.4 or (par == 10.9 and "FLOPS" in xlabel) or par == 10.0 or par == 10.7:
+            xytext = (-75, -5)
+        elif par == 22.8 or par == 22.9 or par == 8.4 or (par == 10.9 and "FLOPS" in xlabel) or par == 10.0:
             xytext = (-35, -20)
         elif par == 9.5:
             xytext = (5, -10)
