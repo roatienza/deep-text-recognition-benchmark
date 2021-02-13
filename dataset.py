@@ -282,14 +282,9 @@ class DataAugment(object):
         self.warp = [Curve(), Distort(), Stretch()]
         self.geometry = [Rotate(), Perspective(), Shrink()]
 
-        self.intact_prob = opt.intact_prob
-        self.isrand_aug = opt.isrand_aug
-
-        if self.isrand_aug:
-            self.isprio_rand_aug = opt.isprio_rand_aug
+        if self.opt.isrand_aug:
             self.augs = [self.invert, self.noise, self.blur, self.weather, self.warp, self.geometry]
-            self.augs_num = opt.augs_num
-            if self.isprio_rand_aug:
+            if self.opt.isprio_rand_aug:
                 self.augs_prob = [0.1, 0.1, 0.1, 0.1, 0.5, 0.1]
         else:
             self.noises = [self.noise, self.noise, self.blur, self.weather] 
@@ -308,14 +303,17 @@ class DataAugment(object):
         #orig_img = img
         #img.save("Source.png" )
 
-        if self.opt.eval or isless(self.intact_prob):
+        if self.opt.eval or isless(self.opt.intact_prob):
             img = transforms.ToTensor()(img)
             if self.scale:
                 img.sub_(0.5).div_(0.5)
             return img
 
-        if self.isrand_aug:
+        if self.opt.isrand_aug:
             return self.rand_aug(img)
+
+        if self.opt.issel_aug:
+            return self.sel_aug(img)
 
         prob = 1
         #np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
@@ -374,10 +372,10 @@ class DataAugment(object):
         #exit(0)
 
     def rand_aug(self, img):
-        if self.isprio_rand_aug:
-            augs = np.random.choice(self.augs, self.augs_num, replace=False, p=self.augs_prob)
+        if self.opt.isprio_rand_aug:
+            augs = np.random.choice(self.augs, self.opt.augs_num, replace=False, p=self.augs_prob)
         else:
-            augs = np.random.choice(self.augs, self.augs_num, replace=False)
+            augs = np.random.choice(self.augs, self.opt.augs_num, replace=False)
         for aug in self.augs:
             if aug in augs:
                 index = np.random.randint(0, len(aug))
@@ -386,6 +384,64 @@ class DataAugment(object):
                     img = op(img.copy(), prob=prob)
                 else:
                     img = op(img, prob=prob)
+
+        img = transforms.ToTensor()(img)
+        if self.scale:
+            img.sub_(0.5).div_(0.5)
+        return img
+
+    def sel_aug(self, img):
+
+        prob = self.opt.sel_prob
+
+        if self.opt.invert and isless(prob):
+            index = np.random.randint(0, len(self.invert))
+            op = self.invert[index]
+            img = op(img)
+
+        if self.opt.noise:
+            index = np.random.randint(0, len(self.noise))
+            op = self.noise[index]
+            img = op(img, prob=prob)
+
+        if self.opt.blur:
+            index = np.random.randint(0, len(self.blur))
+            op = self.blur[index]
+            img = op(img, prob=prob)
+
+        if self.opt.weather:
+            index = np.random.randint(0, len(self.weather))
+            op = self.weather[index]
+            if type(op).__name__ == "Rain": #or "Grid" in type(op).__name__ :
+                img = op(img.copy(), prob=prob)
+            else:
+                img = op(img, prob=prob)
+
+        if self.opt.camera:
+            index = np.random.randint(0, len(self.camera))
+            op = self.camera[index]
+            img = op(img, prob=prob)
+
+        if self.opt.pattern:
+            index = np.random.randint(0, len(self.pattern))
+            op = self.pattern[index]
+            img = op(img.copy(), prob=prob)
+
+        iscurve = False
+        if self.opt.warp:
+            index = np.random.randint(0, len(self.warp))
+            op = self.warp[index]
+            if type(op).__name__ == "Curve":
+                iscurve = True
+            img = op(img, prob=prob)
+
+        if self.opt.geometry:
+            index = np.random.randint(0, len(self.geometry))
+            op = self.geometry[index]
+            if type(op).__name__ == "Rotate":
+                img = op(img, iscurve=iscurve, prob=prob)
+            else:
+                img = op(img, prob=prob)
 
         img = transforms.ToTensor()(img)
         if self.scale:
