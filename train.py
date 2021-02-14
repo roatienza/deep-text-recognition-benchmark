@@ -306,8 +306,8 @@ if __name__ == '__main__':
     """ Model Architecture """
     parser.add_argument('--Transformer', action='store_true', help='Use end-to-end transformer')
 
-    choices = ["vit_small_patch16_224_str", "vit_base_patch16_224_str", "deit_tiny_patch16_224_str", "deit_tiny_patch16_224_str_gray", "deit_small_patch16_224_str", "deit_base_patch16_224_str", "vit_base_patch16_384_str", "vit_base_patch32_384_str"]
-    parser.add_argument('--TransformerModel', default=choices[0], help='Which vit/deit transformer model', choices=choices)
+    choices = ["vit_small_patch16_224_str", "vit_base_patch16_224_str", "deit_tiny_patch16_224_str", "deit_tiny_patch16_224_str_rgb", "deit_small_patch16_224_str", "deit_base_patch16_224_str", "vit_base_patch16_384_str", "vit_base_patch32_384_str"]
+    parser.add_argument('--TransformerModel', default=choices[2], help='Which vit/deit transformer model', choices=choices)
     parser.add_argument('--Transformation', type=str, required=True, help='Transformation stage. None|TPS')
     parser.add_argument('--FeatureExtraction', type=str, required=True,
                         help='FeatureExtraction stage. VGG|RCNN|ResNet')
@@ -351,8 +351,8 @@ if __name__ == '__main__':
     if opt.sensitive:
         # opt.character += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         opt.character = string.printable[:-6]  # same with ASTER setting (use 94 char).
-        if opt.Transformer:
-            opt.batch_max_length = len(opt.character)
+        #if opt.Transformer:
+        #    opt.batch_max_length = len(opt.character)
 
     """ Seed and GPU setting """
     # print("Random Seed: ", opt.manualSeed)
