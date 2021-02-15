@@ -39,6 +39,8 @@ def train(opt):
 
     log = open(f'./saved_models/{opt.exp_name}/log_dataset.txt', 'a')
     opt.eval = True
+    if opt.sensitive:
+        opt.data_filtering_off = True
     AlignCollate_valid = AlignCollate(imgH=opt.imgH, imgW=opt.imgW, keep_ratio_with_pad=opt.PAD, opt=opt)
     valid_dataset, valid_dataset_log = hierarchical_dataset(root=opt.valid_data, opt=opt)
     valid_loader = torch.utils.data.DataLoader(
