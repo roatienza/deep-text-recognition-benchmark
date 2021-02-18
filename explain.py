@@ -7,6 +7,7 @@ import torch.backends.cudnn as cudnn
 import torch.utils.data
 import torch.nn.functional as F
 import numpy as np
+import string
 
 from utils import TokenLabelConverter
 from dataset import hierarchical_dataset, AlignCollate
@@ -37,7 +38,7 @@ def explain_all(model, converter, opt):
         eval_data_path = os.path.join(opt.eval_data, eval_data)
         dataset = eval_data
         os.makedirs(f'./{opt.dir}/{eval_data}', exist_ok=True)
-        AlignCollate_evaluation = AlignCollate(imgH=opt.imgH, imgW=opt.imgW, keep_ratio_with_pad=opt.PAD)
+        AlignCollate_evaluation = AlignCollate(imgH=opt.imgH, imgW=opt.imgW, keep_ratio_with_pad=opt.PAD, opt=opt)
         eval_data, eval_data_log = hierarchical_dataset(root=eval_data_path, opt=opt)
         evaluation_loader = torch.utils.data.DataLoader(
             eval_data, batch_size=1,
@@ -155,6 +156,7 @@ if __name__ == '__main__':
     parser.add_argument('--token', type=int, default=None,
                         help='The token for rollout')
     parser.add_argument('--grad', action='store_true', help='grad rollout')
+    parser.add_argument('--isrand_aug', action='store_true', help='Use RandAug')
     opt = parser.parse_args()
 
     """ vocab / character number configuration """
@@ -166,4 +168,5 @@ if __name__ == '__main__':
         cudnn.deterministic = True
         opt.num_gpu = torch.cuda.device_count()
 
+    opt.eval = True
     explain(opt)
