@@ -28,6 +28,10 @@ def show_mask_on_image(img, mask):
 def explain_all(model, converter, opt):
     eval_data_list = ['IIIT5k_3000', 'SVT', 'IC03_860', 'IC03_867', 'IC13_857',
                       'IC13_1015', 'IC15_1811', 'IC15_2077', 'SVTP', 'CUTE80']
+    eval_data_list = ['IC13_1015', 'IC13_857']
+    attention_rollout = VITAttentionRollout(model, 
+                                            head_fusion=opt.head_fusion, 
+                                            discard_ratio=opt.discard_ratio) 
 
     for eval_data in eval_data_list:
         eval_data_path = os.path.join(opt.eval_data, eval_data)
@@ -41,15 +45,12 @@ def explain_all(model, converter, opt):
             num_workers=int(opt.workers),
             collate_fn=AlignCollate_evaluation, pin_memory=True)
 
-        explain_data(model, evaluation_loader, converter, dataset, opt)
+        explain_data(model, evaluation_loader, converter, dataset, attention_rollout, opt)
         print("Done explaining: ", dataset)
 
 
-def explain_data(model, evaluation_loader, converter, dataset, opt):
+def explain_data(model, evaluation_loader, converter, dataset, attention_rollout, opt):
     for i, (image_tensors, labels) in enumerate(evaluation_loader):
-        if i > 100:
-            return
-
         image = image_tensors.to(device)
         image_hash = (hex(hash(image.cpu().numpy().tobytes()))[2:8]).upper()
 
@@ -72,18 +73,15 @@ def explain_data(model, evaluation_loader, converter, dataset, opt):
         for token in range(25):
             if token > len(labels[0]):
                 continue
-            attention_rollout = VITAttentionRollout(model, 
-                                                    head_fusion=opt.head_fusion, 
-                                                    discard_ratio=opt.discard_ratio, 
-                                                    token=token,
-                                                    seqlen=converter.batch_max_length)
-            mask = attention_rollout(image)
-            mask_name = "{}/{}/gt-{}-pred-{}-token{}-{}.png".format(opt.dir,
-                                                                    dataset,      
-                                                                    labels[0], 
-                                                                    pred,
-                                                                    token,
-                                                                    image_hash)
+            mask = attention_rollout(image, 
+                                     token=token,
+                                     seqlen=converter.batch_max_length)
+            mask_name = "{}/{}/{}-pred-{}-{}-token-{}.png".format(opt.dir,
+                                                                  dataset,      
+                                                                  labels[0], 
+                                                                  pred,
+                                                                  image_hash,
+                                                                  token)
 
             mask = cv2.resize(mask, (img.shape[1], img.shape[0]))
             mask = show_mask_on_image(img, mask)
