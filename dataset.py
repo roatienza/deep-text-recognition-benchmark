@@ -271,23 +271,24 @@ class DataAugment(object):
     def __init__(self, opt):
         self.opt = opt
 
-        self.invert = [PIL.ImageOps.invert]
+        if not opt.eval:
+            self.invert = [PIL.ImageOps.invert]
 
-        self.noise = [GaussianNoise(), ShotNoise(), ImpulseNoise(), SpeckleNoise()]
-        self.blur = [GaussianBlur(), DefocusBlur(), MotionBlur(), GlassBlur(), ZoomBlur()]
-        self.weather = [Fog(), Snow(), Frost(), Rain(), Shadow()]
-        self.camera = [Contrast(), Brightness(), JpegCompression(), Pixelate()]
-        self.pattern = [VGrid(), HGrid(), Grid(), RectGrid(), EllipseGrid()]
+            self.noise = [GaussianNoise(), ShotNoise(), ImpulseNoise(), SpeckleNoise()]
+            self.blur = [GaussianBlur(), DefocusBlur(), MotionBlur(), GlassBlur(), ZoomBlur()]
+            self.weather = [Fog(), Snow(), Frost(), Rain(), Shadow()]
+            self.camera = [Contrast(), Brightness(), JpegCompression(), Pixelate()]
+            self.pattern = [VGrid(), HGrid(), Grid(), RectGrid(), EllipseGrid()]
 
-        self.warp = [Curve(), Distort(), Stretch()]
-        self.geometry = [Rotate(), Perspective(), Shrink()]
+            self.warp = [Curve(), Distort(), Stretch()]
+            self.geometry = [Rotate(), Perspective(), Shrink()]
 
-        if self.opt.isrand_aug:
-            self.augs = [self.invert, self.noise, self.blur, self.weather, self.warp, self.geometry]
-            if self.opt.isprio_rand_aug:
-                self.augs_prob = [0.1, 0.1, 0.1, 0.1, 0.5, 0.1]
-        else:
-            self.noises = [self.noise, self.noise, self.blur, self.weather] 
+            if self.opt.isrand_aug:
+                self.augs = [self.invert, self.noise, self.blur, self.weather, self.warp, self.geometry]
+                if self.opt.isprio_rand_aug:
+                    self.augs_prob = [0.1, 0.1, 0.1, 0.1, 0.5, 0.1]
+            else:
+                self.noises = [self.noise, self.noise, self.blur, self.weather] 
 
         self.scale = False if opt.Transformer else True
 
