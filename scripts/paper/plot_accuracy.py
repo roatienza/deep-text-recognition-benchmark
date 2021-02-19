@@ -47,16 +47,21 @@ acc_vs_time_env = [
 acc_vs_flops = {
         "TRBA": { "Accuracy": 84.3, "FLOPS": 10.9},
         "STAR-Net": { "Accuracy": 81.8, "FLOPS": 10.7},
-        "RARE": { "Accuracy": 81.2, "FLOPS": 2.0},
-        "Rosetta": { "Accuracy": 77.8, "FLOPS": 10.0},
-        "GCRNN": { "Accuracy": 77.5, "FLOPS": 1.8},
+        "RARE": { "Accuracy": 81.9, "FLOPS": 2.0},
+        "Rosetta": { "Accuracy": 78.2, "FLOPS": 10.0},
+        "GCRNN": { "Accuracy": 78.3, "FLOPS": 1.8},
         "R2AM": { "Accuracy": 78.4, "FLOPS": 2.0},
-        "CRNN": { "Accuracy": 76.1, "FLOPS": 1.4},
-        "ViTSTR-Tiny(Ours)": { "Accuracy": 80.1, "FLOPS": 2.1},
-        "ViTSTR-Small(Ours)": { "Accuracy": 82.3, "FLOPS": 8.4},
+        "CRNN": { "Accuracy": 76.7, "FLOPS": 1.4},
+        "ViTSTR-Tiny(Ours)": { "Accuracy": 80.0, "FLOPS": 2.1},
+        "ViTSTR-Small(Ours)": { "Accuracy": 82.5, "FLOPS": 8.4},
+        "ViTSTR-Tiny\n+Aug(Ours)": { "Accuracy": 82.3, "FLOPS": 2.1},
+        "ViTSTR-Small\n+Aug(Ours)": { "Accuracy": 83.7, "FLOPS": 8.4},
         }
 
-acc_vs_flops_env  = [ (1.4, 1.8, 2.0, 8.4, 10.9), (76.1, 77.5, 81.2, 82.3, 83.5)]
+acc_vs_flops_env  = [ 
+        [(1.4, 1.8, 2.0, 8.4, 10.9), (76.7, 78.3, 81.9, 82.5, 84.3)],
+        [(1.4, 1.8, 2.0, 2.1, 8.4, 10.9), (76.7, 78.3, 81.9, 82.3, 83.7, 84.3)]
+        ]
 
 def plot_(data, envelope, title, ylabel="Accuracy", xlabel="Parameters"):
     plt.rc('font', size=14) 
@@ -122,6 +127,25 @@ def plot_(data, envelope, title, ylabel="Accuracy", xlabel="Parameters"):
                 xytext = (-90, -10)
             elif "Small" in label and "Aug" in label:
                 xytext = (-40, 15)
+        elif isflops:
+            if "RARE" in label:
+                xytext = (5, -15)
+            elif "Rosetta" in label:
+                xytext = (-35, -25)
+            elif "R2AM" in label:
+                xytext = (5, 5)
+            elif "STAR" in label:
+                xytext = (-45, -25)
+            elif "TRBA" in label:
+                xytext = (-55, 0)
+            elif "GCRNN" in label:
+                xytext = (0, -20)
+            elif "Tiny" in label and "Aug" in label:
+                xytext = (-30, 15)
+            elif "Small" in label and "Aug" in label:
+                xytext = (-90, 0)
+            elif "Small" in label:
+                xytext = (-90, -20)
         
         ax.annotate(key, (par, acc), xycoords='data',
                     xytext=xytext, textcoords='offset points')
