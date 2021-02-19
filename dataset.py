@@ -400,17 +400,17 @@ class DataAugment(object):
             op = self.invert[index]
             img = op(img)
 
-        if self.opt.noise:
+        if self.opt.noise and isless(prob):
             index = np.random.randint(0, len(self.noise))
             op = self.noise[index]
             img = op(img, prob=prob)
 
-        if self.opt.blur:
+        if self.opt.blur and isless(prob):
             index = np.random.randint(0, len(self.blur))
             op = self.blur[index]
             img = op(img, prob=prob)
 
-        if self.opt.weather:
+        if self.opt.weather and isless(prob):
             index = np.random.randint(0, len(self.weather))
             op = self.weather[index]
             if type(op).__name__ == "Rain": #or "Grid" in type(op).__name__ :
@@ -418,25 +418,25 @@ class DataAugment(object):
             else:
                 img = op(img, prob=prob)
 
-        if self.opt.camera:
+        if self.opt.camera and isless(prob):
             index = np.random.randint(0, len(self.camera))
             op = self.camera[index]
             img = op(img, prob=prob)
 
-        if self.opt.pattern:
+        if self.opt.pattern and isless(prob):
             index = np.random.randint(0, len(self.pattern))
             op = self.pattern[index]
             img = op(img.copy(), prob=prob)
 
         iscurve = False
-        if self.opt.warp:
+        if self.opt.warp and isless(prob):
             index = np.random.randint(0, len(self.warp))
             op = self.warp[index]
             if type(op).__name__ == "Curve":
                 iscurve = True
             img = op(img, prob=prob)
 
-        if self.opt.geometry:
+        if self.opt.geometry and isless(prob):
             index = np.random.randint(0, len(self.geometry))
             op = self.geometry[index]
             if type(op).__name__ == "Rotate":
