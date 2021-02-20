@@ -314,7 +314,7 @@ if __name__ == '__main__':
     parser.add_argument('--flops', action='store_true', help='calculates approx flops (may not work)')
 
     parser.add_argument('--issel_aug', action='store_true', help='Select augs')
-    parser.add_argument('--sel_prob', type=float, default=0.5, help='Probability of applying augmentation')
+    parser.add_argument('--sel_prob', type=float, default=1.0, help='Probability of applying augmentation')
     parser.add_argument('--pattern', action='store_true', help='Pattern group')
     parser.add_argument('--warp', action='store_true', help='Warp group')
     parser.add_argument('--geometry', action='store_true', help='Geometry group')
