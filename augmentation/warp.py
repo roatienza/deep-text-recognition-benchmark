@@ -255,23 +255,23 @@ class Curve:
 
         b = [1.1, .95, .8]
         if mag<0 or mag>=len(b):
-            index = 2
+            index = 0
         else:
             index = mag
         rmin = b[index]
 
-        r = np.random.uniform(rmin, 1.2)*h
+        r = np.random.uniform(rmin, rmin+.1)*h
         x1 = (r**2 - w_50**2)**0.5
         h1 = r - x1
 
-        b = [.45, .425, .4]
+        b = [.45, .4, .35]
         if mag<0 or mag>=len(b):
-            index = 2
+            index = 0
         else:
             index = mag
         tmin = b[index]
 
-        t = np.random.uniform(tmin,0.5)*h
+        t = np.random.uniform(tmin,tmin+0.05)*h
 
         w2 = w_50*t/r
         hi = x1*t/r
