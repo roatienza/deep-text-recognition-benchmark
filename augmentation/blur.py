@@ -149,9 +149,9 @@ class ZoomBlur:
             return img
 
         W, H = img.size
-        c = [np.arange(1.05, 1.11, 1.16),
-             np.arange(1.05, 1.16, 1.21),
-             np.arange(1.05, 1.21, 1.26)]
+        c = [np.arange(1, 1.11, .01),
+             np.arange(1, 1.16, .01),
+             np.arange(1, 1.21, .02)]
         if mag<0 or mag>=len(c):
             index = np.random.randint(0, len(c))
         else:

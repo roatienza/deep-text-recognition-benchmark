@@ -87,7 +87,7 @@ class SpeckleNoise:
         else:
             index = mag
         a = b[index]
-        c = np.random.uniform(a, a+.5)
+        c = np.random.uniform(a, a+.05)
         img = np.array(img) / 255.
         img = np.clip(img + img * np.random.normal(size=img.shape, scale=c), 0, 1) * 255
         return Image.fromarray(img.astype(np.uint8))
