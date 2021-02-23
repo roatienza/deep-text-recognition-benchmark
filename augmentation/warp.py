@@ -106,7 +106,7 @@ class Stretch:
         srcpt.append([P, P])
         srcpt.append([P, H-P])
         srcpt.append([P, H_50])
-        x = np.random.uniform(0, frac)*W_33 if np.random.uniform(0,1) > 0.5 else 0
+        x = np.random.uniform(frac-.1, frac)*W_33 if np.random.uniform(0,1) > 0.5 else 0
         dstpt.append([P+x, P])
         dstpt.append([P+x, H-P])
         dstpt.append([P+x, H_50])
@@ -129,7 +129,7 @@ class Stretch:
         srcpt.append([W-P, P])
         srcpt.append([W-P, H-P])
         srcpt.append([W-P, H_50])
-        x = np.random.uniform(-frac, 0)*W_33 if np.random.uniform(0,1) > 0.5 else 0
+        x = np.random.uniform(-frac, -frac+.1)*W_33 if np.random.uniform(0,1) > 0.5 else 0
         dstpt.append([W-P+x, P])
         dstpt.append([W-P+x, H-P])
         dstpt.append([W-P+x, H_50])

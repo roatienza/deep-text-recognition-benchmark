@@ -24,7 +24,7 @@ class GaussianBlur:
 
         W, H = img.size
         #kernel = [(31,31)] prev 1 level only
-        kernel = [(23,23), (27, 27), (31, 31)]
+        kernel = [(27, 27), (29, 29), (31, 31)]
         if mag<0 or mag>=len(kernel):
             index = np.random.randint(0, len(kernel))
         else:
