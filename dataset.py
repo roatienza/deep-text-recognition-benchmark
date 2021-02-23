@@ -405,48 +405,55 @@ class DataAugment(object):
             img = op(img)
 
         if self.opt.noise:
+            mag = np.random.randint(0, 3)
             index = np.random.randint(0, len(self.noise))
             op = self.noise[index]
-            img = op(img, prob=prob)
+            img = op(img, mag=mag, prob=prob)
 
         if self.opt.blur:
+            mag = np.random.randint(0, 3)
             index = np.random.randint(0, len(self.blur))
             op = self.blur[index]
-            img = op(img, prob=prob)
+            img = op(img, mag=mag, prob=prob)
 
         if self.opt.weather:
+            mag = np.random.randint(0, 3)
             index = np.random.randint(0, len(self.weather))
             op = self.weather[index]
             if type(op).__name__ == "Rain": #or "Grid" in type(op).__name__ :
-                img = op(img.copy(), prob=prob)
+                img = op(img.copy(), mag=mag, prob=prob)
             else:
-                img = op(img, prob=prob)
+                img = op(img, mag=mag, prob=prob)
 
         if self.opt.camera:
+            mag = np.random.randint(0, 3)
             index = np.random.randint(0, len(self.camera))
             op = self.camera[index]
-            img = op(img, prob=prob)
+            img = op(img, mag=mag, prob=prob)
 
         if self.opt.pattern:
+            mag = np.random.randint(0, 3)
             index = np.random.randint(0, len(self.pattern))
             op = self.pattern[index]
-            img = op(img.copy(), prob=prob)
+            img = op(img.copy(), mag=mag, prob=prob)
 
         iscurve = False
         if self.opt.warp:
+            mag = np.random.randint(0, 3)
             index = np.random.randint(0, len(self.warp))
             op = self.warp[index]
             if type(op).__name__ == "Curve":
                 iscurve = True
-            img = op(img, prob=prob)
+            img = op(img, mag=mag, prob=prob)
 
         if self.opt.geometry:
+            mag = np.random.randint(0, 3)
             index = np.random.randint(0, len(self.geometry))
             op = self.geometry[index]
             if type(op).__name__ == "Rotate":
-                img = op(img, iscurve=iscurve, prob=prob)
+                img = op(img, iscurve=iscurve, mag=mag, prob=prob)
             else:
-                img = op(img, prob=prob)
+                img = op(img, mag=mag, prob=prob)
 
         img = transforms.ToTensor()(img)
         if self.scale:

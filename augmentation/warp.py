@@ -332,10 +332,14 @@ class Rotate:
             index = mag
         rotate_angle = b[index]
 
-        #angle = np.random.normal(loc=0., scale=rotate_angle)
         angle = np.random.uniform(rotate_angle-20, rotate_angle)
+        if np.random.uniform(0, 1) < 0.5:
+            angle = -angle
+
+        #angle = np.random.normal(loc=0., scale=rotate_angle)
         #angle = min(angle, 2*rotate_angle)
         #angle = max(angle, -2*rotate_angle)
+
         expand = False if iscurve else True
         img = img.rotate(angle=angle, resample=Image.BICUBIC, expand=expand)
         img = img.resize((W, H), Image.BICUBIC)

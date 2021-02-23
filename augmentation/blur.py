@@ -10,7 +10,7 @@ from wand.api import library as wandlibrary
 from io import BytesIO
 
 #from skimage import color
-from ops import MotionImage, clipped_zoom, disk, plasma_fractal
+from .ops import MotionImage, clipped_zoom, disk, plasma_fractal
 '''
     PIL resize (W,H)
 '''
@@ -24,12 +24,15 @@ class GaussianBlur:
 
         W, H = img.size
         #kernel = [(31,31)] prev 1 level only
-        kernel = [(27, 27), (29, 29), (31, 31)]
+        kernel = (5, 5)
+        sigmas = [.5, 1, 2]
         if mag<0 or mag>=len(kernel):
-            index = np.random.randint(0, len(kernel))
+            index = np.random.randint(0, len(sigmas))
         else:
             index = mag
-        return transforms.GaussianBlur(kernel[index])(img)
+
+        sigma = sigmas[index]
+        return transforms.GaussianBlur(kernel_size=kernel, sigma=sigma)(img)
 
 
 class DefocusBlur:
