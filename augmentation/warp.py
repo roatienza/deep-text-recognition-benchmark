@@ -11,7 +11,7 @@ class Shrink:
     def __init__(self):
         self.tps = cv2.createThinPlateSplineShapeTransformer()
 
-    def __call__(self, img, prob=1.):
+    def __call__(self, img, mag=-1, prob=1.):
         if np.random.uniform(0,1) > prob:
             return img
 
@@ -27,13 +27,21 @@ class Shrink:
         H_50 = 0.50 * H
 
         P = 0
-        frac = 0.4
+
+        #frac = 0.4
+
+        b = [.2, .3, .4]
+        if mag<0 or mag>=len(b):
+            index = 0
+        else:
+            index = mag
+        frac = b[index]
 
         # left-most
         srcpt.append([P, P])
         srcpt.append([P, H-P])
-        x = np.random.uniform(0, frac)*W_33 
-        y = np.random.uniform(0, frac)*H_50
+        x = np.random.uniform(frac-.1, frac)*W_33 
+        y = np.random.uniform(frac-.1, frac)*H_50
         dstpt.append([P+x, P+y])
         dstpt.append([P+x, H-P-y])
         
@@ -69,7 +77,7 @@ class Stretch:
     def __init__(self):
         self.tps = cv2.createThinPlateSplineShapeTransformer()
 
-    def __call__(self, img, prob=1.):
+    def __call__(self, img, mag=-1, prob=1.):
         if np.random.uniform(0,1) > prob:
             return img
 
@@ -85,7 +93,14 @@ class Stretch:
         H_50 = 0.50 * H
 
         P = 0
-        frac = 0.4
+        #frac = 0.4
+
+        b = [.2, .3, .4]
+        if mag<0 or mag>=len(b):
+            index = len(b)-1
+        else:
+            index = mag
+        frac = b[index]
 
         # left-most
         srcpt.append([P, P])
@@ -134,7 +149,7 @@ class Distort:
     def __init__(self):
         self.tps = cv2.createThinPlateSplineShapeTransformer()
 
-    def __call__(self, img, prob=1.):
+    def __call__(self, img, mag=-1, prob=1.):
         if np.random.uniform(0,1) > prob:
             return img
 
@@ -150,7 +165,14 @@ class Distort:
         H_50 = 0.50 * H
 
         P = 0
-        frac = 0.4
+        #frac = 0.4
+
+        b = [.2, .3, .4]
+        if mag<0 or mag>=len(b):
+            index = len(b)-1
+        else:
+            index = mag
+        frac = b[index]
 
         # top pts
         srcpt.append([P, P])
@@ -210,7 +232,7 @@ class Curve:
         self.tps = cv2.createThinPlateSplineShapeTransformer()
         self.side = square_side
 
-    def __call__(self, img, prob=1.):
+    def __call__(self, img, mag=-1, prob=1.):
         if np.random.uniform(0,1) > prob:
             return img
 
@@ -230,11 +252,27 @@ class Curve:
         w_25 = 0.25 * w
         w_50 = 0.50 * w
         w_75 = 0.75 * w
-        r = np.random.uniform(0.8, 1.2)*h
+
+        b = [1.1, .95, .8]
+        if mag<0 or mag>=len(b):
+            index = 2
+        else:
+            index = mag
+        rmin = b[index]
+
+        r = np.random.uniform(rmin, 1.2)*h
         x1 = (r**2 - w_50**2)**0.5
         h1 = r - x1
 
-        t = np.random.uniform(0.4,0.5)*h
+        b = [.45, .425, .4]
+        if mag<0 or mag>=len(b):
+            index = 2
+        else:
+            index = mag
+        tmin = b[index]
+
+        t = np.random.uniform(tmin,0.5)*h
+
         w2 = w_50*t/r
         hi = x1*t/r
         h2 = h1 + hi  
@@ -278,7 +316,7 @@ class Rotate:
     def __init__(self, square_side=224):
         self.side = square_side
 
-    def __call__(self, img, iscurve=False, rotate_angle=30., prob=1.):
+    def __call__(self, img, iscurve=False, mag=-1, prob=1.):
         if np.random.uniform(0,1) > prob:
             return img
 
@@ -287,9 +325,17 @@ class Rotate:
         if H!=self.side or W!=self.side:
             img = img.resize((self.side, self.side), Image.BICUBIC)
 
-        angle = np.random.normal(loc=0., scale=rotate_angle)
-        angle = min(angle, 2*rotate_angle)
-        angle = max(angle, -2*rotate_angle)
+        b = [20., 40, 60]
+        if mag<0 or mag>=len(b):
+            index = 1
+        else:
+            index = mag
+        rotate_angle = b[index]
+
+        #angle = np.random.normal(loc=0., scale=rotate_angle)
+        angle = np.random.uniform(rotate_angle-20, rotate_angle)
+        #angle = min(angle, 2*rotate_angle)
+        #angle = max(angle, -2*rotate_angle)
         expand = False if iscurve else True
         img = img.rotate(angle=angle, resample=Image.BICUBIC, expand=expand)
         img = img.resize((W, H), Image.BICUBIC)
@@ -300,7 +346,7 @@ class Perspective:
     def __init__(self):
         pass
 
-    def __call__(self, img, prob=1.):
+    def __call__(self, img, mag=-1, prob=1.):
         if np.random.uniform(0,1) > prob:
             return img
 
@@ -308,15 +354,23 @@ class Perspective:
 
         # upper-left, upper-right, lower-left, lower-right
         src =  np.float32([[0, 0], [W, 0], [0, H], [W, H]])
-        low = 0.3 
+        #low = 0.3 
+
+        b = [.1, .2, .3]
+        if mag<0 or mag>=len(b):
+            index = 2
+        else:
+            index = mag
+        low = b[index]
+
         high = 1 - low
         if np.random.uniform(0, 1) > 0.5:
-            toprightY = np.random.uniform(0, low)*H
-            bottomrightY = np.random.uniform(high, 1.0)*H
+            toprightY = np.random.uniform(low, low+.1)*H
+            bottomrightY = np.random.uniform(high-.1, high)*H
             dest = np.float32([[0, 0], [W, toprightY], [0, H], [W, bottomrightY]])
         else:
-            topleftY = np.random.uniform(0, low)*H
-            bottomleftY = np.random.uniform(high, 1.0)*H
+            topleftY = np.random.uniform(low, low+.1)*H
+            bottomleftY = np.random.uniform(high-.1, high)*H
             dest = np.float32([[0, topleftY], [W, 0], [0, bottomleftY], [W, H]])
         M = cv2.getPerspectiveTransform(src, dest)
         img = np.array(img)

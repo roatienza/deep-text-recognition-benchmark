@@ -15,13 +15,16 @@ class Contrast:
     def __init__(self):
         pass
 
-    def __call__(self, img, prob=1.):
+    def __call__(self, img, mag=-1, prob=1.):
         if np.random.uniform(0,1) > prob:
             return img
 
         #c = [0.4, .3, .2, .1, .05]
         c = [0.4, .3, .2]
-        index = np.random.randint(0, len(c))
+        if mag<0 or mag>=len(c):
+            index = np.random.randint(0, len(c))
+        else:
+            index = mag
         c = c[index]
         img = np.array(img) / 255.
         means = np.mean(img, axis=(0, 1), keepdims=True)
@@ -34,14 +37,17 @@ class Brightness:
     def __init__(self):
         pass
 
-    def __call__(self, img, prob=1.):
+    def __call__(self, img, mag=-1, prob=1.):
         if np.random.uniform(0,1) > prob:
             return img
 
         #W, H = img.size
         #c = [.1, .2, .3, .4, .5]
         c = [.1, .2, .3]
-        index = np.random.randint(0, len(c))
+        if mag<0 or mag>=len(c):
+            index = np.random.randint(0, len(c))
+        else:
+            index = mag
         c = c[index]
 
         n_channels = len(img.getbands())
@@ -77,13 +83,16 @@ class JpegCompression:
     def __init__(self):
         pass
 
-    def __call__(self, img, prob=1.):
+    def __call__(self, img, mag=-1, prob=1.):
         if np.random.uniform(0,1) > prob:
             return img
 
         #c = [25, 18, 15, 10, 7]
         c = [25, 18, 15]
-        index = np.random.randint(0, len(c))
+        if mag<0 or mag>=len(c):
+            index = np.random.randint(0, len(c))
+        else:
+            index = mag
         c = c[index]
         output = BytesIO()
         img.save(output, 'JPEG', quality=c)
@@ -94,14 +103,17 @@ class Pixelate:
     def __init__(self):
         pass
 
-    def __call__(self, img, prob=1.):
+    def __call__(self, img, mag=-1, prob=1.):
         if np.random.uniform(0,1) > prob:
             return img
 
         W, H = img.size
         #c = [0.6, 0.5, 0.4, 0.3, 0.25]
         c = [0.6, 0.5, 0.4]
-        index = np.random.randint(0, len(c))
+        if mag<0 or mag>=len(c):
+            index = np.random.randint(0, len(c))
+        else:
+            index = mag
         c = c[index]
         img = img.resize((int(W* c), int(H * c)), Image.BOX)
         return img.resize((W, H), Image.BOX)

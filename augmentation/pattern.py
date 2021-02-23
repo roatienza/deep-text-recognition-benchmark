@@ -11,15 +11,21 @@ class VGrid:
     def __init__(self):
         pass
 
-    def __call__(self, img, copy=True, max_width=3, prob=1.):
+    def __call__(self, img, copy=True, max_width=4, mag=-1, prob=1.):
         if np.random.uniform(0,1) > prob:
             return img
 
         if copy:
             img = img.copy()
         W, H = img.size
-        line_width = np.random.randint(1, max_width)
-        image_stripe = np.random.randint(1, 4)
+
+        if mag<0 or mag>max_width:
+            line_width = np.random.randint(1, max_width)
+            image_stripe = np.random.randint(1, max_width)
+        else:
+            line_width = mag + 1
+            image_stripe = mag + 1
+
         n_lines = W // (line_width + image_stripe) + 1
         draw = ImageDraw.Draw(img)
         for i in range(1, n_lines):
@@ -32,15 +38,20 @@ class HGrid:
     def __init__(self):
         pass
 
-    def __call__(self, img, copy=True, max_width=3, prob=1.):
+    def __call__(self, img, copy=True, max_width=4, mag=-1, prob=1.):
         if np.random.uniform(0,1) > prob:
             return img
 
         if copy:
             img = img.copy()
         W, H = img.size
-        line_width = np.random.randint(1, max_width)
-        image_stripe = np.random.randint(1, 4)
+        if mag<0 or mag>max_width:
+            line_width = np.random.randint(1, max_width)
+            image_stripe = np.random.randint(1, max_width)
+        else:
+            line_width = mag + 1
+            image_stripe = mag + 1
+
         n_lines = H // (line_width + image_stripe) + 1
         draw = ImageDraw.Draw(img)
         for i in range(1, n_lines):
@@ -53,7 +64,7 @@ class Grid:
     def __init__(self):
         pass
 
-    def __call__(self, img, prob=1.):
+    def __call__(self, img, mag=-1, prob=1.):
         if np.random.uniform(0,1) > prob:
             return img
 
@@ -65,7 +76,7 @@ class RectGrid:
     def __init__(self):
         pass
 
-    def __call__(self, img, isellipse=False, prob=1.):
+    def __call__(self, img, isellipse=False, mag=-1,  prob=1.):
         if np.random.uniform(0,1) > prob:
             return img
 
@@ -96,7 +107,7 @@ class EllipseGrid:
     def __init__(self):
         pass
 
-    def __call__(self, img, prob=1.):
+    def __call__(self, img, mag=-1, prob=1.):
         if np.random.uniform(0,1) > prob:
             return img
 

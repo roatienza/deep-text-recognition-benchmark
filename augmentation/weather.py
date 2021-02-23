@@ -6,7 +6,7 @@ from PIL import Image, ImageOps, ImageDraw
 from skimage import color
 from pkg_resources import resource_filename
 from io import BytesIO
-from .ops import plasma_fractal, clipped_zoom, MotionImage
+from ops import plasma_fractal, clipped_zoom, MotionImage
 
 '''
     PIL resize (W,H)
@@ -15,13 +15,16 @@ class Fog:
     def __init__(self):
         pass
 
-    def __call__(self, img, prob=1.):
+    def __call__(self, img, mag=-1, prob=1.):
         if np.random.uniform(0,1) > prob:
             return img
 
         W, H = img.size
         c = [(1.5, 2), (2., 2), (2.5, 1.7)]
-        index = np.random.randint(0, len(c))
+        if mag<0 or mag>=len(c):
+            index = np.random.randint(0, len(c))
+        else:
+            index = mag
         c = c[index]
 
         n_channels = len(img.getbands())
@@ -46,13 +49,16 @@ class Frost:
     def __init__(self):
         pass
 
-    def __call__(self, img, prob=1.):
+    def __call__(self, img, mag=-1, prob=1.):
         if np.random.uniform(0,1) > prob:
             return img
 
         W, H = img.size
         c = [(1, 0.4), (0.8, 0.6), (0.7, 0.7)]
-        index = np.random.randint(0, len(c))
+        if mag<0 or mag>=len(c):
+            index = np.random.randint(0, len(c))
+        else:
+            index = mag
         c = c[index]
 
         filename = [resource_filename(__name__, 'frost/frost1.png'),
@@ -90,7 +96,7 @@ class Snow:
     def __init__(self):
         pass
 
-    def __call__(self, img, prob=1.):
+    def __call__(self, img, mag=-1, prob=1.):
         if np.random.uniform(0,1) > prob:
             return img
 
@@ -98,7 +104,10 @@ class Snow:
         c = [(0.1, 0.3, 3, 0.5, 10, 4, 0.8),
              (0.2, 0.3, 2, 0.5, 12, 4, 0.7),
              (0.55, 0.3, 4, 0.9, 12, 8, 0.7)]
-        index = np.random.randint(0, len(c))
+        if mag<0 or mag>=len(c):
+            index = np.random.randint(0, len(c))
+        else:
+            index = mag
         c = c[index]
 
         n_channels = len(img.getbands())
@@ -142,7 +151,7 @@ class Rain:
     def __init__(self):
         pass
 
-    def __call__(self, img, max_width=3, prob=1.):
+    def __call__(self, img, mag=-1, prob=1.):
         if np.random.uniform(0,1) > prob:
             return img
 
@@ -151,7 +160,15 @@ class Rain:
         n_channels = len(img.getbands())
         isgray = n_channels == 1
         line_width = np.random.randint(1, 2)
-        n_rains = np.random.randint(50, 100)
+
+        c =[50, 70, 90]
+        if mag<0 or mag>=len(c):
+            index = 0
+        else:
+            index = mag
+        c = c[index]
+
+        n_rains = np.random.randint(c, c+20)
         slant = np.random.randint(-60, 60)
         fillcolor = 200 if isgray else (200,200,200)
 
@@ -172,7 +189,7 @@ class Shadow:
     def __init__(self):
         pass
 
-    def __call__(self, img, max_width=3, prob=1.):
+    def __call__(self, img, mag=-1, prob=1.):
         if np.random.uniform(0,1) > prob:
             return img
 
@@ -181,10 +198,17 @@ class Shadow:
         n_channels = len(img.getbands())
         isgray = n_channels == 1
 
+        c =[64, 96, 128]
+        if mag<0 or mag>=len(c):
+            index = 0
+        else:
+            index = mag
+        c = c[index]
+
         img = img.convert('RGBA')
         overlay = Image.new('RGBA', img.size, (255,255,255,0))
         draw = ImageDraw.Draw(overlay) 
-        transparency = np.random.randint(128, 128+32)
+        transparency = np.random.randint(c, c+32)
         x1 = np.random.randint(0, W//2)
         y1 = 0
 
