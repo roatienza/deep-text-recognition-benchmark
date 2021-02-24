@@ -15,6 +15,7 @@ from augmentation.noise import GaussianNoise, ShotNoise, ImpulseNoise, SpeckleNo
 from augmentation.blur import GaussianBlur, DefocusBlur, MotionBlur, GlassBlur, ZoomBlur
 from augmentation.camera import Contrast, Brightness, JpegCompression, Pixelate
 from augmentation.weather import Fog, Snow, Frost, Rain, Shadow
+from augmentation.process import Posterize, Solarize, Invert, Equalize, AutoContrast, Sharpness, Color
 
 from natsort import natsorted
 from PIL import Image
@@ -273,21 +274,21 @@ class DataAugment(object):
         self.opt = opt
 
         if not opt.eval:
-            self.invert = [PIL.ImageOps.invert]
+            self.process = [Posterize(), Solarize(), Invert(), Equalize(), AutoContrast(), Sharpness(), Color()]
+            self.camera = [Contrast(), Brightness(), JpegCompression(), Pixelate()]
+            self.pattern = [VGrid(), HGrid(), Grid(), RectGrid(), EllipseGrid()]
 
             self.noise = [GaussianNoise(), ShotNoise(), ImpulseNoise(), SpeckleNoise()]
             self.blur = [GaussianBlur(), DefocusBlur(), MotionBlur(), GlassBlur(), ZoomBlur()]
             self.weather = [Fog(), Snow(), Frost(), Rain(), Shadow()]
-            self.camera = [Contrast(), Brightness(), JpegCompression(), Pixelate()]
-            self.pattern = [VGrid(), HGrid(), Grid(), RectGrid(), EllipseGrid()]
 
             self.warp = [Curve(), Distort(), Stretch()]
             self.geometry = [Rotate(), Perspective(), Shrink()]
 
             if self.opt.isrand_aug:
-                self.augs = [self.invert, self.noise, self.blur, self.weather, self.warp, self.geometry]
+                self.augs = [self.process, self.camera, self.noise, self.blur, self.weather, self.pattern, self.warp, self.geometry]
                 if self.opt.isprio_rand_aug:
-                    self.augs_prob = [0.1, 0.1, 0.1, 0.1, 0.5, 0.1]
+                    self.augs_prob = [0.1, 0.1, 0.2, 0.2, 0.1, 0.1, 0.1, 0.1]
             else:
                 self.noises = [self.noise, self.noise, self.blur, self.weather] 
 
@@ -398,12 +399,13 @@ class DataAugment(object):
 
     def sel_aug(self, img):
 
-        prob = self.opt.sel_prob
+        prob = 1.
 
-        if self.opt.invert and isless(prob):
-            index = np.random.randint(0, len(self.invert))
-            op = self.invert[index]
-            img = op(img)
+        if self.opt.process:
+            mag = np.random.randint(0, 3)
+            index = np.random.randint(0, len(self.process))
+            op = self.process[index]
+            img = op(img, mag=mag, prob=prob)
 
         if self.opt.noise:
             mag = np.random.randint(0, 3)
