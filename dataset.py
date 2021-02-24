@@ -8,7 +8,8 @@ import torch
 import cv2
 
 from augmentation.weather import Fog, Snow, Frost
-from augmentation.warp import Curve, Rotate, Perspective, Distort, Stretch, Shrink
+from augmentation.warp import Curve, Distort, Stretch
+from augmentation.geometry import Rotate, Perspective, Shrink
 from augmentation.pattern import VGrid, HGrid, Grid, RectGrid, EllipseGrid
 from augmentation.noise import GaussianNoise, ShotNoise, ImpulseNoise, SpeckleNoise
 from augmentation.blur import GaussianBlur, DefocusBlur, MotionBlur, GlassBlur, ZoomBlur

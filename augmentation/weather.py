@@ -6,7 +6,7 @@ from PIL import Image, ImageOps, ImageDraw
 from skimage import color
 from pkg_resources import resource_filename
 from io import BytesIO
-from .ops import plasma_fractal, clipped_zoom, MotionImage
+from ops import plasma_fractal, clipped_zoom, MotionImage
 
 '''
     PIL resize (W,H)

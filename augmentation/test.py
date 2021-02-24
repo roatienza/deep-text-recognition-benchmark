@@ -1,12 +1,14 @@
 
 import os
 import cv2
-from warp import Curve, Rotate, Perspective, Distort, Stretch, Shrink
+from warp import Curve, Distort, Stretch
+from geometry import Rotate, Perspective, Shrink
 from pattern import VGrid, HGrid, Grid, RectGrid, EllipseGrid
 from noise import GaussianNoise, ShotNoise, ImpulseNoise, SpeckleNoise
 from blur import GaussianBlur, DefocusBlur, MotionBlur, GlassBlur, ZoomBlur
 from camera import Contrast, Brightness, JpegCompression, Pixelate
 from weather import Fog, Snow, Frost, Rain, Shadow
+from process import Posterize, Solarize, Invert, Equalize, AutoContrast, Sharpness, Color
 
 from PIL import Image
 import PIL.ImageOps
@@ -28,17 +30,13 @@ if __name__ == '__main__':
     ops.extend([GaussianBlur(), DefocusBlur(), MotionBlur(), GlassBlur(), ZoomBlur()])
     ops.extend([Contrast(), Brightness(), JpegCompression(), Pixelate()])
     ops.extend([Fog(), Snow(), Frost(), Rain(), Shadow()])
-    ops.extend([PIL.ImageOps.invert])
+    ops.extend([Posterize(), Solarize(), Invert(), Equalize(), AutoContrast(), Sharpness(), Color()])
     for op in ops:
         for mag in range(3):
-            if "function" in type(op).__name__:
-                out_img = op(img)
-            else:
-                out_img = op(img, mag=mag)
+            out_img = op(img, mag=mag)
             filename = type(op).__name__ + "-" + str(mag) + ".png"
             out_img.save(os.path.join(opt.results, filename))
 
-    img.save(os.path.join(opt.results, "source.png"))
 
     
 

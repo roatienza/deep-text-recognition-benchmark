@@ -23,8 +23,8 @@ class VGrid:
             line_width = np.random.randint(1, max_width)
             image_stripe = np.random.randint(1, max_width)
         else:
-            line_width = mag + 1
-            image_stripe = mag + 1
+            line_width = 1
+            image_stripe = 3 - mag
 
         n_lines = W // (line_width + image_stripe) + 1
         draw = ImageDraw.Draw(img)
@@ -49,8 +49,8 @@ class HGrid:
             line_width = np.random.randint(1, max_width)
             image_stripe = np.random.randint(1, max_width)
         else:
-            line_width = mag + 1
-            image_stripe = mag + 1
+            line_width = 1
+            image_stripe = 3 - mag
 
         n_lines = H // (line_width + image_stripe) + 1
         draw = ImageDraw.Draw(img)
@@ -68,8 +68,8 @@ class Grid:
         if np.random.uniform(0,1) > prob:
             return img
 
-        img = VGrid()(img, copy=True, max_width=2)
-        img = HGrid()(img, copy=False, max_width=2)
+        img = VGrid()(img, copy=True, mag=mag)
+        img = HGrid()(img, copy=False, mag=mag)
         return img
 
 class RectGrid:
@@ -83,7 +83,7 @@ class RectGrid:
         img = img.copy()
         W, H = img.size
         line_width = 1 
-        image_stripe = 1 #np.random.randint(2, 6)
+        image_stripe = 3 - mag #np.random.randint(2, 6)
         offset = 4 if isellipse else 1
         n_lines = ((H//2) // (line_width + image_stripe)) + offset
         draw = ImageDraw.Draw(img)
@@ -111,5 +111,5 @@ class EllipseGrid:
         if np.random.uniform(0,1) > prob:
             return img
 
-        img = RectGrid()(img, isellipse=True, prob=prob)
+        img = RectGrid()(img, isellipse=True, mag=mag, prob=prob)
         return img
