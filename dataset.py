@@ -289,8 +289,6 @@ class DataAugment(object):
                 self.augs = [self.process, self.camera, self.noise, self.blur, self.weather, self.pattern, self.warp, self.geometry]
                 if self.opt.isprio_rand_aug:
                     self.augs_prob = [0.1, 0.1, 0.2, 0.2, 0.1, 0.1, 0.1, 0.1]
-            else:
-                self.noises = [self.noise, self.noise, self.blur, self.weather] 
 
         self.scale = False if opt.Transformer else True
 
@@ -388,9 +386,9 @@ class DataAugment(object):
                 index = np.random.randint(0, len(aug))
                 op = aug[index]
                 if type(op).__name__ == "Rain" or "Grid" in type(op).__name__ :
-                    img = op(img.copy(), prob=prob)
+                    img = op(img.copy(), mag=self.opt.augs_mag)
                 else:
-                    img = op(img, prob=prob)
+                    img = op(img, mag=self.opt.augs_mag)
 
         img = transforms.ToTensor()(img)
         if self.scale:
@@ -461,6 +459,8 @@ class DataAugment(object):
         img = transforms.ToTensor()(img)
         if self.scale:
             img.sub_(0.5).div_(0.5)
+
+
         return img
 
 

@@ -335,9 +335,10 @@ if __name__ == '__main__':
 
     parser.add_argument('--scheduler', action='store_true', help='Use lr scheduler')
 
-    parser.add_argument('--intact_prob', type=float, default=0.25, help='Probability of not applying augmentation')
-    parser.add_argument('--augs_num', type=int, default=4, help='Number of data augment groups to apply')
+    parser.add_argument('--intact_prob', type=float, default=0.5, help='Probability of not applying augmentation')
     parser.add_argument('--isrand_aug', action='store_true', help='Use RandAug')
+    parser.add_argument('--augs_num', type=int, default=4, help='Number of data augment groups to apply')
+    parser.add_argument('--augs_mag', type=int, default=1, help='Magnitude of data augment groups to apply')
     parser.add_argument('--isprio_rand_aug', action='store_true', help='Use prioritized RandAug')
 
     parser.add_argument('--fast_acc', action='store_true', help='Fast average accuracy computation')
