@@ -276,11 +276,15 @@ class DataAugment(object):
         if not opt.eval:
             self.process = [Posterize(), Solarize(), Invert(), Equalize(), AutoContrast(), Sharpness(), Color()]
             self.camera = [Contrast(), Brightness(), JpegCompression(), Pixelate()]
+
             self.pattern = [VGrid(), HGrid(), Grid(), RectGrid(), EllipseGrid()]
 
             self.noise = [GaussianNoise(), ShotNoise(), ImpulseNoise(), SpeckleNoise()]
             self.blur = [GaussianBlur(), DefocusBlur(), MotionBlur(), GlassBlur(), ZoomBlur()]
             self.weather = [Fog(), Snow(), Frost(), Rain(), Shadow()]
+
+            self.noises = [self.blur, self.noise, self.weather]
+            self.processes = [self.camera, self.process]
 
             self.warp = [Curve(), Distort(), Stretch()]
             self.geometry = [Rotate(), Perspective(), Shrink()]
@@ -323,34 +327,49 @@ class DataAugment(object):
         prob = 1
         #np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
 
-        if isless(0.2):
-            index = np.random.randint(0, len(self.invert))
-            op = self.invert[index]
-            img = op(img)
+        if isless(0.6):
+            index = np.random.randint(0, len(self.processes))
+            process = self.processes[index]
+            index = np.random.randint(0, len(process))
+            op = process[index]
+            mag = np.random.randint(0, 3)
+            img = op(img, mag=mag, prob=prob)
 
         index = np.random.randint(0, len(self.noises))
         noise = self.noises[index]
         index = np.random.randint(0, len(noise))
         op = noise[index]
-        if type(op).__name__ == "Rain" or "Grid" in type(op).__name__ :
-            img = op(img.copy(), prob=prob)
+        mag = np.random.randint(0, 3)
+        if type(op).__name__ == "Rain":
+            img = op(img.copy(), mag=mag, prob=prob)
         else:
-            img = op(img, prob=prob)
+            img = op(img, mag=mag, prob=prob)
 
-        iscurve = False
-        index = np.random.randint(0, len(self.warp))
-        op = self.warp[index]
-        if type(op).__name__ == "Curve":
-            iscurve = True
-        img = op(img, prob=prob)
-            
+
         if isless(0.2):
+            index = np.random.randint(0, len(self.pattern))
+            op = self.pattern[index]
+            mag = np.random.randint(0, 3)
+            img = op(img.copy(), mag=mag, prob=prob)
+
+
+        if isless(0.8):
+            iscurve = False
+            if isless(0.6):
+                index = np.random.randint(0, len(self.warp))
+                op = self.warp[index]
+                mag = np.random.randint(0, 3)
+                if type(op).__name__ == "Curve":
+                    iscurve = True
+                img = op(img, mag=mag, prob=prob)
+            
             index = np.random.randint(0, len(self.geometry))
             op = self.geometry[index]
+            mag = np.random.randint(0, 3)
             if type(op).__name__ == "Rotate":
-                img = op(img, iscurve=iscurve, prob=prob)
+                img = op(img, mag=mag, iscurve=iscurve, prob=prob)
             else:
-                img = op(img, prob=prob)
+                img = op(img, mag=mag, prob=prob)
 
         img = transforms.ToTensor()(img)
 
