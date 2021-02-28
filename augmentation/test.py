@@ -2,7 +2,7 @@
 import os
 import cv2
 from warp import Curve, Distort, Stretch
-from geometry import Rotate, Perspective, Shrink
+from geometry import Rotate, Perspective, Shrink, TranslateX, TranslateY
 from pattern import VGrid, HGrid, Grid, RectGrid, EllipseGrid
 from noise import GaussianNoise, ShotNoise, ImpulseNoise, SpeckleNoise
 from blur import GaussianBlur, DefocusBlur, MotionBlur, GlassBlur, ZoomBlur
@@ -26,7 +26,7 @@ if __name__ == '__main__':
 
     img = Image.open(opt.image)
     img = img.resize( (100,32) )
-    ops = [Curve(), Rotate(), Perspective(), Distort(), Stretch(), Shrink(), VGrid(), HGrid(), Grid(), RectGrid(), EllipseGrid()]
+    ops = [Curve(), Rotate(), Perspective(), Distort(), Stretch(), Shrink(), TranslateX(), TranslateY(), VGrid(), HGrid(), Grid(), RectGrid(), EllipseGrid()]
     ops.extend([GaussianNoise(), ShotNoise(), ImpulseNoise(), SpeckleNoise()])
     ops.extend([GaussianBlur(), DefocusBlur(), MotionBlur(), GlassBlur(), ZoomBlur()])
     ops.extend([Contrast(), Brightness(), JpegCompression(), Pixelate()])
@@ -40,7 +40,4 @@ if __name__ == '__main__':
                 out_img = PIL.ImageOps.grayscale(out_img)
             out_img.save(os.path.join(opt.results, filename))
 
-
-
-    
 

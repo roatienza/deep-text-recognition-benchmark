@@ -145,3 +145,50 @@ class Perspective:
 
         return img
 
+
+class TranslateX:
+    def __init__(self):
+        pass
+
+    def __call__(self, img, mag=-1, prob=1.):
+        if np.random.uniform(0,1) > prob:
+            return img
+
+        b = [.03, .06, .09]
+        if mag<0 or mag>=len(b):
+            index = 2
+        else:
+            index = mag
+        v = b[index]
+        v = np.random.uniform(v-0.03, v)
+
+        v = v * img.size[0]
+        if np.random.uniform(0,1) > 0.5:
+            v = -v
+        return img.transform(img.size, Image.AFFINE, (1, 0, v, 0, 1, 0))
+
+
+class TranslateY:
+    def __init__(self):
+        pass
+
+    def __call__(self, img, mag=-1, prob=1.):
+        if np.random.uniform(0,1) > prob:
+            return img
+
+        b = [.07, .14, .21]
+        if mag<0 or mag>=len(b):
+            index = 2
+        else:
+            index = mag
+        v = b[index]
+        v = np.random.uniform(v-0.07, v)
+
+        v = v * img.size[1]
+        if np.random.uniform(0,1) > 0.5:
+            v = -v
+        return img.transform(img.size, Image.AFFINE, (1, 0, 0, 0, 1, v))
+
+
+
+
