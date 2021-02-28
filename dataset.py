@@ -9,7 +9,7 @@ import cv2
 
 from augmentation.weather import Fog, Snow, Frost
 from augmentation.warp import Curve, Distort, Stretch
-from augmentation.geometry import Rotate, Perspective, Shrink
+from augmentation.geometry import Rotate, Perspective, Shrink, TranslateX, TranslateY
 from augmentation.pattern import VGrid, HGrid, Grid, RectGrid, EllipseGrid
 from augmentation.noise import GaussianNoise, ShotNoise, ImpulseNoise, SpeckleNoise
 from augmentation.blur import GaussianBlur, DefocusBlur, MotionBlur, GlassBlur, ZoomBlur
@@ -287,7 +287,7 @@ class DataAugment(object):
             self.processes = [self.camera, self.process]
 
             self.warp = [Curve(), Distort(), Stretch()]
-            self.geometry = [Rotate(), Perspective(), Shrink()]
+            self.geometry = [Rotate(), Perspective(), Shrink(), TranslateX(), TranslateY()]
 
             if self.opt.isrand_aug:
                 self.augs = [self.process, self.camera, self.noise, self.blur, self.weather, self.pattern, self.warp, self.geometry]
