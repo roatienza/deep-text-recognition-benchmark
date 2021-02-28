@@ -400,14 +400,13 @@ class DataAugment(object):
             augs = np.random.choice(self.augs, self.opt.augs_num, replace=False, p=self.augs_prob)
         else:
             augs = np.random.choice(self.augs, self.opt.augs_num, replace=False)
-        for aug in self.augs:
-            if aug in augs:
-                index = np.random.randint(0, len(aug))
-                op = aug[index]
-                if type(op).__name__ == "Rain" or "Grid" in type(op).__name__ :
-                    img = op(img.copy(), mag=self.opt.augs_mag)
-                else:
-                    img = op(img, mag=self.opt.augs_mag)
+        for aug in augs:
+            index = np.random.randint(0, len(aug))
+            op = aug[index]
+            if type(op).__name__ == "Rain" or "Grid" in type(op).__name__ :
+                img = op(img.copy(), mag=self.opt.augs_mag)
+            else:
+                img = op(img, mag=self.opt.augs_mag)
 
         img = transforms.ToTensor()(img)
         if self.scale:
