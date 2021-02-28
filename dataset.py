@@ -292,7 +292,7 @@ class DataAugment(object):
             if self.opt.isrand_aug:
                 self.augs = [self.process, self.camera, self.noise, self.blur, self.weather, self.pattern, self.warp, self.geometry]
                 if self.opt.isprio_rand_aug:
-                    self.augs_prob = [0.1, 0.1, 0.2, 0.2, 0.1, 0.1, 0.1, 0.1]
+                    self.augs_prob = [0.1, 0.1, 0.15, 0.2, 0.1, 0.1, 0.1, 0.15]
 
         self.scale = False if opt.Transformer else True
 
