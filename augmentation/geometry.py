@@ -10,6 +10,8 @@ from PIL import Image, ImageOps
 class Shrink:
     def __init__(self):
         self.tps = cv2.createThinPlateSplineShapeTransformer()
+        self.translateXAbs = TranslateXAbs()
+        self.translateYAbs = TranslateYAbs()
 
     def __call__(self, img, mag=-1, prob=1.):
         if np.random.uniform(0,1) > prob:
@@ -70,6 +72,11 @@ class Shrink:
         self.tps.estimateTransformation(dst_shape, src_shape, matches)
         img = self.tps.warpImage(img)
         img = Image.fromarray(img)
+
+        if np.random.uniform(0, 1) < 0.5:
+            img = self.translateXAbs(img, val=x)
+        else:
+            img = self.translateYAbs(img, val=y)
 
         return img
 
@@ -188,6 +195,38 @@ class TranslateY:
         if np.random.uniform(0,1) > 0.5:
             v = -v
         return img.transform(img.size, Image.AFFINE, (1, 0, 0, 0, 1, v))
+
+
+class TranslateXAbs:
+    def __init__(self):
+        pass
+
+    def __call__(self, img, val=0, prob=1.):
+        if np.random.uniform(0,1) > prob:
+            return img
+
+        v = np.random.uniform(0, val)
+
+        if np.random.uniform(0,1) > 0.5:
+            v = -v
+        return img.transform(img.size, Image.AFFINE, (1, 0, v, 0, 1, 0))
+
+
+class TranslateYAbs:
+    def __init__(self):
+        pass
+
+    def __call__(self, img, val=0, prob=1.):
+        if np.random.uniform(0,1) > prob:
+            return img
+
+        v = np.random.uniform(0, val)
+
+        if np.random.uniform(0,1) > 0.5:
+            v = -v
+        return img.transform(img.size, Image.AFFINE, (1, 0, 0, 0, 1, v))
+
+
 
 
 
