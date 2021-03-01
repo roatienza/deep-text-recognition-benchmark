@@ -403,10 +403,11 @@ class DataAugment(object):
         for aug in augs:
             index = np.random.randint(0, len(aug))
             op = aug[index]
+            mag = np.random.randint(0, 3) if self.opt.augs_mag is None else self.opt.augs_mag
             if type(op).__name__ == "Rain" or "Grid" in type(op).__name__ :
-                img = op(img.copy(), mag=self.opt.augs_mag)
+                img = op(img.copy(), mag=mag)
             else:
-                img = op(img, mag=self.opt.augs_mag)
+                img = op(img, mag=mag)
 
         img = transforms.ToTensor()(img)
         if self.scale:
