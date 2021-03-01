@@ -287,7 +287,7 @@ class DataAugment(object):
             self.processes = [self.camera, self.process]
 
             self.warp = [Curve(), Distort(), Stretch()]
-            self.geometry = [Rotate(), Perspective(), Shrink(), TranslateX(), TranslateY()]
+            self.geometry = [Rotate(), Perspective(), Shrink()]
 
             if self.opt.isrand_aug:
                 self.augs = [self.process, self.camera, self.noise, self.blur, self.weather, self.pattern, self.warp, self.geometry]
