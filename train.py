@@ -102,6 +102,7 @@ def train(opt):
     print(model)
 
     """ setup loss """
+    # README: https://github.com/clovaai/deep-text-recognition-benchmark/pull/209
     if 'CTC' in opt.Prediction:
         if opt.baiduCTC:
             # need to install warpctc. see our guideline.
