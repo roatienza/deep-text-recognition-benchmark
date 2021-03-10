@@ -289,10 +289,33 @@ class DataAugment(object):
             self.warp = [Curve(), Distort(), Stretch()]
             self.geometry = [Rotate(), Perspective(), Shrink()]
 
+            self.isbaseline_aug = False
             if self.opt.isrand_aug:
                 self.augs = [self.process, self.camera, self.noise, self.blur, self.weather, self.pattern, self.warp, self.geometry]
                 if self.opt.isprio_rand_aug:
                     self.augs_prob = [0.1, 0.1, 0.15, 0.2, 0.1, 0.1, 0.1, 0.15]
+            elif self.opt.issemantic_aug:
+                self.geometry = [Rotate(), Perspective(), Shrink()]
+                self.noise = [GaussianNoise()]
+                self.blur = [MotionBlur()]
+                self.augs = [self.noise, self.blur, self.geometry]
+                self.isbaseline_aug = True
+            elif self.opt.islearning_aug:
+                self.geometry = [Rotate(), Perspective()]
+                self.noise = [GaussianNoise()]
+                self.blur = [MotionBlur()]
+                self.warp = [Distort()]
+                self.augs = [self.warp, self.noise, self.blur, self.geometry]
+                self.isbaseline_aug = True
+            elif self.opt.isscatter_aug:
+                self.geometry = [Shrink()]
+                self.warp = [Distort()]
+                self.augs = [self.warp, self.geometry]
+                self.baseline_aug = True
+            elif self.opt.isrotation_aug:
+                self.geometry = [Rotate()]
+                self.augs = [self.geometry]
+                self.isbaseline_aug = True
 
         self.scale = False if opt.Transformer else True
 
@@ -318,6 +341,8 @@ class DataAugment(object):
             return self.rand_aug(img)
         elif self.opt.issel_aug:
             return self.sel_aug(img)
+        elif self.isbaseline_aug:
+            return self.baseline_aug(img)
         elif self.opt.intact_prob >= 1.0:
             img = transforms.ToTensor()(img)
             if self.scale:
@@ -394,6 +419,19 @@ class DataAugment(object):
         #    img = np.repeat(img, 3, axis=2)
         #    cv2.imwrite("dest-gray.png", img)
         #exit(0)
+    def baseline_aug(self, img):
+        augs = np.random.choice(self.augs, self.opt.augs_num, replace=False)
+        for aug in augs:
+            index = np.random.randint(0, len(aug))
+            op = aug[index]
+            mag = np.random.randint(0, 3) if self.opt.augs_mag is None else self.opt.augs_mag
+            img = op(img, mag=mag)
+
+        img = transforms.ToTensor()(img)
+        if self.scale:
+            img.sub_(0.5).div_(0.5)
+        return img
+
 
     def rand_aug(self, img):
         if self.opt.isprio_rand_aug:
