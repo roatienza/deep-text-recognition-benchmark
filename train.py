@@ -102,6 +102,7 @@ def train(opt):
     print(model)
 
     """ setup loss """
+    # README: https://github.com/clovaai/deep-text-recognition-benchmark/pull/209
     if 'CTC' in opt.Prediction:
         if opt.baiduCTC:
             # need to install warpctc. see our guideline.
@@ -341,6 +342,10 @@ if __name__ == '__main__':
     parser.add_argument('--augs_mag', type=int, default=None, help='Magnitude of data augment groups to apply')
     parser.add_argument('--isprio_rand_aug', action='store_true', help='Use prioritized RandAug')
 
+    parser.add_argument('--issemantic_aug', action='store_true', help='Use Semantic')
+    parser.add_argument('--isrotation_aug', action='store_true', help='Use ')
+    parser.add_argument('--isscatter_aug', action='store_true', help='Use ')
+    parser.add_argument('--islearning_aug', action='store_true', help='Use ')
     parser.add_argument('--fast_acc', action='store_true', help='Fast average accuracy computation')
     opt = parser.parse_args()
 
