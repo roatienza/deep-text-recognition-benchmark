@@ -48,8 +48,11 @@ def infer_data(model, evaluation_loader, converter, dataset, opt):
         preds_index = preds_index.view(-1, opt.batch_max_length + 1)
         length_for_pred = torch.IntTensor([opt.batch_max_length - 1] ).to(device)
         preds_str = converter.decode(preds_index[:, 0:], length_for_pred)
-        pred_EOS = preds_str[0].find('[s]')
-        pred = preds_str[0][:pred_EOS]  # prune after "end of sentence" token ([s])
+        if 'Attn' in opt.Prediction:
+            pred_EOS = preds_str[0].find('[s]')
+            pred = preds_str[0][:pred_EOS]  # prune after "end of sentence" token ([s])
+        else:
+            pred = preds_str[0]
         print(f'Pred: {pred}')
         print(f'GT:   {labels[0]}')
 
