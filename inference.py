@@ -41,6 +41,7 @@ def infer_data(model, evaluation_loader, converter, dataset, opt):
         image = image_tensors.to(device)
         image_hash = (hex(hash(image.cpu().numpy().tobytes()))[2:8]).upper()
 
+        length_for_pred = torch.IntTensor([opt.batch_max_length] * 1).to(device)
         text_for_pred = torch.LongTensor(1, opt.batch_max_length + 1).fill_(0).to(device)
         text_for_loss, length_for_loss = converter.encode(labels, batch_max_length=opt.batch_max_length)
         if 'CTC' in opt.Prediction:
@@ -58,7 +59,7 @@ def infer_data(model, evaluation_loader, converter, dataset, opt):
             # select max probabilty (greedy decoding) then decode index to character
             _, preds_index = preds.max(2)
             preds_str = converter.decode(preds_index, length_for_pred)
-            labels = converter.decode(text_for_loss[:, 1:], length_for_loss)
+            #labels = converter.decode(text_for_loss[:, 1:], length_for_loss)
 
         #target = converter.encode(labels)
         #preds = model(image, text_for_pred)
