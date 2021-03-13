@@ -41,13 +41,30 @@ def infer_data(model, evaluation_loader, converter, dataset, opt):
         image = image_tensors.to(device)
         image_hash = (hex(hash(image.cpu().numpy().tobytes()))[2:8]).upper()
 
-        #target = converter.encode(labels)
         text_for_pred = torch.LongTensor(1, opt.batch_max_length + 1).fill_(0).to(device)
-        preds = model(image, text_for_pred)
-        _, preds_index = preds.topk(1, dim=-1, largest=True, sorted=True)
-        preds_index = preds_index.view(-1, opt.batch_max_length + 1)
-        length_for_pred = torch.IntTensor([opt.batch_max_length - 1] ).to(device)
-        preds_str = converter.decode(preds_index[:, 0:], length_for_pred)
+        text_for_loss, length_for_loss = converter.encode(labels, batch_max_length=opt.batch_max_length)
+        if 'CTC' in opt.Prediction:
+            preds = model(image, text_for_pred)
+            preds_size = torch.IntTensor([preds.size(1)] * 1)
+
+            _, preds_index = preds.max(2)
+            preds_str = converter.decode(preds_index.data, preds_size.data)
+        
+        else:
+            preds = model(image, text_for_pred, is_train=False)
+
+            preds = preds[:, :text_for_loss.shape[1] - 1, :]
+
+            # select max probabilty (greedy decoding) then decode index to character
+            _, preds_index = preds.max(2)
+            preds_str = converter.decode(preds_index, length_for_pred)
+            labels = converter.decode(text_for_loss[:, 1:], length_for_loss)
+
+        #target = converter.encode(labels)
+        #preds = model(image, text_for_pred)
+        #_, preds_index = preds.topk(1, dim=-1, largest=True, sorted=True)
+        #preds_index = preds_index.view(-1, opt.batch_max_length + 1)
+        #preds_str = converter.decode(preds_index[:, 0:], length_for_pred)
         if 'Attn' in opt.Prediction:
             pred_EOS = preds_str[0].find('[s]')
             pred = preds_str[0][:pred_EOS]  # prune after "end of sentence" token ([s])
