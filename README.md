@@ -1,4 +1,6 @@
-# Vision Transformer for Fast and Efficient Scene Text Recognition (ICDAR2021)
+# Vision Transformer for Fast and Efficient Scene Text Recognition (ICDAR 2021)
+
+ViTSTR is a simple single-stage model that uses a pre-trained Vision Transformer (ViT) to perform Scene Text Recognition (ViTSTR). It has a comparable accuracy but uses significantly less number of parameters and FLOPS.
 
 ViTSTR is built using a fork of [CLOVA AI Deep Text Recognition Benchmark](https://github.com/clovaai/deep-text-recognition-benchmark) whose original documentation is at the bottom. Below we document how to train and evaluate ViTSTR-Tiny and ViTSTR-small.
 
@@ -6,16 +8,46 @@ ViTSTR is built using a fork of [CLOVA AI Deep Text Recognition Benchmark](https
 
 ### No data augmentation
 
-`RANDOM=$$`
 
-`CUDA_VISIBLE_DEVICES=0 python3 train.py --train_data data_lmdb_release/training --valid_data data_lmdb_release/evaluation --select_data MJ-ST --batch_ratio 0.5-0.5 --Transformation None --FeatureExtraction None --SequenceModeling None --Prediction None --Transformer --imgH 224 --imgW 224 --TransformerModel=deit_tiny_patch16_224_str --manualSeed=$RANDOM  --sensitive`
+
+```
+RANDOM=$$
+
+CUDA_VISIBLE_DEVICES=0 python3 train.py --train_data data_lmdb_release/training \
+--valid_data data_lmdb_release/evaluation --select_data MJ-ST \ 
+--batch_ratio 0.5-0.5 --Transformation None --FeatureExtraction None \ 
+--SequenceModeling None --Prediction None --Transformer \
+--imgH 224 --imgW 224 --TransformerModel=deit_tiny_patch16_224_str \
+--manualSeed=$RANDOM  --sensitive
+```
 
 
 ## Test ViTSTR-Tiny
 
 Find the `best_accuracy.pth` checkpoint file (usually in `saved_model` folder).
 
-`CUDA_VISIBLE_DEVICES=0 python3 test.py --eval_data data_lmdb_release/evaluation --benchmark_all_eval --Transformation None --FeatureExtraction None --SequenceModeling None --Prediction None --saved_model <path_to/best_accuracy.pth> --sensitive --data_filtering_off  --Transformer --TransformerModel=deit_tiny_patch16_224_str --imgH 224 --imgW 224`
+```
+CUDA_VISIBLE_DEVICES=0 python3 test.py --eval_data data_lmdb_release/evaluation \
+--benchmark_all_eval --Transformation None --FeatureExtraction None \
+--SequenceModeling None --Prediction None --saved_model <path_to/best_accuracy.pth>\
+--sensitive --data_filtering_off  --Transformer --TransformerModel=deit_tiny_patch16_224_str\
+--imgH 224 --imgW 224
+```
+
+
+## Citation
+If you find this work useful, please cite:
+
+```
+@inproceedings{atienza2021vitstr,
+  title={Vision Transformer for Fast and Efficient Scene Text Recognition},
+  author={Atienza, Rowel},
+  booktitle = {International Conference on Document Analysis and Recognition (ICDAR)},
+  year={2021},
+  pubstate={published},
+  tppubtype={inproceedings}
+}
+```
 
 
 # What Is Wrong With Scene Text Recognition Model Comparisons? Dataset and Model Analysis
