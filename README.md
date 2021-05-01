@@ -2,6 +2,8 @@
 
 ViTSTR is a simple single-stage model that uses a pre-trained Vision Transformer (ViT) to perform Scene Text Recognition (ViTSTR). It has a comparable accuracy but uses significantly less number of parameters and FLOPS.
 
+![ViTSTR Model](figures/vitstr_model.png)
+
 ViTSTR is built using a fork of [CLOVA AI Deep Text Recognition Benchmark](https://github.com/clovaai/deep-text-recognition-benchmark) whose original documentation is at the bottom. Below we document how to train and evaluate ViTSTR-Tiny and ViTSTR-small.
 
 ## Train ViTSTR-Tiny
