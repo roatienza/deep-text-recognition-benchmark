@@ -18,6 +18,21 @@ Find the `best_accuracy.pth` checkpoint file (usually in `saved_model` folder).
 `CUDA_VISIBLE_DEVICES=0 python3 test.py --eval_data data_lmdb_release/evaluation --benchmark_all_eval --Transformation None --FeatureExtraction None --SequenceModeling None --Prediction None --saved_model <path_to/best_accuracy.pth> --sensitive --data_filtering_off  --Transformer --TransformerModel=deit_tiny_patch16_224_str --imgH 224 --imgW 224`
 
 
+## Citation
+If you find this work useful, please cite:
+
+```
+@inproceedings{atienza2021vitstr,
+  title={Vision Transformer for Fast and Efficient Scene Text Recognition},
+  author={Atienza, Rowel},
+  booktitle = {International Conference on Document Analysis and Recognition (ICDAR)},
+  year={2021},
+  pubstate={published},
+  tppubtype={inproceedings}
+}
+```
+
+
 # What Is Wrong With Scene Text Recognition Model Comparisons? Dataset and Model Analysis
 | [paper](https://arxiv.org/abs/1904.01906) | [training and evaluation data](https://github.com/clovaai/deep-text-recognition-benchmark#download-lmdb-dataset-for-traininig-and-evaluation-from-here) | [failure cases and cleansed label](https://github.com/clovaai/deep-text-recognition-benchmark#download-failure-cases-and-cleansed-label-from-here) | [pretrained model](https://drive.google.com/drive/folders/15WPsuPJDCzhp2SvYZLRj8mAlT3zmoAMW) | [Baidu ver(passwd:rryk)](https://pan.baidu.com/s/1KSNLv4EY3zFWHpBYlpFCBQ) |
 
