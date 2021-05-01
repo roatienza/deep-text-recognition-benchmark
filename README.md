@@ -32,8 +32,8 @@ Find the `best_accuracy.pth` checkpoint file (usually in `saved_model` folder).
 CUDA_VISIBLE_DEVICES=0 python3 test.py --eval_data data_lmdb_release/evaluation \
 --benchmark_all_eval --Transformation None --FeatureExtraction None \
 --SequenceModeling None --Prediction None --saved_model <path_to/best_accuracy.pth>\
---sensitive --data_filtering_off  --Transformer --TransformerModel=deit_tiny_patch16_224_str\
---imgH 224 --imgW 224
+--sensitive --data_filtering_off  --Transformer \
+--TransformerModel=deit_tiny_patch16_224_str --imgH 224 --imgW 224
 ```
 
 
