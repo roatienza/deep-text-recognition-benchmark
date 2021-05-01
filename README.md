@@ -15,7 +15,7 @@ ViTSTR is built using a fork of [CLOVA AI Deep Text Recognition Benchmark](https
 
 Find the `best_accuracy.pth` checkpoint file (usually in `saved_model` folder).
 
-`CUDA_VISIBLE_DEVICES=0 python3 test.py --eval_data data_lmdb_release/evaluation --benchmark_all_eval --Transformation None --FeatureExtraction None --SequenceModeling None --Prediction None --saved_model <path_to/best_accuracy.pth> --sensitive --data_filtering_off  --Transformer --TransformerModel=deit_small_patch16_224_str --imgH 224 --imgW 224`
+`CUDA_VISIBLE_DEVICES=0 python3 test.py --eval_data data_lmdb_release/evaluation --benchmark_all_eval --Transformation None --FeatureExtraction None --SequenceModeling None --Prediction None --saved_model <path_to/best_accuracy.pth> --sensitive --data_filtering_off  --Transformer --TransformerModel=deit_tiny_patch16_224_str --imgH 224 --imgW 224`
 
 
 # What Is Wrong With Scene Text Recognition Model Comparisons? Dataset and Model Analysis
