@@ -52,9 +52,6 @@ def accuracy(output, target, topk=(1,)):
 def get_device(verbose=False):
     use_cuda = torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
-    #if torch.cuda.device_count() > 1:
-    #    print("Available GPUs:", torch.cuda.device_count())
-    #    # model = nn.DataParallel(model)
     if verbose:
         print("Device:", device)
     return device

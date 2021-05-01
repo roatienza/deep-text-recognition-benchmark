@@ -270,6 +270,9 @@ def isless(prob=0.5):
     return np.random.uniform(0,1) < prob
 
 class DataAugment(object):
+    '''
+    Supports with and without data augmentation 
+    '''
     def __init__(self, opt):
         self.opt = opt
 
@@ -290,14 +293,17 @@ class DataAugment(object):
             self.geometry = [Rotate(), Perspective(), Shrink()]
 
             self.isbaseline_aug = False
+            # rand augment
             if self.opt.isrand_aug:
                 self.augs = [self.process, self.camera, self.noise, self.blur, self.weather, self.pattern, self.warp, self.geometry]
+            # semantic augment
             elif self.opt.issemantic_aug:
                 self.geometry = [Rotate(), Perspective(), Shrink()]
                 self.noise = [GaussianNoise()]
                 self.blur = [MotionBlur()]
                 self.augs = [self.noise, self.blur, self.geometry]
                 self.isbaseline_aug = True
+            # pp-ocr augment
             elif self.opt.islearning_aug:
                 self.geometry = [Rotate(), Perspective()]
                 self.noise = [GaussianNoise()]
@@ -305,11 +311,13 @@ class DataAugment(object):
                 self.warp = [Distort()]
                 self.augs = [self.warp, self.noise, self.blur, self.geometry]
                 self.isbaseline_aug = True
+            # scatter augment
             elif self.opt.isscatter_aug:
                 self.geometry = [Shrink()]
                 self.warp = [Distort()]
                 self.augs = [self.warp, self.geometry]
                 self.baseline_aug = True
+            # rotation augment
             elif self.opt.isrotation_aug:
                 self.geometry = [Rotate()]
                 self.augs = [self.geometry]
@@ -337,6 +345,7 @@ class DataAugment(object):
             #return img
         elif self.opt.isrand_aug or self.isbaseline_aug:
             img = self.rand_aug(img)
+        # individual augment can also be selected
         elif self.opt.issel_aug:
             img = self.sel_aug(img)
 
