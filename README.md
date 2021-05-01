@@ -8,14 +8,23 @@ ViTSTR is built using a fork of [CLOVA AI Deep Text Recognition Benchmark](https
 
 `RANDOM=$$`
 
-`CUDA_VISIBLE_DEVICES=0 python3 train.py --train_data data_lmdb_release/training --valid_data data_lmdb_release/evaluation --select_data MJ-ST --batch_ratio 0.5-0.5 --Transformation None --FeatureExtraction None --SequenceModeling None --Prediction None --Transformer --imgH 224 --imgW 224 --TransformerModel=deit_tiny_patch16_224_str --manualSeed=$RANDOM  --sensitive`
+`CUDA_VISIBLE_DEVICES=0 python3 train.py --train_data data_lmdb_release/training \
+    --valid_data data_lmdb_release/evaluation --select_data MJ-ST \ 
+    --batch_ratio 0.5-0.5 --Transformation None --FeatureExtraction None \ 
+    --SequenceModeling None --Prediction None --Transformer \
+    --imgH 224 --imgW 224 --TransformerModel=deit_tiny_patch16_224_str \
+    --manualSeed=$RANDOM  --sensitive`
 
 
 ## Test ViTSTR-Tiny
 
 Find the `best_accuracy.pth` checkpoint file (usually in `saved_model` folder).
 
-`CUDA_VISIBLE_DEVICES=0 python3 test.py --eval_data data_lmdb_release/evaluation --benchmark_all_eval --Transformation None --FeatureExtraction None --SequenceModeling None --Prediction None --saved_model <path_to/best_accuracy.pth> --sensitive --data_filtering_off  --Transformer --TransformerModel=deit_tiny_patch16_224_str --imgH 224 --imgW 224`
+`CUDA_VISIBLE_DEVICES=0 python3 test.py --eval_data data_lmdb_release/evaluation \
+  --benchmark_all_eval --Transformation None --FeatureExtraction None \
+  --SequenceModeling None --Prediction None --saved_model <path_to/best_accuracy.pth>\
+  --sensitive --data_filtering_off  --Transformer --TransformerModel=deit_tiny_patch16_224_str\
+  --imgH 224 --imgW 224`
 
 
 ## Citation
