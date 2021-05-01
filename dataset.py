@@ -292,8 +292,6 @@ class DataAugment(object):
             self.isbaseline_aug = False
             if self.opt.isrand_aug:
                 self.augs = [self.process, self.camera, self.noise, self.blur, self.weather, self.pattern, self.warp, self.geometry]
-                if self.opt.isprio_rand_aug:
-                    self.augs_prob = [0.1, 0.1, 0.15, 0.2, 0.1, 0.1, 0.1, 0.15]
             elif self.opt.issemantic_aug:
                 self.geometry = [Rotate(), Perspective(), Shrink()]
                 self.noise = [GaussianNoise()]
@@ -332,75 +330,19 @@ class DataAugment(object):
         #img.save("Source.png" )
 
         if self.opt.eval or isless(self.opt.intact_prob):
-            img = transforms.ToTensor()(img)
-            if self.scale:
-                img.sub_(0.5).div_(0.5)
-            return img
-
-        if self.opt.isrand_aug:
-            return self.rand_aug(img)
+            pass
+            #img = transforms.ToTensor()(img)
+            #if self.scale:
+            #    img.sub_(0.5).div_(0.5)
+            #return img
+        elif self.opt.isrand_aug or self.isbaseline_aug:
+            img = self.rand_aug(img)
         elif self.opt.issel_aug:
-            return self.sel_aug(img)
-        elif self.isbaseline_aug:
-            return self.baseline_aug(img)
-        elif self.opt.intact_prob >= 1.0:
-            img = transforms.ToTensor()(img)
-            if self.scale:
-                img.sub_(0.5).div_(0.5)
-            return img
-
-        prob = 1
-        #np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
-
-        if isless(0.6):
-            index = np.random.randint(0, len(self.processes))
-            process = self.processes[index]
-            index = np.random.randint(0, len(process))
-            op = process[index]
-            mag = np.random.randint(0, 3)
-            img = op(img, mag=mag, prob=prob)
-
-        index = np.random.randint(0, len(self.noises))
-        noise = self.noises[index]
-        index = np.random.randint(0, len(noise))
-        op = noise[index]
-        mag = np.random.randint(0, 3)
-        if type(op).__name__ == "Rain":
-            img = op(img.copy(), mag=mag, prob=prob)
-        else:
-            img = op(img, mag=mag, prob=prob)
-
-
-        if isless(0.2):
-            index = np.random.randint(0, len(self.pattern))
-            op = self.pattern[index]
-            mag = np.random.randint(0, 3)
-            img = op(img.copy(), mag=mag, prob=prob)
-
-
-        if isless(0.8):
-            iscurve = False
-            if isless(0.6):
-                index = np.random.randint(0, len(self.warp))
-                op = self.warp[index]
-                mag = np.random.randint(0, 3)
-                if type(op).__name__ == "Curve":
-                    iscurve = True
-                img = op(img, mag=mag, prob=prob)
-            
-            index = np.random.randint(0, len(self.geometry))
-            op = self.geometry[index]
-            mag = np.random.randint(0, 3)
-            if type(op).__name__ == "Rotate":
-                img = op(img, mag=mag, iscurve=iscurve, prob=prob)
-            else:
-                img = op(img, mag=mag, prob=prob)
+            img = self.sel_aug(img)
 
         img = transforms.ToTensor()(img)
-
         if self.scale:
             img.sub_(0.5).div_(0.5)
-
         return img
 
         """
@@ -419,37 +361,22 @@ class DataAugment(object):
         #    img = np.repeat(img, 3, axis=2)
         #    cv2.imwrite("dest-gray.png", img)
         #exit(0)
-    def baseline_aug(self, img):
+
+
+    def rand_aug(self, img):
         augs = np.random.choice(self.augs, self.opt.augs_num, replace=False)
         for aug in augs:
             index = np.random.randint(0, len(aug))
             op = aug[index]
             mag = np.random.randint(0, 3) if self.opt.augs_mag is None else self.opt.augs_mag
-            img = op(img, mag=mag)
-
-        img = transforms.ToTensor()(img)
-        if self.scale:
-            img.sub_(0.5).div_(0.5)
-        return img
-
-
-    def rand_aug(self, img):
-        if self.opt.isprio_rand_aug:
-            augs = np.random.choice(self.augs, self.opt.augs_num, replace=False, p=self.augs_prob)
-        else:
-            augs = np.random.choice(self.augs, self.opt.augs_num, replace=False)
-        for aug in augs:
-            index = np.random.randint(0, len(aug))
-            op = aug[index]
-            mag = np.random.randint(0, 3) if self.opt.augs_mag is None else self.opt.augs_mag
-            if type(op).__name__ == "Rain" or "Grid" in type(op).__name__ :
+            if type(op).__name__ == "Rain"  or type(op).__name__ == "Grid":
                 img = op(img.copy(), mag=mag)
             else:
                 img = op(img, mag=mag)
 
-        img = transforms.ToTensor()(img)
-        if self.scale:
-            img.sub_(0.5).div_(0.5)
+        #img = transforms.ToTensor()(img)
+        #if self.scale:
+        #    img.sub_(0.5).div_(0.5)
         return img
 
     def sel_aug(self, img):
@@ -513,10 +440,9 @@ class DataAugment(object):
             else:
                 img = op(img, mag=mag, prob=prob)
 
-        img = transforms.ToTensor()(img)
-        if self.scale:
-            img.sub_(0.5).div_(0.5)
-
+        #img = transforms.ToTensor()(img)
+        #if self.scale:
+        #    img.sub_(0.5).div_(0.5)
 
         return img
 

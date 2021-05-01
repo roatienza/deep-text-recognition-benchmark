@@ -20,10 +20,11 @@ from test import validation
 
 from torch.optim.lr_scheduler import CosineAnnealingLR, StepLR, MultiStepLR, ReduceLROnPlateau
 
+from utilities.misc import get_args
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-# python3 train.py --train_data data_lmdb_release/training --valid_data data_lmdb_release/validation --select_data MJ-ST --batch_ratio 0.5-0.5 --Transformation None --FeatureExtraction None --SequenceModeling None --Prediction None --Transformer --imgH 224 --imgW 224 --valInterval=200 
+# python3 train.py --train_data data_lmdb_release/training --valid_data data_lmdb_release/validation --select_data MJ-ST --batch_ratio 0.5-0.5 --Transformation None --FeatureExtraction None --SequenceModeling None --Prediction None --Transformer --imgH 224 --imgW 224
 
 def train(opt):
     """ dataset preparation """
@@ -130,12 +131,6 @@ def train(opt):
         optimizer = optim.Adam(filtered_parameters, lr=opt.lr, betas=(opt.beta1, 0.999))
     else:
         optimizer = optim.Adadelta(filtered_parameters, lr=opt.lr, rho=opt.rho, eps=opt.eps)
-        #if opt.Transformer:
-        #    optimizer = optim.Adadelta(model.parameters(),
-        #                               lr=opt.lr, 
-        #                               rho=opt.rho, 
-        #                               eps=opt.eps)
-        #else:
 
     if opt.scheduler:
         scheduler = CosineAnnealingLR(optimizer, T_max=opt.num_iter)
@@ -271,101 +266,21 @@ def train(opt):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--exp_name', help='Where to store logs and models')
-    parser.add_argument('--train_data', required=True, help='path to training dataset')
-    parser.add_argument('--valid_data', required=True, help='path to validation dataset')
-    parser.add_argument('--manualSeed', type=int, default=1111, help='for random seed setting')
-    parser.add_argument('--workers', type=int, help='number of data loading workers', default=4)
-    parser.add_argument('--batch_size', type=int, default=192, help='input batch size')
-    parser.add_argument('--num_iter', type=int, default=300000, help='number of iterations to train for')
-    parser.add_argument('--valInterval', type=int, default=2000, help='Interval between each validation')
-    parser.add_argument('--saved_model', default='', help="path to model to continue training")
-    parser.add_argument('--FT', action='store_true', help='whether to do fine-tuning')
-    parser.add_argument('--sgd', action='store_true', help='Whether to use SGD (default is Adadelta)')
-    parser.add_argument('--adam', action='store_true', help='Whether to use adam (default is Adadelta)')
-    parser.add_argument('--lr', type=float, default=1, help='learning rate, default=1.0 for Adadelta')
-    parser.add_argument('--beta1', type=float, default=0.9, help='beta1 for adam. default=0.9')
-    parser.add_argument('--rho', type=float, default=0.95, help='decay rate rho for Adadelta. default=0.95')
-    parser.add_argument('--eps', type=float, default=1e-8, help='eps for Adadelta. default=1e-8')
-    parser.add_argument('--grad_clip', type=float, default=5, help='gradient clipping value. default=5')
-    parser.add_argument('--baiduCTC', action='store_true', help='for data_filtering_off mode')
-    """ Data processing """
-    parser.add_argument('--select_data', type=str, default='MJ-ST',
-                        help='select training data (default is MJ-ST, which means MJ and ST used as training data)')
-    parser.add_argument('--batch_ratio', type=str, default='0.5-0.5',
-                        help='assign ratio for each selected data in the batch')
-    parser.add_argument('--total_data_usage_ratio', type=str, default='1.0',
-                        help='total data usage ratio, this ratio is multiplied to total number of data.')
-    parser.add_argument('--batch_max_length', type=int, default=25, help='maximum-label-length')
-    parser.add_argument('--imgH', type=int, default=32, help='the height of the input image')
-    parser.add_argument('--imgW', type=int, default=100, help='the width of the input image')
-    parser.add_argument('--rgb', action='store_true', help='use rgb input')
-    parser.add_argument('--character', type=str,
-                        default='0123456789abcdefghijklmnopqrstuvwxyz', help='character label')
-    parser.add_argument('--sensitive', action='store_true', help='for sensitive character mode')
-    parser.add_argument('--PAD', action='store_true', help='whether to keep ratio then pad for image resize')
-    parser.add_argument('--data_filtering_off', action='store_true', help='for data_filtering_off mode')
-    """ Model Architecture """
-    parser.add_argument('--Transformer', action='store_true', help='Use end-to-end transformer')
 
-    choices = ["vit_small_patch16_224_str", "vit_base_patch16_224_str", "deit_tiny_patch16_224_str", "deit_tiny_patch16_224_str_rgb", "deit_small_patch16_224_str", "deit_base_patch16_224_str", "vit_base_patch16_384_str", "vit_base_patch32_384_str"]
-    parser.add_argument('--TransformerModel', default=choices[2], help='Which vit/deit transformer model', choices=choices)
-    parser.add_argument('--Transformation', type=str, required=True, help='Transformation stage. None|TPS')
-    parser.add_argument('--FeatureExtraction', type=str, required=True,
-                        help='FeatureExtraction stage. VGG|RCNN|ResNet')
-    parser.add_argument('--SequenceModeling', type=str, required=True, help='SequenceModeling stage. None|BiLSTM')
-    parser.add_argument('--Prediction', type=str, required=True, help='Prediction stage. None|CTC|Attn')
-    parser.add_argument('--num_fiducial', type=int, default=20, help='number of fiducial points of TPS-STN')
-    parser.add_argument('--input_channel', type=int, default=1,
-                        help='the number of input channel of Feature extractor')
-    parser.add_argument('--output_channel', type=int, default=512,
-                        help='the number of output channel of Feature extractor')
-    parser.add_argument('--hidden_size', type=int, default=256, help='the size of the LSTM hidden state')
-
-    parser.add_argument('--issel_aug', action='store_true', help='Select augs')
-    parser.add_argument('--sel_prob', type=float, default=1., help='Probability of applying augmentation')
-    parser.add_argument('--pattern', action='store_true', help='Pattern group')
-    parser.add_argument('--warp', action='store_true', help='Warp group')
-    parser.add_argument('--geometry', action='store_true', help='Geometry group')
-    parser.add_argument('--weather', action='store_true', help='Weather group')
-    parser.add_argument('--noise', action='store_true', help='Noise group')
-    parser.add_argument('--blur', action='store_true', help='Blur group')
-    parser.add_argument('--camera', action='store_true', help='Camera group')
-    parser.add_argument('--process', action='store_true', help='Image processing routines')
-
-    parser.add_argument('--scheduler', action='store_true', help='Use lr scheduler')
-
-    parser.add_argument('--intact_prob', type=float, default=0.5, help='Probability of not applying augmentation')
-    parser.add_argument('--isrand_aug', action='store_true', help='Use RandAug')
-    parser.add_argument('--augs_num', type=int, default=4, help='Number of data augment groups to apply')
-    parser.add_argument('--augs_mag', type=int, default=None, help='Magnitude of data augment groups to apply')
-    parser.add_argument('--isprio_rand_aug', action='store_true', help='Use prioritized RandAug')
-
-    parser.add_argument('--issemantic_aug', action='store_true', help='Use Semantic')
-    parser.add_argument('--isrotation_aug', action='store_true', help='Use ')
-    parser.add_argument('--isscatter_aug', action='store_true', help='Use ')
-    parser.add_argument('--islearning_aug', action='store_true', help='Use ')
-    parser.add_argument('--fast_acc', action='store_true', help='Fast average accuracy computation')
-    opt = parser.parse_args()
+    opt = get_args()
 
     if not opt.exp_name:
-        opt.exp_name = f'Wordformer-{opt.TransformerModel}' if opt.Transformer else f'{opt.Transformation}-{opt.FeatureExtraction}-{opt.SequenceModeling}-{opt.Prediction}'
+        opt.exp_name = f'ViTSTR-{opt.TransformerModel}' if opt.Transformer else f'{opt.Transformation}-{opt.FeatureExtraction}-{opt.SequenceModeling}-{opt.Prediction}'
 
     opt.exp_name += f'-Seed{opt.manualSeed}'
-    # print(opt.exp_name)
 
     os.makedirs(f'./saved_models/{opt.exp_name}', exist_ok=True)
 
     """ vocab / character number configuration """
     if opt.sensitive:
-        # opt.character += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         opt.character = string.printable[:-6]  # same with ASTER setting (use 94 char).
-        #if opt.Transformer:
-        #    opt.batch_max_length = len(opt.character)
 
     """ Seed and GPU setting """
-    # print("Random Seed: ", opt.manualSeed)
     random.seed(opt.manualSeed)
     np.random.seed(opt.manualSeed)
     torch.manual_seed(opt.manualSeed)
@@ -374,7 +289,6 @@ if __name__ == '__main__':
     cudnn.benchmark = True
     cudnn.deterministic = True
     opt.num_gpu = torch.cuda.device_count()
-    # print('device count', opt.num_gpu)
     if opt.num_gpu > 1:
         print('------ Use multi-GPU setting ------')
         print('if you stuck too long time with multi-GPU setting, try to set --workers 0')

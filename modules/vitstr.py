@@ -7,7 +7,7 @@ from __future__ import print_function
 
 from timm.models import create_model
 
-def wordformer(num_tokens, model='vit_base_patch16_224_str', checkpoint_path=''):
+def create_vitstr(num_tokens, model=None, checkpoint_path=''):
     model = create_model(
         model,
         pretrained=True,

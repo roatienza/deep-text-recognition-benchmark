@@ -21,7 +21,7 @@ from modules.transformation import TPS_SpatialTransformerNetwork
 from modules.feature_extraction import VGG_FeatureExtractor, RCNN_FeatureExtractor, ResNet_FeatureExtractor
 from modules.sequence_modeling import BidirectionalLSTM
 from modules.prediction import Attention
-from modules.wordformer import wordformer
+from modules.vitstr import create_vitstr
 
 import math
 
@@ -33,7 +33,7 @@ class Model(nn.Module):
         self.opt = opt
         self.stages = {'Trans': opt.Transformation, 'Feat': opt.FeatureExtraction,
                        'Seq': opt.SequenceModeling, 'Pred': opt.Prediction,
-                       'Wordformer': opt.Transformer}
+                       'ViTSTR': opt.Transformer}
 
         """ Transformation """
         if opt.Transformation == 'TPS':
@@ -43,7 +43,7 @@ class Model(nn.Module):
             print('No Transformation module specified')
 
         if opt.Transformer:
-            self.Wordformer = wordformer(num_tokens=opt.num_class, model=opt.TransformerModel)
+            self.ViTSTR = create_vitstr(num_tokens=opt.num_class, model=opt.TransformerModel)
             return
 
         """ FeatureExtraction """
@@ -81,8 +81,8 @@ class Model(nn.Module):
         if not self.stages['Trans'] == "None":
             input = self.Transformation(input)
 
-        if self.stages['Wordformer']:
-            prediction = self.Wordformer(input, seqlen=seqlen)
+        if self.stages['ViTSTR']:
+            prediction = self.ViTSTR(input, seqlen=seqlen)
             return prediction
 
         """ Feature extraction stage """
