@@ -1,6 +1,6 @@
 # Vision Transformer for Fast and Efficient Scene Text Recognition (ICDAR2021)
 
-ViTSTR is built using a fork of [CLOVA AI Deep Text Recognition Benchmark](https://github.com/clovaai/deep-text-recognition-benchmark). The original documentation is at the bottom. Below we document how to train and test ViTSTR-Tiny and ViTSTR-small.
+ViTSTR is built using a fork of [CLOVA AI Deep Text Recognition Benchmark](https://github.com/clovaai/deep-text-recognition-benchmark) whose original documentation is at the bottom. Below we document how to train and evaluate ViTSTR-Tiny and ViTSTR-small.
 
 ## Train ViTSTR-Tiny
 
@@ -8,7 +8,7 @@ ViTSTR is built using a fork of [CLOVA AI Deep Text Recognition Benchmark](https
 
 `RANDOM=$$`
 
-`CUDA_VISIBLE_DEVICES=0 python3 train.py --train_data data_lmdb_release/training --valid_data data_lmdb_release/evaluation --select_data MJ-ST --batch_ratio 0.5-0.5 --Transformation None --FeatureExtraction None --SequenceModeling None --Prediction None --Transformer --imgH 224 --imgW 224 --TransformerModel=deit_tiny_patch16_224_str --manualSeed=$RANDOM --intact_prob=1.0 --data_filtering_off --exp_name=deit_tiny_100`
+`CUDA_VISIBLE_DEVICES=0 python3 train.py --train_data data_lmdb_release/training --valid_data data_lmdb_release/evaluation --select_data MJ-ST --batch_ratio 0.5-0.5 --Transformation None --FeatureExtraction None --SequenceModeling None --Prediction None --Transformer --imgH 224 --imgW 224 --TransformerModel=deit_tiny_patch16_224_str --manualSeed=$RANDOM --intact_prob=1.0 --data_filtering_off --sensitive --exp_name=vitstr_tiny_`
 
 
 ## Test
