@@ -1,4 +1,4 @@
-# Vision Transformer for Fast and Efficient Scene Text Recognition (ICDAR2021)
+# Vision Transformer for Fast and Efficient Scene Text Recognition (ICDAR 2021)
 
 ViTSTR is built using a fork of [CLOVA AI Deep Text Recognition Benchmark](https://github.com/clovaai/deep-text-recognition-benchmark) whose original documentation is at the bottom. Below we document how to train and evaluate ViTSTR-Tiny and ViTSTR-small.
 
