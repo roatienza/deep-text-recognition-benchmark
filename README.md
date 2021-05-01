@@ -2,11 +2,13 @@
 
 ViTSTR is built using a fork of [CLOVA AI Deep Text Recognition Benchmark](https://github.com/clovaai/deep-text-recognition-benchmark). The original documentation is at the bottom. Below we document how to train and test ViTSTR-Tiny and ViTSTR-small.
 
-## Train
+## Train ViTSTR-Tiny
+
+### No data augmentation (`--intact-prob=1.0`)
 
 `RANDOM=$$`
 
-`CUDA_VISIBLE_DEVICES=0 python3 train.py --train_data data_lmdb_release/training --valid_data data_lmdb_release/evaluation --select_data MJ-ST --batch_ratio 0.5-0.5 --Transformation None --FeatureExtraction None --SequenceModeling None --Prediction None --Transformer --imgH 224 --imgW 224 --TransformerModel=deit_small_patch16_224_str --manualSeed=$RANDOM --batch_size=96 --scheduler --warp --rotation --perspective --auto_augment --sensitive --data_filtering_off --rgb  --exp_name=deit_small_all_sensitive_rgb`
+`CUDA_VISIBLE_DEVICES=0 python3 train.py --train_data data_lmdb_release/training --valid_data data_lmdb_release/evaluation --select_data MJ-ST --batch_ratio 0.5-0.5 --Transformation None --FeatureExtraction None --SequenceModeling None --Prediction None --Transformer --imgH 224 --imgW 224 --TransformerModel=deit_tiny_patch16_224_str --manualSeed=$RANDOM --intact_prob=1.0 --data_filtering_off --exp_name=deit_tiny_100`
 
 
 ## Test
