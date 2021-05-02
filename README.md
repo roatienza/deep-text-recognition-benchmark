@@ -26,14 +26,15 @@ CUDA_VISIBLE_DEVICES=0 python3 train.py --train_data data_lmdb_release/training
 
 ## Test ViTSTR-Tiny
 
-Find the `best_accuracy.pth` checkpoint file (usually in `saved_model` folder).
+Find the path to `best_accuracy.pth` checkpoint file (usually in `saved_model` folder).
 
 ```
-CUDA_VISIBLE_DEVICES=0 python3 test.py --eval_data data_lmdb_release/evaluation \
---benchmark_all_eval --Transformation None --FeatureExtraction None \
---SequenceModeling None --Prediction None --saved_model <path_to/best_accuracy.pth>\
---sensitive --data_filtering_off  --Transformer \
---TransformerModel=deit_tiny_patch16_224_str --imgH 224 --imgW 224
+CUDA_VISIBLE_DEVICES=0 python3 test.py --eval_data data_lmdb_release/evaluation 
+--benchmark_all_eval --Transformation None --FeatureExtraction None  
+--SequenceModeling None --Prediction None --Transformer 
+--TransformerModel=vitstr_tiny_patch16_224 
+--saved_model <path_to/best_accuracy.pth> 
+--sensitive --data_filtering_off  --imgH 224 --imgW 224
 ```
 
 
