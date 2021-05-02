@@ -22,8 +22,8 @@ __all__ = [
     'vitstr_tiny_patch16_224', 
     'vitstr_small_patch16_224', 
     'vitstr_base_patch16_224',
-    #'vitstr_tiny_distilled_patch16_224', 
-    #'vitstr_small_distilled_patch16_224',
+    'vitstr_tiny_distilled_patch16_224', 
+    'vitstr_small_distilled_patch16_224',
     #'vitstr_base_distilled_patch16_224',
 ]
 
@@ -194,4 +194,18 @@ def vitstr_tiny_distilled_patch16_224(pretrained=False, **kwargs):
     if pretrained:
         load_pretrained(
             model, num_classes=model.num_classes, in_chans=kwargs.get('in_chans', 1), filter_fn=_conv_filter)
+    return model
+
+
+@register_model
+def vitstr_small_distilled_patch16_224(pretrained=False, **kwargs):
+    kwargs['in_chans'] = 1
+    model = ViTSTR(
+        patch_size=16, embed_dim=384, depth=12, num_heads=6, mlp_ratio=4, qkv_bias=True, **kwargs)
+    model.default_cfg = _cfg(
+            url="https://dl.fbaipublicfiles.com/deit/deit_small_distilled_patch16_224-649709d9.pth"
+    )
+    if pretrained:
+        load_pretrained(
+            model, num_classes=model.num_classes, in_chans=kwargs.get('in_chans', 1), filter_fn=checkpoint_filter_fn)
     return model

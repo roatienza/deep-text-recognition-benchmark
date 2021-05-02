@@ -233,10 +233,13 @@ def get_device(verbose=True):
 def get_args(is_train=True):
     parser = argparse.ArgumentParser(description='STR')
 
-    parser.add_argument('--eval_data', required=is_train, help='path to evaluation dataset')
+    # for test
+    parser.add_argument('--eval_data', required=not is_train, help='path to evaluation dataset')
     parser.add_argument('--benchmark_all_eval', action='store_true', help='evaluate 10 benchmark evaluation datasets')
     parser.add_argument('--calculate_infer_time', action='store_true', help='calculate inference timing')
+    parser.add_argument('--flops', action='store_true', help='calculates approx flops (may not work)')
 
+    # for train
     parser.add_argument('--exp_name', help='Where to store logs and models')
     parser.add_argument('--train_data', required=is_train, help='path to training dataset')
     parser.add_argument('--valid_data', required=is_train, help='path to validation dataset')
@@ -275,7 +278,7 @@ def get_args(is_train=True):
     """ Model Architecture """
     parser.add_argument('--Transformer', action='store_true', help='Use end-to-end transformer')
 
-    choices = ["vitstr_tiny_patch16_224", "vitstr_small_patch16_224", "vitstr_base_patch16_224", "vitstr_tiny_distilled_patch16_224"]
+    choices = ["vitstr_tiny_patch16_224", "vitstr_small_patch16_224", "vitstr_base_patch16_224", "vitstr_tiny_distilled_patch16_224", "vitstr_small_distilled_patch16_224"]
     parser.add_argument('--TransformerModel', default=choices[0], help='Which vit/deit transformer model', choices=choices)
     parser.add_argument('--Transformation', type=str, required=True, help='Transformation stage. None|TPS')
     parser.add_argument('--FeatureExtraction', type=str, required=True,
