@@ -1,4 +1,11 @@
 '''
+Implementation of ViTSTR based on timm VisionTransformer.
+
+TODO: 
+1) distilled deit backbone
+2) base deit backbone
+
+Copyright 2021 Rowel Atienza
 '''
 
 from __future__ import absolute_import
@@ -14,7 +21,6 @@ from copy import deepcopy
 from functools import partial
 from timm.models.vision_transformer import VisionTransformer, _cfg
 from timm.models.registry import register_model
-#from timm.models.helpers import create_model
 from timm.models import create_model
 
 _logger = logging.getLogger(__name__)
@@ -23,8 +29,8 @@ __all__ = [
     'vitstr_tiny_patch16_224', 
     'vitstr_small_patch16_224', 
     'vitstr_base_patch16_224',
-    'vitstr_tiny_distilled_patch16_224', 
-    'vitstr_small_distilled_patch16_224',
+    #'vitstr_tiny_distilled_patch16_224', 
+    #'vitstr_small_distilled_patch16_224',
     #'vitstr_base_distilled_patch16_224',
 ]
 
@@ -41,6 +47,10 @@ def create_vitstr(num_tokens, model=None, checkpoint_path=''):
     return vitstr
 
 class ViTSTR(VisionTransformer):
+    '''
+    ViTSTR is basically a ViT that uses DeiT weights.
+    Modified head to support a sequence of characters prediction for STR.
+    '''
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
     
@@ -75,6 +85,10 @@ class ViTSTR(VisionTransformer):
 
 
 def load_pretrained(model, cfg=None, num_classes=1000, in_chans=1, filter_fn=None, strict=True):
+    '''
+    Loads a pretrained checkpoint
+    From an older version of timm
+    '''
     if cfg is None:
         cfg = getattr(model, 'default_cfg')
     if cfg is None or 'url' not in cfg or not cfg['url']:
@@ -118,7 +132,6 @@ def load_pretrained(model, cfg=None, num_classes=1000, in_chans=1, filter_fn=Non
         strict = False
 
     model.load_state_dict(state_dict, strict=strict)
-
 
 def _conv_filter(state_dict, patch_size=16):
     """ convert patch embedding weight from manual patchify + linear proj to conv"""
@@ -173,6 +186,7 @@ def vitstr_base_patch16_224(pretrained=False, **kwargs):
             model, num_classes=model.num_classes, in_chans=kwargs.get('in_chans', 1), filter_fn=_conv_filter)
     return model
 
+# below is work in progress
 @register_model
 def vitstr_tiny_distilled_patch16_224(pretrained=False, **kwargs):
     kwargs['in_chans'] = 1
