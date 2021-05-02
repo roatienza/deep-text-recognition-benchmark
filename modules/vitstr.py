@@ -14,7 +14,8 @@ from copy import deepcopy
 from functools import partial
 from timm.models.vision_transformer import VisionTransformer, _cfg
 from timm.models.registry import register_model
-from timm.models.helpers import create_model
+#from timm.models.helpers import create_model
+from timm.models import create_model
 
 _logger = logging.getLogger(__name__)
 
