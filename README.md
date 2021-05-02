@@ -15,11 +15,11 @@ ViTSTR is built using a fork of [CLOVA AI Deep Text Recognition Benchmark](https
 ```
 RANDOM=$$
 
-CUDA_VISIBLE_DEVICES=0 python3 train.py --train_data data_lmdb_release/training \
---valid_data data_lmdb_release/evaluation --select_data MJ-ST \ 
---batch_ratio 0.5-0.5 --Transformation None --FeatureExtraction None \ 
---SequenceModeling None --Prediction None --Transformer \
---imgH 224 --imgW 224 --TransformerModel=deit_tiny_patch16_224_str \
+CUDA_VISIBLE_DEVICES=0 python3 train.py --train_data data_lmdb_release/training
+--valid_data data_lmdb_release/evaluation --select_data MJ-ST 
+--batch_ratio 0.5-0.5 --Transformation None --FeatureExtraction None 
+--SequenceModeling None --Prediction None --Transformer 
+--TransformerModel=vitstr_tiny_patch16_224 --imgH 224 --imgW 224 
 --manualSeed=$RANDOM  --sensitive
 ```
 
