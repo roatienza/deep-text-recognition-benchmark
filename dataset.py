@@ -331,18 +331,8 @@ class DataAugment(object):
         '''
         img = img.resize((self.opt.imgW, self.opt.imgH), Image.BICUBIC)
 
-        """
-        Comment out
-        """
-        #orig_img = img
-        #img.save("Source.png" )
-
         if self.opt.eval or isless(self.opt.intact_prob):
             pass
-            #img = transforms.ToTensor()(img)
-            #if self.scale:
-            #    img.sub_(0.5).div_(0.5)
-            #return img
         elif self.opt.isrand_aug or self.isbaseline_aug:
             img = self.rand_aug(img)
         # individual augment can also be selected
@@ -353,23 +343,6 @@ class DataAugment(object):
         if self.scale:
             img.sub_(0.5).div_(0.5)
         return img
-
-        """
-        Comment 
-        """
-        #if self.opt.rgb:
-        #    img = img.permute(1,2,0)
-        #else:
-        #    img = img[0].squeeze()
-        #img = img.cpu().numpy()
-        #img = (((img + 1) * 0.5) * 255).astype(np.uint8)
-        #if self.opt.rgb:
-        #    cv2.imwrite("dest.png", cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
-        #else:
-        #    img = np.expand_dims(img, axis=2)
-        #    img = np.repeat(img, 3, axis=2)
-        #    cv2.imwrite("dest-gray.png", img)
-        #exit(0)
 
 
     def rand_aug(self, img):
@@ -383,9 +356,6 @@ class DataAugment(object):
             else:
                 img = op(img, mag=mag)
 
-        #img = transforms.ToTensor()(img)
-        #if self.scale:
-        #    img.sub_(0.5).div_(0.5)
         return img
 
     def sel_aug(self, img):
@@ -448,10 +418,6 @@ class DataAugment(object):
                 img = op(img, iscurve=iscurve, mag=mag, prob=prob)
             else:
                 img = op(img, mag=mag, prob=prob)
-
-        #img = transforms.ToTensor()(img)
-        #if self.scale:
-        #    img.sub_(0.5).div_(0.5)
 
         return img
 

@@ -292,6 +292,8 @@ def get_args(is_train=True):
                         help='the number of output channel of Feature extractor')
     parser.add_argument('--hidden_size', type=int, default=256, help='the size of the LSTM hidden state')
 
+    # selective augmentation 
+    # can choose specific data augmentation
     parser.add_argument('--issel_aug', action='store_true', help='Select augs')
     parser.add_argument('--sel_prob', type=float, default=1., help='Probability of applying augmentation')
     parser.add_argument('--pattern', action='store_true', help='Pattern group')
@@ -303,17 +305,21 @@ def get_args(is_train=True):
     parser.add_argument('--camera', action='store_true', help='Camera group')
     parser.add_argument('--process', action='store_true', help='Image processing routines')
 
+    # use cosine learning rate decay
     parser.add_argument('--scheduler', action='store_true', help='Use lr scheduler')
 
     parser.add_argument('--intact_prob', type=float, default=0.5, help='Probability of not applying augmentation')
     parser.add_argument('--isrand_aug', action='store_true', help='Use RandAug')
-    parser.add_argument('--augs_num', type=int, default=4, help='Number of data augment groups to apply')
-    parser.add_argument('--augs_mag', type=int, default=None, help='Magnitude of data augment groups to apply')
+    parser.add_argument('--augs_num', type=int, default=3, help='Number of data augment groups to apply. 1 to 8.')
+    parser.add_argument('--augs_mag', type=int, default=None, help='Magnitude of data augment groups to apply. None if random.')
 
+    # for comparison to other augmentations
     parser.add_argument('--issemantic_aug', action='store_true', help='Use Semantic')
     parser.add_argument('--isrotation_aug', action='store_true', help='Use ')
     parser.add_argument('--isscatter_aug', action='store_true', help='Use ')
     parser.add_argument('--islearning_aug', action='store_true', help='Use ')
+
+    # orig paper uses this for fast benchmarking
     parser.add_argument('--fast_acc', action='store_true', help='Fast average accuracy computation')
    
     args = parser.parse_args()
