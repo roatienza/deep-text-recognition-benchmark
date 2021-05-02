@@ -14,8 +14,7 @@ from nltk.metrics.distance import edit_distance
 from utils import CTCLabelConverter, AttnLabelConverter, Averager, TokenLabelConverter
 from dataset import hierarchical_dataset, AlignCollate
 from model import Model
-
-from utilities.misc import get_args
+from utils import get_args
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -284,7 +283,7 @@ def get_flops(model, opt, converter):
 
 
 if __name__ == '__main__':
-    opt = get_args()
+    opt = get_args(is_train=False)
 
     """ vocab / character number configuration """
     if opt.sensitive:

@@ -17,10 +17,10 @@ from utils import CTCLabelConverter, CTCLabelConverterForBaiduWarpctc, AttnLabel
 from dataset import hierarchical_dataset, AlignCollate, Batch_Balanced_Dataset
 from model import Model
 from test import validation
+from utils import get_args
 
 from torch.optim.lr_scheduler import CosineAnnealingLR, StepLR, MultiStepLR, ReduceLROnPlateau
 
-from utilities.misc import get_args
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -270,7 +270,7 @@ if __name__ == '__main__':
     opt = get_args()
 
     if not opt.exp_name:
-        opt.exp_name = f'ViTSTR-{opt.TransformerModel}' if opt.Transformer else f'{opt.Transformation}-{opt.FeatureExtraction}-{opt.SequenceModeling}-{opt.Prediction}'
+        opt.exp_name = f'{opt.TransformerModel}' if opt.Transformer else f'{opt.Transformation}-{opt.FeatureExtraction}-{opt.SequenceModeling}-{opt.Prediction}'
 
     opt.exp_name += f'-Seed{opt.manualSeed}'
 

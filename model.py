@@ -43,7 +43,7 @@ class Model(nn.Module):
             print('No Transformation module specified')
 
         if opt.Transformer:
-            self.ViTSTR = create_vitstr(num_tokens=opt.num_class, model=opt.TransformerModel)
+            self.vitstr= create_vitstr(num_tokens=opt.num_class, model=opt.TransformerModel)
             return
 
         """ FeatureExtraction """
@@ -82,7 +82,7 @@ class Model(nn.Module):
             input = self.Transformation(input)
 
         if self.stages['ViTSTR']:
-            prediction = self.ViTSTR(input, seqlen=seqlen)
+            prediction = self.vitstr(input, seqlen=seqlen)
             return prediction
 
         """ Feature extraction stage """
