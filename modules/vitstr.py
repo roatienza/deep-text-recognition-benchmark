@@ -14,7 +14,7 @@ from copy import deepcopy
 from functools import partial
 from timm.models.vision_transformer import VisionTransformer, _cfg
 from timm.models.registry import register_model
-from timm.models.factory import create_model
+from timm.models.helpers import create_model
 
 _logger = logging.getLogger(__name__)
 
@@ -32,15 +32,6 @@ def create_vitstr(num_tokens, model=None, checkpoint_path=''):
         model,
         pretrained=True,
         num_classes=num_tokens,
-        drop_rate=0.,
-        drop_connect_rate=None, 
-        drop_path_rate=None,
-        drop_block_rate=None,
-        global_pool=None,
-        bn_tf=False,
-        bn_momentum=None,
-        bn_eps=None,
-        scriptable=False,
         checkpoint_path=checkpoint_path)
 
     # might need to run to get zero init head for transfer learning
@@ -164,7 +155,7 @@ def vitstr_small_patch16_224(pretrained=False, **kwargs):
     )
     if pretrained:
         load_pretrained(
-            model, num_classes=model.num_classes, in_chans=kwargs.get('in_chans', 1), filter_fn=checkpoint_filter_fn)
+            model, num_classes=model.num_classes, in_chans=kwargs.get('in_chans', 1), filter_fn=_conv_filter)
     return model
 
 @register_model
@@ -178,15 +169,15 @@ def vitstr_base_patch16_224(pretrained=False, **kwargs):
     )
     if pretrained:
         load_pretrained(
-            model, num_classes=model.num_classes, in_chans=kwargs.get('in_chans', 1), filter_fn=checkpoint_filter_fn)
+            model, num_classes=model.num_classes, in_chans=kwargs.get('in_chans', 1), filter_fn=_conv_filter)
     return model
 
 @register_model
 def vitstr_tiny_distilled_patch16_224(pretrained=False, **kwargs):
     kwargs['in_chans'] = 1
+    #kwargs['distilled'] = True
     model = ViTSTR(
         patch_size=16, embed_dim=192, depth=12, num_heads=3, mlp_ratio=4, qkv_bias=True, **kwargs)
-
     model.default_cfg = _cfg(
             url='https://dl.fbaipublicfiles.com/deit/deit_tiny_distilled_patch16_224-b40b3cf7.pth'
     )
@@ -200,6 +191,7 @@ def vitstr_tiny_distilled_patch16_224(pretrained=False, **kwargs):
 @register_model
 def vitstr_small_distilled_patch16_224(pretrained=False, **kwargs):
     kwargs['in_chans'] = 1
+    kwargs['distilled'] = True
     model = ViTSTR(
         patch_size=16, embed_dim=384, depth=12, num_heads=6, mlp_ratio=4, qkv_bias=True, **kwargs)
     model.default_cfg = _cfg(
@@ -207,5 +199,5 @@ def vitstr_small_distilled_patch16_224(pretrained=False, **kwargs):
     )
     if pretrained:
         load_pretrained(
-            model, num_classes=model.num_classes, in_chans=kwargs.get('in_chans', 1), filter_fn=checkpoint_filter_fn)
+            model, num_classes=model.num_classes, in_chans=kwargs.get('in_chans', 1), filter_fn=_conv_filter)
     return model
