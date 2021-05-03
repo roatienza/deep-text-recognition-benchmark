@@ -2,6 +2,10 @@
 
 ViTSTR is a simple single-stage model that uses a pre-trained Vision Transformer (ViT) to perform Scene Text Recognition (ViTSTR). It has a comparable accuracy but uses significantly less number of parameters and FLOPS.
 
+### Paper
+
+TODO: Link to paper
+
 ![ViTSTR Model](figures/vitstr_model.png)
 
 ViTSTR is built using a fork of [CLOVA AI Deep Text Recognition Benchmark](https://github.com/clovaai/deep-text-recognition-benchmark) whose original documentation is at the bottom. Below we document how to train and evaluate ViTSTR-Tiny and ViTSTR-small.
@@ -16,14 +20,16 @@ pip3 install -r requirements.txt
 
 Download lmdb dataset. See CLOVA AI original documentation below.
 
-### Quick validation using a pre-trained model (ViTSTR-Small)
+### Quick validation using a pre-trained model 
+
+ViTSTR-Small
 
 ```
-CUDA_VISIBLE_DEVICES=0 python3 test.py --eval_data data_lmdb_release/evaluation
---benchmark_all_eval --Transformation None --FeatureExtraction None
---SequenceModeling None --Prediction None --Transformer
---TransformerModel=vitstr_small_patch16_224
---saved_model saved_models/vitstr_small_patch16_224-Seed29296/vitstr_small_patch16_224.pth
+CUDA_VISIBLE_DEVICES=0 python3 test.py --eval_data data_lmdb_release/evaluation 
+--benchmark_all_eval --Transformation None --FeatureExtraction None 
+--SequenceModeling None --Prediction None --Transformer  
+--TransformerModel=vitstr_small_patch16_224 
+--saved_model https://github.com/roatienza/deep-text-recognition-benchmark/releases/download/v0.1.0/vitstr_small_patch16_224.pth 
 --sensitive --data_filtering_off  --imgH 224 --imgW 224
 ```
 
