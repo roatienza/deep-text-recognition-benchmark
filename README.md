@@ -1,4 +1,4 @@
-# Vision Transformer for Fast and Efficient Scene Text Recognition (ICDAR 2021)
+## Vision Transformer for Fast and Efficient Scene Text Recognition (ICDAR 2021)
 
 ViTSTR is a simple single-stage model that uses a pre-trained Vision Transformer (ViT) to perform Scene Text Recognition (ViTSTR). It has a comparable accuracy but uses significantly less number of parameters and FLOPS.
 
@@ -6,11 +6,9 @@ ViTSTR is a simple single-stage model that uses a pre-trained Vision Transformer
 
 ViTSTR is built using a fork of [CLOVA AI Deep Text Recognition Benchmark](https://github.com/clovaai/deep-text-recognition-benchmark) whose original documentation is at the bottom. Below we document how to train and evaluate ViTSTR-Tiny and ViTSTR-small.
 
-## Train ViTSTR-Tiny
+### Train ViTSTR-Tiny
 
-### No data augmentation
-
-
+No data augmentation
 
 ```
 RANDOM=$$
@@ -23,8 +21,31 @@ CUDA_VISIBLE_DEVICES=0 python3 train.py --train_data data_lmdb_release/training
 --manualSeed=$RANDOM  --sensitive
 ```
 
+With data augmentation and randaug. Best to use more workers (eg from default of 4, use 32 instead) since the data augmentation used is CPU intensive.
 
-## Test ViTSTR-Tiny
+```
+CUDA_VISIBLE_DEVICES=0 python3 train.py --train_data data_lmdb_release/training
+--valid_data data_lmdb_release/evaluation --select_data MJ-ST 
+--batch_ratio 0.5-0.5 --Transformation None --FeatureExtraction None 
+--SequenceModeling None --Prediction None --Transformer 
+--TransformerModel=vitstr_tiny_patch16_224 --imgH 224 --imgW 224 
+--manualSeed=$RANDOM  --sensitive --isrand_aug --workers=32
+```
+
+### ViTSTR-Small and Multi-GPU training
+
+Best to train larger networks like ViTSTR-Small and ViTSTR-Base on a multi-GPU machine. To keep a fixed batch size at `192`, use the `--batch_size` option. Divide `192` by the number of GPUs. For example, to train ViTSTR-Small on a 4-GPU machine, this would be `--batch_size=48`.
+
+```
+python3 train.py --train_data data_lmdb_release/training 
+--valid_data data_lmdb_release/evaluation --select_data MJ-ST 
+--batch_ratio 0.5-0.5 --Transformation None --FeatureExtraction None 
+--SequenceModeling None --Prediction None --Transformer 
+--TransformerModel=vitstr_small_patch16_224 --imgH 224 --imgW 224 
+--manualSeed=29296 --sensitive --batch_size=48
+```
+
+### Test ViTSTR-Tiny
 
 Find the path to `best_accuracy.pth` checkpoint file (usually in `saved_model` folder).
 
@@ -38,7 +59,7 @@ CUDA_VISIBLE_DEVICES=0 python3 test.py --eval_data data_lmdb_release/evaluation
 ```
 
 
-## Citation
+### Citation
 If you find this work useful, please cite:
 
 ```
