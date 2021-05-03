@@ -20,7 +20,9 @@ pip3 install -r requirements.txt
 
 Download lmdb dataset. See CLOVA AI original documentation below.
 
-### Quick validation using a pre-trained model (ViTSTR-Small)
+### Quick validation using a pre-trained model 
+
+ViTSTR-Small
 
 ```
 CUDA_VISIBLE_DEVICES=0 python3 test.py --eval_data data_lmdb_release/evaluation 
