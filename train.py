@@ -280,6 +280,9 @@ if __name__ == '__main__':
     if opt.sensitive:
         opt.character = string.printable[:-6]  # same with ASTER setting (use 94 char).
 
+    if opt.workers <= 0:
+        opt.workers = os.cpu_count()
+        
     """ Seed and GPU setting """
     random.seed(opt.manualSeed)
     np.random.seed(opt.manualSeed)
