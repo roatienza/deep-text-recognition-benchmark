@@ -229,7 +229,11 @@ def test(opt):
 
     # load model
     print('loading pretrained model from %s' % opt.saved_model)
-    model.load_state_dict(torch.load(opt.saved_model, map_location=device))
+
+    if validators.url(opt.saved_model):
+        model.load_state_dict(torch.hub.load_state_dict_from_url(checkpoint, progress=True, map_location=device))
+    else:
+        model.load_state_dict(torch.load(opt.saved_model, map_location=device))
     opt.exp_name = '_'.join(opt.saved_model.split('/')[1:])
     # print(model)
 

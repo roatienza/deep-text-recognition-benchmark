@@ -6,3 +6,4 @@ lmdb>=1.0.0
 pillow>=8.2.0
 opencv-python>=4.5.1.48
 nltk>=3.4.5
+natsort>=7.1.0
