@@ -16,20 +16,29 @@ pip3 install -r requirements.txt
 
 Download lmdb dataset. See CLOVA AI original documentation below.
 
-### Quick validation using a pre-trained model
+### Quick validation using a pre-trained model (ViTSTR-Small)
 
 ```
-CUDA_VISIBLE_DEVICES=0 python3 test.py --eval_data data_lmdb_release/evaluation 
---benchmark_all_eval --Transformation None --FeatureExtraction None  
---SequenceModeling None --Prediction None --Transformer 
---TransformerModel=vitstr_tiny_patch16_224 
---saved_model https:// 
+CUDA_VISIBLE_DEVICES=0 python3 test.py --eval_data data_lmdb_release/evaluation
+--benchmark_all_eval --Transformation None --FeatureExtraction None
+--SequenceModeling None --Prediction None --Transformer
+--TransformerModel=vitstr_small_patch16_224
+--saved_model saved_models/vitstr_small_patch16_224-Seed29296/vitstr_small_patch16_224.pth
 --sensitive --data_filtering_off  --imgH 224 --imgW 224
 ```
 
-### Train ViTSTR-Tiny
+### Benchmarks (Top 1% accuracy)
 
-No data augmentation
+| Model | IIIT | SVT | IC03 | IC03 | IC13 | IC13 | IC15 | IC15 | SVTP | CT | Acc | Std
+| :--- | :---: | :---: | :---: | :---: | :--: | :--: | :---: | :---: | :---: | :---: | :---: | :--: |
+| ViTSTR-Tiny | 85.6 |  82.4 | 93.0 | 92.7 | 90.3 | 89.4  | 71.6 | 65.9 | 73.4 | 64.7 | 80.0 | 0.3
+| ViTSTR-Tiny+Aug | 85.6 | 85.9 | 94.0 | 93.5 | 91.4 | 90.1 | 74.7 | 68.9 | 77.4 | 72.7 | 82.3 | 0.1
+| ViTSTR-Small | 85.2 | 86.5 | 94.0 | 93.7 | 91.8 | 90.9 | 75.0 | 69.2 | 78.5 | 71.4 | 82.5 | 0.1
+| ViTSTR-Small+Aug  | 86.6 | 86.9 | 93.9 | 93.4  |92.3 |91.4 |76.9 | 70.9 | 80.3 | 77.8 | 83.7 | 0.0
+
+### Train
+
+ViTSTR-Tiny without data augmentation 
 
 ```
 RANDOM=$$
@@ -42,7 +51,7 @@ CUDA_VISIBLE_DEVICES=0 python3 train.py --train_data data_lmdb_release/training
 --manualSeed=$RANDOM  --sensitive
 ```
 
-With data augmentation and randaug. Best to use more workers (eg from default of 4, use 32 instead) since the data augmentation used is CPU intensive.
+ViTSTR-Tiny with data augmentation and random augmentation. Best to use more workers (eg from default of `4`, use `32` instead) since the data augmentation used is CPU intensive.
 
 ```
 CUDA_VISIBLE_DEVICES=0 python3 train.py --train_data data_lmdb_release/training
@@ -53,7 +62,9 @@ CUDA_VISIBLE_DEVICES=0 python3 train.py --train_data data_lmdb_release/training
 --manualSeed=$RANDOM  --sensitive --isrand_aug --workers=32
 ```
 
-### ViTSTR-Small and multi-GPU training
+### Multi-GPU
+
+ViTSTR-Small on a 4-GPU machine. 
 
 Best to train larger networks like ViTSTR-Small and ViTSTR-Base on a multi-GPU machine. To keep a fixed batch size at `192`, use the `--batch_size` option. Divide `192` by the number of GPUs. For example, to train ViTSTR-Small on a 4-GPU machine, this would be `--batch_size=48`.
 
@@ -66,9 +77,9 @@ python3 train.py --train_data data_lmdb_release/training
 --manualSeed=29296 --sensitive --batch_size=48
 ```
 
-### Test ViTSTR-Tiny
+### Test
 
-Find the path to `best_accuracy.pth` checkpoint file (usually in `saved_model` folder).
+ViTSTR-Tiny. Find the path to `best_accuracy.pth` checkpoint file (usually in `saved_model` folder).
 
 ```
 CUDA_VISIBLE_DEVICES=0 python3 test.py --eval_data data_lmdb_release/evaluation 
@@ -80,7 +91,8 @@ CUDA_VISIBLE_DEVICES=0 python3 test.py --eval_data data_lmdb_release/evaluation
 ```
 
 
-### Citation
+
+## Citation
 If you find this work useful, please cite:
 
 ```
