@@ -12,7 +12,11 @@ ViTSTR is built using a fork of [CLOVA AI Deep Text Recognition Benchmark](https
 pip3 install -r requirements.txt
 ```
 
-### Quick validation
+### Dataset
+
+Download lmdb dataset. See CLOVA AI original documentation below.
+
+### Quick validation using a pre-trained model
 
 ```
 CUDA_VISIBLE_DEVICES=0 python3 test.py --eval_data data_lmdb_release/evaluation 
