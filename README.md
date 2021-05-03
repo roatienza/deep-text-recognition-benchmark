@@ -1,4 +1,4 @@
-## Vision Transformer for Fast and Efficient Scene Text Recognition (ICDAR 2021)
+# Vision Transformer for Fast and Efficient Scene Text Recognition (ICDAR 2021)
 
 ViTSTR is a simple single-stage model that uses a pre-trained Vision Transformer (ViT) to perform Scene Text Recognition (ViTSTR). It has a comparable accuracy but uses significantly less number of parameters and FLOPS.
 
