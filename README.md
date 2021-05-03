@@ -6,6 +6,23 @@ ViTSTR is a simple single-stage model that uses a pre-trained Vision Transformer
 
 ViTSTR is built using a fork of [CLOVA AI Deep Text Recognition Benchmark](https://github.com/clovaai/deep-text-recognition-benchmark) whose original documentation is at the bottom. Below we document how to train and evaluate ViTSTR-Tiny and ViTSTR-small.
 
+### Install requirements
+
+```
+pip3 install -r requirements.txt
+```
+
+### Quick validation
+
+```
+CUDA_VISIBLE_DEVICES=0 python3 test.py --eval_data data_lmdb_release/evaluation 
+--benchmark_all_eval --Transformation None --FeatureExtraction None  
+--SequenceModeling None --Prediction None --Transformer 
+--TransformerModel=vitstr_tiny_patch16_224 
+--saved_model https:// 
+--sensitive --data_filtering_off  --imgH 224 --imgW 224
+```
+
 ### Train ViTSTR-Tiny
 
 No data augmentation
@@ -32,7 +49,7 @@ CUDA_VISIBLE_DEVICES=0 python3 train.py --train_data data_lmdb_release/training
 --manualSeed=$RANDOM  --sensitive --isrand_aug --workers=32
 ```
 
-### ViTSTR-Small and Multi-GPU training
+### ViTSTR-Small and multi-GPU training
 
 Best to train larger networks like ViTSTR-Small and ViTSTR-Base on a multi-GPU machine. To keep a fixed batch size at `192`, use the `--batch_size` option. Divide `192` by the number of GPUs. For example, to train ViTSTR-Small on a 4-GPU machine, this would be `--batch_size=48`.
 
