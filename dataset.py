@@ -5,7 +5,6 @@ import six
 import math
 import lmdb
 import torch
-import cv2
 
 from augmentation.weather import Fog, Snow, Frost
 from augmentation.warp import Curve, Distort, Stretch
