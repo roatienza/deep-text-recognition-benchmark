@@ -57,11 +57,28 @@ CUDA_VISIBLE_DEVICES=0 python3 train.py --train_data data_lmdb_release/training
 --manualSeed=$RANDOM  --sensitive
 ```
 
-ViTSTR-Tiny with data augmentation and random augmentation. 
+### Multi-GPU training
+
+ViTSTR-Small on a 4-GPU machine
+
+It is recommended to train larger networks like ViTSTR-Small and ViTSTR-Base on a multi-GPU machine. To keep a fixed batch size at `192`, use the `--batch_size` option. Divide `192` by the number of GPUs. For example, to train ViTSTR-Small on a 4-GPU machine, this would be `--batch_size=48`.
+
+```
+python3 train.py --train_data data_lmdb_release/training 
+--valid_data data_lmdb_release/evaluation --select_data MJ-ST 
+--batch_ratio 0.5-0.5 --Transformation None --FeatureExtraction None 
+--SequenceModeling None --Prediction None --Transformer 
+--TransformerModel=vitstr_small_patch16_224 --imgH 224 --imgW 224 
+--manualSeed=29296 --sensitive --batch_size=48
+```
+
+### Data augmentation 
+
+ViTSTR-Tiny using rand augment
 
 It is recommended to use more workers (eg from default of `4`, use `32` instead) since the data augmentation process is CPU intensive. In determining the number of workers, a simple rule of thumb to follow is it can be set to a value between 25% to 50% of the total number of CPU cores. For example, for a system with `64` CPU cores, the number of workers can be set to `32` to use 50% of all cores.  For multi-GPU systems, the number of workers must be divided by the number of GPUs. For example, for `32` workers in a 4-GPU system, `--workers=8`. For convenience, simply use `--workers=-1`, 50% of all cores will be used.
 
-Transformers like large batch sizes. For ViTSTR, the performance improves with a large batch size (e.g. `1024`). Similar to workers, for multi-GPU systems, the `--batch_size` option must be equal to the target batch size divided by the number of GPUs to use in the training. For example, for batch size of `1024` in a 4-GPU system, `--batch_size=256`.
+Transformers like large batch sizes. For ViTSTR, the performance improves with a large batch size (e.g. `1024`). 
 
 Lastly, instead of using a constant learning rate, a cosine scheduler improves the performance of the model during training.
 
@@ -77,20 +94,6 @@ python3 train.py --train_data data_lmdb_release/training
 --batch_size=256 --isrand_aug --workers=-1 --scheduler
 ```
 
-### Multi-GPU
-
-ViTSTR-Small on a 4-GPU machine. 
-
-Best to train larger networks like ViTSTR-Small and ViTSTR-Base on a multi-GPU machine. To keep a fixed batch size at `192`, use the `--batch_size` option. Divide `192` by the number of GPUs. For example, to train ViTSTR-Small on a 4-GPU machine, this would be `--batch_size=48`.
-
-```
-python3 train.py --train_data data_lmdb_release/training 
---valid_data data_lmdb_release/evaluation --select_data MJ-ST 
---batch_ratio 0.5-0.5 --Transformation None --FeatureExtraction None 
---SequenceModeling None --Prediction None --Transformer 
---TransformerModel=vitstr_small_patch16_224 --imgH 224 --imgW 224 
---manualSeed=29296 --sensitive --batch_size=48
-```
 
 ### Test
 
@@ -104,7 +107,6 @@ CUDA_VISIBLE_DEVICES=0 python3 test.py --eval_data data_lmdb_release/evaluation
 --sensitive --data_filtering_off  --imgH 224 --imgW 224
 --saved_model <path_to/best_accuracy.pth>
 ```
-
 
 
 ## Citation
