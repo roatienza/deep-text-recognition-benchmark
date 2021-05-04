@@ -69,7 +69,7 @@ python3 train.py --train_data data_lmdb_release/training
 --batch_ratio 0.5-0.5 --Transformation None --FeatureExtraction None 
 --SequenceModeling None --Prediction None --Transformer 
 --TransformerModel=vitstr_small_patch16_224 --imgH 224 --imgW 224 
---manualSeed=29296 --sensitive --batch_size=48
+--manualSeed=$RANDOM --sensitive --batch_size=48
 ```
 
 ### Data augmentation 
