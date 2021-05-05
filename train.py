@@ -280,8 +280,7 @@ if __name__ == '__main__':
     if opt.sensitive:
         opt.character = string.printable[:-6]  # same with ASTER setting (use 94 char).
 
-    if opt.workers <= 0:
-        opt.workers = os.cpu_count()
+
         
     """ Seed and GPU setting """
     random.seed(opt.manualSeed)
@@ -292,6 +291,10 @@ if __name__ == '__main__':
     cudnn.benchmark = True
     cudnn.deterministic = True
     opt.num_gpu = torch.cuda.device_count()
+
+    if opt.workers <= 0:
+        opt.workers = (os.cpu_count() // 2) // opt.num_gpu
+
     if opt.num_gpu > 1:
         print('------ Use multi-GPU setting ------')
         print('if you stuck too long time with multi-GPU setting, try to set --workers 0')
