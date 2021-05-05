@@ -77,13 +77,9 @@ python3 train.py --train_data data_lmdb_release/training
 
 ViTSTR-Tiny using rand augment
 
-It is recommended to use more workers (eg from default of `4`, use `32` instead) since the data augmentation process is CPU intensive. In determining the number of workers, a simple rule of thumb to follow is it can be set to a value between 25% to 50% of the total number of CPU cores. For example, for a system with `64` CPU cores, the number of workers can be set to `32` to use 50% of all cores.  For multi-GPU systems, the number of workers must be divided by the number of GPUs. For example, for `32` workers in a 4-GPU system, `--workers=8`. For convenience, simply use `--workers=-1`, 50% of all cores will be used.
+It is recommended to use more workers (eg from default of `4`, use `32` instead) since the data augmentation process is CPU intensive. In determining the number of workers, a simple rule of thumb to follow is it can be set to a value between 25% to 50% of the total number of CPU cores. For example, for a system with `64` CPU cores, the number of workers can be set to `32` to use 50% of all cores.  For multi-GPU systems, the number of workers must be divided by the number of GPUs. For example, for `32` workers in a 4-GPU system, `--workers=8`. For convenience, simply use `--workers=-1`, 50% of all cores will be used. Lastly, instead of using a constant learning rate, a cosine scheduler improves the performance of the model during training.
 
-Transformers like large batch sizes. For ViTSTR, the performance improves with a large batch size (e.g. `1024`). 
-
-Lastly, instead of using a constant learning rate, a cosine scheduler improves the performance of the model during training.
-
-Below is a sample configuration for a 4-GPU system.
+Below is a sample configuration for a 4-GPU system using batch size of `192`.
 
 ```
 python3 train.py --train_data data_lmdb_release/training
@@ -92,7 +88,7 @@ python3 train.py --train_data data_lmdb_release/training
 --SequenceModeling None --Prediction None --Transformer 
 --TransformerModel=vitstr_tiny_patch16_224 --imgH 224 --imgW 224 
 --manualSeed=$RANDOM  --sensitive
---batch_size=256 --isrand_aug --workers=-1 --scheduler
+--batch_size=48 --isrand_aug --workers=-1 --scheduler
 ```
 
 
