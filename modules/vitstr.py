@@ -95,7 +95,7 @@ def load_pretrained(model, cfg=None, num_classes=1000, in_chans=1, filter_fn=Non
         _logger.warning("Pretrained model URL is invalid, using random initialization.")
         return
 
-    state_dict = model_zoo.load_url(cfg['url'], progress=False, map_location='cpu')
+    state_dict = model_zoo.load_url(cfg['url'], progress=True, map_location='cpu')
 
     if filter_fn is not None:
         state_dict = filter_fn(state_dict)
@@ -103,7 +103,11 @@ def load_pretrained(model, cfg=None, num_classes=1000, in_chans=1, filter_fn=Non
     if in_chans == 1:
         conv1_name = cfg['first_conv']
         _logger.info('Converting first conv (%s) pretrained weights from 3 to 1 channel' % conv1_name)
-        conv1_weight = state_dict[conv1_name + '.weight']
+        key = conv1_name + '.weight'
+        if key in state_dict.keys():
+            conv1_weight = state_dict[conv1_name + '.weight']
+        else:
+            return
         # Some weights are in torch.half, ensure it's float for sum on CPU
         conv1_type = conv1_weight.dtype
         conv1_weight = conv1_weight.float()
@@ -175,7 +179,7 @@ def vitstr_small_patch16_224(pretrained=False, **kwargs):
 @register_model
 def vitstr_base_patch16_224(pretrained=False, **kwargs):
     kwargs['in_chans'] = 1
-    model = VisionTransformer(
+    model = ViTSTR(
         patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True, **kwargs)
     model.default_cfg = _cfg(
             #url='https://github.com/roatienza/public/releases/download/v0.1-deit-base/deit_base_patch16_224-b5f2ef4d.pth'
