@@ -96,6 +96,8 @@ def load_pretrained(model, cfg=None, num_classes=1000, in_chans=1, filter_fn=Non
         return
 
     state_dict = model_zoo.load_url(cfg['url'], progress=True, map_location='cpu')
+    if "model" in state_dict.keys():
+        state_dict = state_dict["model"]
 
     if filter_fn is not None:
         state_dict = filter_fn(state_dict)
@@ -105,8 +107,10 @@ def load_pretrained(model, cfg=None, num_classes=1000, in_chans=1, filter_fn=Non
         _logger.info('Converting first conv (%s) pretrained weights from 3 to 1 channel' % conv1_name)
         key = conv1_name + '.weight'
         if key in state_dict.keys():
+            _logger.info('(%s) key found in state_dict' % key)
             conv1_weight = state_dict[conv1_name + '.weight']
         else:
+            _logger.info('(%s) key NOT found in state_dict' % key)
             return
         # Some weights are in torch.half, ensure it's float for sum on CPU
         conv1_type = conv1_weight.dtype
@@ -135,7 +139,9 @@ def load_pretrained(model, cfg=None, num_classes=1000, in_chans=1, filter_fn=Non
         del state_dict[classifier_name + '.bias']
         strict = False
 
+    print("Loading pre-trained vision transformer weights from %s ..." % cfg['url'])
     model.load_state_dict(state_dict, strict=strict)
+
 
 def _conv_filter(state_dict, patch_size=16):
     """ convert patch embedding weight from manual patchify + linear proj to conv"""

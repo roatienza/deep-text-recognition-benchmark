@@ -70,9 +70,6 @@ def train(opt):
         opt.input_channel = 3
 
     model = Model(opt)
-    print('model input parameters', opt.imgH, opt.imgW, opt.num_fiducial, opt.input_channel, opt.output_channel,
-          opt.hidden_size, opt.num_class, opt.batch_max_length, opt.Transformation, opt.FeatureExtraction,
-          opt.SequenceModeling, opt.Prediction)
 
     # weight initialization
     if not opt.Transformer:
@@ -99,8 +96,8 @@ def train(opt):
             model.load_state_dict(torch.load(opt.saved_model), strict=False)
         else:
             model.load_state_dict(torch.load(opt.saved_model))
-    print("Model:")
-    print(model)
+    #print("Model:")
+    #print(model)
 
     """ setup loss """
     # README: https://github.com/clovaai/deep-text-recognition-benchmark/pull/209
@@ -143,7 +140,7 @@ def train(opt):
         for k, v in args.items():
             opt_log += f'{str(k)}: {str(v)}\n'
         opt_log += '---------------------------------------\n'
-        print(opt_log)
+        #print(opt_log)
         opt_file.write(opt_log)
         total_params = int(sum(params_num))
         total_params = f'Trainable network params num : {total_params:,}'
