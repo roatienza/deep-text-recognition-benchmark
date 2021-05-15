@@ -38,6 +38,9 @@ Other weights available:
 ```
 vitstr_tiny_patch16_224.pth
 vitstr_small_patch16_224.pth
+vitstr_base_patch16_224.pth
+vitstr_tiny_patch16_224_aug.pth
+vitstr_base_patch16_224_aug.pth
 ```
 
 ### Benchmarks (Top 1% accuracy)
