@@ -4,7 +4,7 @@ ViTSTR is a simple single-stage model that uses a pre-trained Vision Transformer
 
 ### Paper
 
-TODO: Link to paper
+[Arxiv](https://arxiv.org/abs/2105.08582)
 
 ![ViTSTR Model](figures/vitstr_model.png)
 
