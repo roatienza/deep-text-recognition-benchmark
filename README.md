@@ -56,6 +56,19 @@ vitstr_base_patch16_224_aug.pth
 | ViTSTR-Base  | 86.9	|87.2	|93.8	|93.4	|92.1	|91.3	|76.8	|71.1	|80.0	|74.7	|83.7	|0.1
 | ViTSTR-Base+Aug  | 88.4	|87.7	|94.7	|94.3	|93.2	|92.4	|78.5	|72.6	|81.8	|81.3	|85.2	|0.1
 
+
+### Comparison with other STR models
+
+#### Accuracy vs Number of Parameters
+
+![Acc vs Parameters](https://github.com/roatienza/deep-text-recognition-benchmark/blob/master/scripts/paper/Accuracy_vs_Number_of_Parameters.png)
+
+#### Accuracy vs Speed (2080Ti GPU)
+![Acc vs Speed](https://github.com/roatienza/deep-text-recognition-benchmark/blob/master/scripts/paper/Accuracy_vs_Msec_per_Image.png)
+
+#### Accuracy vs FLOPS
+![Acc vs FLOPS](https://github.com/roatienza/deep-text-recognition-benchmark/blob/master/scripts/paper/Accuracy_vs_GFLOPS.png)
+
 ### Train
 
 ViTSTR-Tiny without data augmentation 
