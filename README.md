@@ -33,15 +33,14 @@ CUDA_VISIBLE_DEVICES=0 python3 test.py --eval_data data_lmdb_release/evaluation
 https://github.com/roatienza/deep-text-recognition-benchmark/releases/download/v0.1.0/vitstr_small_patch16_224_aug.pth 
 ```
 
-Other weights available:
+Available model weights:
 
-```
-vitstr_tiny_patch16_224.pth
-vitstr_small_patch16_224.pth
-vitstr_base_patch16_224.pth
-vitstr_tiny_patch16_224_aug.pth
-vitstr_base_patch16_224_aug.pth
-```
+| Small | Tiny | Base |
+| :---: | :---: | :---: |
+| `vitstr_tiny_patch16_224` | `vitstr_small_patch16_224` | `vitstr_base_patch16_224`|
+|[ViTSTR-Tiny](https://github.com/roatienza/deep-text-recognition-benchmark/releases/download/v0.1.0/vitstr_tiny_patch16_224.pth)|[ViTSTR-Small](https://github.com/roatienza/deep-text-recognition-benchmark/releases/download/v0.1.0/vitstr_small_patch16_224.pth)|[ViTSTR-Base](https://github.com/roatienza/deep-text-recognition-benchmark/releases/download/v0.1.0/vitstr_base_patch16_224.pth)|
+|[ViTSTR-Tiny+Aug](https://github.com/roatienza/deep-text-recognition-benchmark/releases/download/v0.1.0/vitstr_tiny_patch16_224_aug.pth)|[ViTSTR-Small+Aug](https://github.com/roatienza/deep-text-recognition-benchmark/releases/download/v0.1.0/vitstr_small_patch16_224_aug.pth)|[ViTSTR-Base+Aug](https://github.com/roatienza/deep-text-recognition-benchmark/releases/download/v0.1.0/vitstr_base_patch16_224_aug.pth)|
+
 
 ### Benchmarks (Top 1% accuracy)
 
