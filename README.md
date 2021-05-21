@@ -35,7 +35,7 @@ https://github.com/roatienza/deep-text-recognition-benchmark/releases/download/v
 
 Available model weights:
 
-| Small | Tiny | Base |
+| Tiny | Small  | Base |
 | :---: | :---: | :---: |
 | `vitstr_tiny_patch16_224` | `vitstr_small_patch16_224` | `vitstr_base_patch16_224`|
 |[ViTSTR-Tiny](https://github.com/roatienza/deep-text-recognition-benchmark/releases/download/v0.1.0/vitstr_tiny_patch16_224.pth)|[ViTSTR-Small](https://github.com/roatienza/deep-text-recognition-benchmark/releases/download/v0.1.0/vitstr_small_patch16_224.pth)|[ViTSTR-Base](https://github.com/roatienza/deep-text-recognition-benchmark/releases/download/v0.1.0/vitstr_base_patch16_224.pth)|
