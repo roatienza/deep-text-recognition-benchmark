@@ -8,3 +8,4 @@ nltk==3.4.5
 natsort==7.1.0
 opencv-python==4.5.1.48
 opencv-contrib-python==4.5.1.48
+wand==0.6.6
