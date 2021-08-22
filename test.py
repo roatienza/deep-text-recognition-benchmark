@@ -25,11 +25,10 @@ def benchmark_all_eval(model, criterion, converter, opt): #, calculate_infer_tim
 
     if opt.fast_acc:
     # # To easily compute the total accuracy of our paper.
-        eval_data_list = ['IIIT5k_3000', 'SVT', 'IC03_867', 'IC13_1015', 'IC15_2077', 'SVTP', 'CUTE80']
+        eval_data_list = ['SVT']
     else:
         # The evaluation datasets, dataset order is same with Table 1 in our paper.
-        eval_data_list = ['IIIT5k_3000', 'SVT', 'IC03_860', 'IC03_867', 'IC13_857',
-                          'IC13_1015', 'IC15_1811', 'IC15_2077', 'SVTP', 'CUTE80']
+        eval_data_list = ['SVT']
 
     if opt.calculate_infer_time:
         evaluation_batch_size = 1  # batch_size should be 1 to calculate the GPU inference time per image.
