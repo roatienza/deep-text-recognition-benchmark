@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import torch
 import torch.nn as nn
 
 from modules.transformation import TPS_SpatialTransformerNetwork
@@ -22,8 +21,6 @@ from modules.feature_extraction import VGG_FeatureExtractor, RCNN_FeatureExtract
 from modules.sequence_modeling import BidirectionalLSTM
 from modules.prediction import Attention
 from modules.vitstr import create_vitstr
-
-import math
 
 
 class Model(nn.Module):
@@ -43,7 +40,7 @@ class Model(nn.Module):
             print('No Transformation module specified')
 
         if opt.Transformer:
-            self.vitstr= create_vitstr(num_tokens=opt.num_class, model=opt.TransformerModel)
+            self.vitstr = create_vitstr(num_tokens=opt.num_class, model=opt.TransformerModel)
             return
 
         """ FeatureExtraction """

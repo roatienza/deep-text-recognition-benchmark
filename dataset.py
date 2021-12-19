@@ -265,7 +265,7 @@ class RawDataset(Dataset):
         return (img, self.image_path_list[index])
 
 
-def isless(prob=0.5):
+def is_less(prob=0.5):
     return np.random.uniform(0,1) < prob
 
 class DataAugment(object):
