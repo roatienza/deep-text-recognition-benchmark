@@ -330,7 +330,7 @@ class DataAugment(object):
         '''
         img = img.resize((self.opt.imgW, self.opt.imgH), Image.BICUBIC)
 
-        if self.opt.eval or isless(self.opt.intact_prob):
+        if self.opt.eval or is_less(self.opt.intact_prob):
             pass
         elif self.opt.isrand_aug or self.isbaseline_aug:
             img = self.rand_aug(img)
