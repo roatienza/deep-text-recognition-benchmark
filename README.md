@@ -135,14 +135,15 @@ CUDA_VISIBLE_DEVICES=0 python3 test.py --eval_data data_lmdb_release/evaluation
 If you find this work useful, please cite:
 
 ```
-@inproceedings{atienza2021vitstr,
-  title={Vision Transformer for Fast and Efficient Scene Text Recognition},
+@inproceedings{atienza2021vision,
+  title={Vision transformer for fast and efficient scene text recognition},
   author={Atienza, Rowel},
-  booktitle = {International Conference on Document Analysis and Recognition (ICDAR)},
+  booktitle={International Conference on Document Analysis and Recognition},
+  pages={319--334},
   year={2021},
-  pubstate={published},
-  tppubtype={inproceedings}
+  organization={Springer}
 }
+
 ```
 
 
