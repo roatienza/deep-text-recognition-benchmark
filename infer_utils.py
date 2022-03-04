@@ -14,9 +14,6 @@ class TokenLabelConverter(object):
         # [GO] for the start token of the attention decoder. [s] for end-of-sentence token.
         self.SPACE = '[s]'
         self.GO = '[GO]'
-        #self.MASK = '[MASK]'
-
-        #self.list_token = [self.GO, self.SPACE, self.MASK]
         self.list_token = [self.GO, self.SPACE]
         self.character = self.list_token + list(args.character)
 
@@ -62,16 +59,16 @@ class NormalizePAD(object):
         img = self.toTensor(img)
         img.sub_(0.5).div_(0.5)
         c, h, w = img.size()
-        Pad_img = torch.FloatTensor(*self.max_size).fill_(0)
-        Pad_img[:, :, :w] = img  # right pad
+        pad_img = torch.FloatTensor(*self.max_size).fill_(0)
+        pad_img[:, :, :w] = img  # right pad
         if self.max_size[2] != w:  # add border Pad
-            Pad_img[:, :, w:] = img[:, :, w - 1].unsqueeze(2).expand(c, h, self.max_size[2] - w)
+            pad_img[:, :, w:] = img[:, :, w - 1].unsqueeze(2).expand(c, h, self.max_size[2] - w)
 
-        return Pad_img
+        return pad_img
 
 
 def get_args():
-    parser = argparse.ArgumentParser(description='STR')
+    parser = argparse.ArgumentParser(description='ViTSTR evaluation')
 
     parser.add_argument('--image', required=True, help='path to input image')
     parser.add_argument('--batch_max_length', type=int, default=25, help='maximum-label-length')
@@ -82,8 +79,7 @@ def get_args():
                         default='0123456789abcdefghijklmnopqrstuvwxyz', help='character label')
     parser.add_argument('--input-channel', type=int, default=1,
                         help='the number of input channel of Feature extractor')
-    choices = ["vitstr_small_patch16_224_aug.pth"]
-    parser.add_argument('--model', default=choices[0], help='Which vit/deit transformer model', choices=choices)
+    parser.add_argument('--model', default="vitstr_small_patch16_224_aug_infer.pth", help='ViTSTR model')
 
     args = parser.parse_args()
     return args
