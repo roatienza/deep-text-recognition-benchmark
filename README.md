@@ -30,7 +30,7 @@ CUDA_VISIBLE_DEVICES=0 python3 test.py --eval_data data_lmdb_release/evaluation 
 --SequenceModeling None --Prediction None --Transformer \
 --sensitive --data_filtering_off  --imgH 224 --imgW 224 \
 --TransformerModel=vitstr_small_patch16_224 --saved_model \ 
-https://github.com/roatienza/deep-text-recognition-benchmark/releases/download/v0.1.0/vitstr_small_patch16_224_aug.pth 
+https://github.com/roatienza/deep-text-recognition-benchmark/releases/download/v0.1.0/vitstr_small_patch16_224_aug.pth \
 ```
 
 Available model weights:
