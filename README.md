@@ -41,7 +41,7 @@ python3 infer.py --image demo_image/demo_2.jpg --model vitstr_small_patch16_224_
 
 ### Dataset
 
-Download lmdb dataset. See CLOVA AI original documentation below.
+Download lmdb dataset from [CLOVA AI Deep Text Recognition Benchmark](https://github.com/clovaai/deep-text-recognition-benchmark).
 
 ### Quick validation using a pre-trained model 
 
