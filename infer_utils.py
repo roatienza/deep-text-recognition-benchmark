@@ -1,10 +1,41 @@
 import torch
 import argparse
+from PIL import Image
 from torchvision import transforms
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-class TokenLabelConverter(object):
+class ViTSTRFeatureExtractor:
+    def __init__(self, input_channel=1, imgH=224, imgW=224):
+        self.imgH = imgH
+        self.imgW = imgW
+        self.transform = NormalizePAD((input_channel, imgH, imgW))
+    
+    def __call__(self, img_path):
+        img = Image.open(img_path).convert('L')
+        img = img.resize((self.imgW, self.imgH), Image.BICUBIC)
+        img = self.transform(img)
+        img = torch.unsqueeze(img, dim=0)
+        return img
+    
+class NormalizePAD:
+    def __init__(self, max_size, PAD_type='right'):
+        self.toTensor = transforms.ToTensor()
+        self.max_size = max_size
+        self.max_width_half = max_size[2] // 2 
+        self.PAD_type = PAD_type
+
+    def __call__(self, img):
+        img = self.toTensor(img)
+        img.sub_(0.5).div_(0.5)
+        c, h, w = img.size()
+        pad_img = torch.FloatTensor(*self.max_size).fill_(0)
+        pad_img[:, :, :w] = img  # right pad
+        if self.max_size[2] != w:  # add border Pad
+            pad_img[:, :, w:] = img[:, :, w - 1].unsqueeze(2).expand(c, h, self.max_size[2] - w)
+
+        return pad_img
+
+class TokenLabelConverter:
     """ Convert between text-label and text-index """
 
     def __init__(self, args):
@@ -36,33 +67,6 @@ class TokenLabelConverter(object):
             text = ''.join([self.character[i] for i in text_index[index, :]])
             texts.append(text)
         return texts
-
-
-def get_device(verbose=True):
-    use_cuda = torch.cuda.is_available()
-    device = torch.device("cuda" if use_cuda else "cpu")
-    if verbose:
-        print("Device:", device)
-    return device
-
-class NormalizePAD(object):
-
-    def __init__(self, max_size, PAD_type='right'):
-        self.toTensor = transforms.ToTensor()
-        self.max_size = max_size
-        self.max_width_half = max_size[2] // 2 
-        self.PAD_type = PAD_type
-
-    def __call__(self, img):
-        img = self.toTensor(img)
-        img.sub_(0.5).div_(0.5)
-        c, h, w = img.size()
-        pad_img = torch.FloatTensor(*self.max_size).fill_(0)
-        pad_img[:, :, :w] = img  # right pad
-        if self.max_size[2] != w:  # add border Pad
-            pad_img[:, :, w:] = img[:, :, w - 1].unsqueeze(2).expand(c, h, self.max_size[2] - w)
-
-        return pad_img
 
 
 def get_args():
