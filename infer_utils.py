@@ -1,7 +1,5 @@
 import torch
-import numpy as np
 import argparse
-import math
 from torchvision import transforms
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -52,7 +50,7 @@ class NormalizePAD(object):
     def __init__(self, max_size, PAD_type='right'):
         self.toTensor = transforms.ToTensor()
         self.max_size = max_size
-        self.max_width_half = math.floor(max_size[2] / 2)
+        self.max_width_half = max_size[2] // 2 
         self.PAD_type = PAD_type
 
     def __call__(self, img):
