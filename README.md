@@ -31,6 +31,14 @@ After the model has been downloaded, you can perform inference using the local c
 python3 infer.py --image demo_image/demo_2.jpg --model vitstr_small_patch16_224_aug_infer.pth
 ```
 
+#### Sample Results:
+| Input Image | Output Prediction  |
+| :---: | :---: |
+| ![demo_1](demo_image/demo_1.png) | `Available` |
+| ![demo_2](demo_image/demo_2.jpg) | `SHAKESHACK` |
+| ![demo_3](demo_image/demo_3.png) | `Londen` |
+| ![demo_4](demo_image/demo_4.png) | `Greenstead` |
+
 ### Dataset
 
 Download lmdb dataset. See CLOVA AI original documentation below.
