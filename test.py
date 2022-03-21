@@ -14,7 +14,7 @@ from nltk.metrics.distance import edit_distance
 
 from utils import CTCLabelConverter, AttnLabelConverter, Averager, TokenLabelConverter
 from dataset import hierarchical_dataset, AlignCollate
-from model import Model
+from model import Model, JitModel
 from utils import get_args
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -220,7 +220,7 @@ def get_state_dict(state_dict):
 # https://pytorch.org/tutorials/beginner/saving_loading_models.html
 def get_infer_model(model, opt):
     new_state_dict = get_state_dict(model.state_dict())
-    model = Model(opt)
+    model = JitModel(opt)
     model.load_state_dict(new_state_dict)
     if opt.quantized:
         backend = "qnnpack"

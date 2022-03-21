@@ -26,6 +26,7 @@ from modules.vitstr import create_vitstr
 import math
 
 
+
 class Model(nn.Module):
 
     def __init__(self, opt):
@@ -102,5 +103,14 @@ class Model(nn.Module):
         else:
             prediction = self.Prediction(contextual_feature.contiguous(), text, is_train, batch_max_length=self.opt.batch_max_length)
 
+        return prediction
+
+class JitModel(Model):
+    def __init__(self, opt):
+        super(Model, self).__init__()
+        self.vitstr= create_vitstr(num_tokens=opt.num_class, model=opt.TransformerModel)
+
+    def forward(self, input, seqlen:int = 25):
+        prediction = self.vitstr(input, seqlen=seqlen)
         return prediction
 

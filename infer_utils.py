@@ -83,5 +83,9 @@ def get_args():
                         help='the number of input channel of Feature extractor')
     parser.add_argument('--model', default="vitstr_small_patch16_224_aug_infer.pth", help='ViTSTR model')
 
+    # For Raspberry Pi 4
+    parser.add_argument('--quantized', action='store_true', help='Model quantization')
+    parser.add_argument('--rpi', action='store_true', help='run on rpi 4')
+
     args = parser.parse_args()
     return args
