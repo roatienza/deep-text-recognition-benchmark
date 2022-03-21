@@ -322,5 +322,8 @@ def get_args(is_train=True):
     # orig paper uses this for fast benchmarking
     parser.add_argument('--fast_acc', action='store_true', help='Fast average accuracy computation')
    
+    parser.add_argument('--infer_model', type=str,
+                        default=None, help='generate inference jit model')
+    parser.add_argument('--quantized', action='store_true', help='Model quantization')
     args = parser.parse_args()
     return args

@@ -208,6 +208,35 @@ def validation(model, criterion, evaluation_loader, converter, opt):
     return valid_loss_avg.val(), accuracy, norm_ED, preds_str, confidence_score_list, labels, infer_time, length_of_data
 
 
+def get_state_dict(state_dict):
+    from collections import OrderedDict
+    new_state_dict = OrderedDict()
+    for k, v in state_dict.items():
+        name = k[7:] # remove module.
+        new_state_dict[name] = v
+    return new_state_dict
+
+
+# https://pytorch.org/tutorials/beginner/saving_loading_models.html
+def get_infer_model(model, opt):
+    new_state_dict = get_state_dict(model.state_dict())
+    model = Model(opt)
+    model.load_state_dict(new_state_dict)
+    if opt.quantized:
+        backend = "qnnpack"
+        model.qconfig = torch.quantization.get_default_qconfig(backend)
+        torch.backends.quantized.engine = backend
+        model_static_quantized = torch.quantization.prepare(model, inplace=False)
+        model_static_quantized = torch.quantization.convert(model_static_quantized, inplace=False)
+        #model_scripted = torch.jit.script(model_static_quantized)
+        #model_scripted.save(opt.infer_model)
+        torch.save(model_static_quantized, opt.infer_model)
+        return
+
+    model_scripted = torch.jit.script(model)
+    model_scripted.save(opt.infer_model)
+    return
+
 def test(opt):
     """ model configuration """
     if opt.Transformer:
@@ -236,6 +265,10 @@ def test(opt):
         model.load_state_dict(torch.load(opt.saved_model, map_location=device))
     opt.exp_name = '_'.join(opt.saved_model.split('/')[1:])
     # print(model)
+
+    if opt.infer_model is not None:
+        get_infer_model(model, opt)
+        return
 
     """ keep evaluation model and result logs """
     os.makedirs(f'./result/{opt.exp_name}', exist_ok=True)

@@ -20,6 +20,22 @@ new_state_dict = OrderedDict()
 for k, v in state_dict.items():
     name = k[7:] # remove module.
     new_state_dict[name] = v
+
+To generate torchscript jit
+model.py
+    def forward(self, input, seqlen: int =25): #text, is_train=True, seqlen=25):
+        """ Transformation stage """
+        #if not self.stages['Trans'] == "None":
+        #    input = self.Transformation(input)
+
+        #if self.stages['ViTSTR']:
+        prediction = self.vitstr(input, seqlen=seqlen)
+        return prediction
+
+
+modules/vitstr.py
+    def forward(self, x, seqlen: int =25):
+
 '''
 
 

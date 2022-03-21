@@ -73,7 +73,7 @@ class ViTSTR(VisionTransformer):
         x = self.norm(x)
         return x
 
-    def forward(self, x, seqlen=25):
+    def forward(self, x, seqlen: int =25):
         x = self.forward_features(x)
         x = x[:, :seqlen]
 
