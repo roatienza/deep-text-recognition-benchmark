@@ -325,5 +325,6 @@ def get_args(is_train=True):
     parser.add_argument('--infer_model', type=str,
                         default=None, help='generate inference jit model')
     parser.add_argument('--quantized', action='store_true', help='Model quantization')
+    parser.add_argument('--static', action='store_true', help='Static model quantization')
     args = parser.parse_args()
     return args

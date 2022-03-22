@@ -1,3 +1,20 @@
+'''
+
+Test on single GPU:
+    CUDA_VISIBLE_DEVICES=0 python3 test.py --eval_data data_lmdb_release/evaluation --benchmark_all_eval --Transformation None --FeatureExtraction None --SequenceModeling None --Prediction None --Transformer --sensitive --data_filtering_off  --imgH 224 --imgW 224 --TransformerModel=vitstr_small_patch16_224 --saved_model https://github.com/roatienza/deep-text-recognition-benchmark/releases/download/v0.1.0/vitstr_small_patch16_224_aug.pth 
+
+
+To convert to quantized model, add the ff to the script above:
+    --infer_model=vitstr_small_patch16_quant.pt --quantized
+
+To convert to a standalone jit model, add the ff to the script above:
+    --infer_model=vitstr_small_patch16_jit.pt 
+
+
+'''
+
+
+
 import os
 import time
 import string
@@ -222,17 +239,24 @@ def get_infer_model(model, opt):
     new_state_dict = get_state_dict(model.state_dict())
     model = JitModel(opt)
     model.load_state_dict(new_state_dict)
+    model.eval()
     if opt.quantized:
-        backend = "qnnpack"
-        model.qconfig = torch.quantization.get_default_qconfig(backend)
-        torch.backends.quantized.engine = backend
-        model_static_quantized = torch.quantization.prepare(model, inplace=False)
-        model_static_quantized = torch.quantization.convert(model_static_quantized, inplace=False)
-        #model_scripted = torch.jit.script(model_static_quantized)
-        #model_scripted.save(opt.infer_model)
-        torch.save(model_static_quantized, opt.infer_model)
-        return
-
+        # static quantization : Work in progress
+        if opt.static:
+            backend = "qnnpack"
+            model.qconfig = torch.quantization.get_default_qconfig(backend)
+            torch.backends.quantized.engine = backend
+            model_quantized = torch.quantization.prepare(model, inplace=False)
+            model_quantized = torch.quantization.convert(model_quantized, inplace=False)
+        # support for dynamic quantization 
+        else:
+            from torch.quantization import quantize_dynamic
+            model_quantized = quantize_dynamic(model=model, 
+                                               qconfig_spec={torch.nn.Linear}, dtype=torch.qint8, inplace=False
+                                               )
+        # quantized model save/load https://pytorch.org/docs/stable/quantization.html
+        model = torch.jit.script(model_quantized)
+        
     model_scripted = torch.jit.script(model)
     model_scripted.save(opt.infer_model)
     return
