@@ -23,6 +23,19 @@ python3 infer.py --image demo_image/demo_1.png \
 --model https://github.com/roatienza/deep-text-recognition-benchmark/releases/download/v0.1.0/vitstr_small_patch16_224_aug_infer.pth
 ```
 
+**Quantized Model**
+
+```
+python3 infer.py --image demo_image/demo_1.png --model  https://github.com/roatienza/deep-text-recognition-benchmark/releases/download/v0.1.0/vitstr_small_patch16_quant.pt --quantized
+```
+
+**Quantized Model on Raspberry Pi 4**
+
+```
+python3 infer.py --image demo_image/demo_1.png --model  https://github.com/roatienza/deep-text-recognition-benchmark/releases/download/v0.1.0/vitstr_small_patch16_quant.pt --quantized --rpi
+```
+
+
 Replace `--image` by the path to your target image file.
 
 After the model has been downloaded, you can perform inference using the local checkpoint:
