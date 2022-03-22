@@ -50,8 +50,13 @@ def infer(args):
     converter = TokenLabelConverter(args)
     args.num_class = len(converter.character)
     img = ViTSTRFeatureExtractor()(args.image)
-    if args.rpi:
-        backend = "qnnpack"
+
+    if args.quantized:
+        if args.rpi:
+            backend = "qnnpack"   #arm
+        else:
+            backend =  "fbgemm"   #x86
+
         torch.backends.quantized.engine = backend
     
     if validators.url(args.model):
@@ -59,7 +64,8 @@ def infer(args):
         torch.hub.download_url_to_file(args.model, checkpoint)
     else:
         checkpoint = args.model
-    if args.rpi:
+
+    if args.quantized:
         model = torch.jit.load(checkpoint)
     else:
         model = torch.load(checkpoint)
