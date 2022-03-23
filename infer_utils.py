@@ -72,7 +72,7 @@ class TokenLabelConverter:
 def get_args():
     parser = argparse.ArgumentParser(description='ViTSTR evaluation')
 
-    parser.add_argument('--image', required=True, help='path to input image')
+    parser.add_argument('--image', default=None, help='path to input image')
     parser.add_argument('--batch_max_length', type=int, default=25, help='maximum-label-length')
     parser.add_argument('--imgH', type=int, default=224, help='the height of the input image')
     parser.add_argument('--imgW', type=int, default=224, help='the width of the input image')
@@ -82,6 +82,8 @@ def get_args():
     parser.add_argument('--input-channel', type=int, default=1,
                         help='the number of input channel of Feature extractor')
     parser.add_argument('--model', default="vitstr_small_patch16_224_aug_infer.pth", help='ViTSTR model')
+    parser.add_argument('--gpu', action='store_true', help='use gpu for model inference')
+    parser.add_argument('--time', action='store_true', help='perform speed benchmark')
 
     # For Raspberry Pi 4
     parser.add_argument('--quantized', action='store_true', help='Model quantization')
