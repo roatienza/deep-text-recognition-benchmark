@@ -19,8 +19,7 @@ pip3 install -r requirements.txt
 ### Inference
 
 ```
-python3 infer.py --image demo_image/demo_1.png \
---model https://github.com/roatienza/deep-text-recognition-benchmark/releases/download/v0.1.0/vitstr_small_patch16_224_aug_infer.pth
+python3 infer.py --image demo_image/demo_1.png --model https://github.com/roatienza/deep-text-recognition-benchmark/releases/download/v0.1.0/vitstr_small_patch16_jit.pt
 ```
 
 Replace `--image` by the path to your target image file.
@@ -28,7 +27,7 @@ Replace `--image` by the path to your target image file.
 After the model has been downloaded, you can perform inference using the local checkpoint:
 
 ```
-python3 infer.py --image demo_image/demo_2.jpg --model vitstr_small_patch16_224_aug_infer.pth
+python3 infer.py --image demo_image/demo_2.jpg --model vitstr_small_patch16_jit.pt
 ```
 
 **Quantized Model on x86**
