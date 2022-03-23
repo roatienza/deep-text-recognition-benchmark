@@ -6,6 +6,36 @@ Usage:
 
 --image: path to image file to convert to text
 
+Inference timing:
+    Quantized on CPU:
+        python3 infer.py --model vitstr_small_patch16_quant.pt --time --quantized
+        Average inference time per image: 2.22e-02 sec
+
+    CPU:
+        python3 infer.py --model vitstr_small_patch16_224_aug_infer.pth --time 
+        Average inference time per image: 3.24e-02 sec
+
+        With JIT:
+            python3 infer.py --model vitstr_small_patch16_jit.pt --time 
+            Average inference time per image: 2.75e-02 sec
+
+    GPU:
+        python3 infer.py --model vitstr_small_patch16_224_aug_infer.pth --time --gpu
+        Average inference time per image: 3.50e-03 sec
+        
+        With JIT:
+            python3 infer.py --model vitstr_small_patch16_jit.pt --time --gpu
+            Average inference time per image: 2.56e-03 sec
+
+    RPi 4 CPU Quantized:
+        python3 infer.py --model vitstr_small_patch16_quant.pt --time --rpi --quantized
+        Average inference time per image: 3.59e-01 sec
+
+    RPi 4 CPU JIT:
+        python3 infer.py --model vitstr_small_patch16_jit.pt  --time --rpi
+        Average inference time per image: 4.64e-01 sec
+        
+
 To generate torchscript jit
 model.py
     def forward(self, input, seqlen: int =25): #text, is_train=True, seqlen=25):
