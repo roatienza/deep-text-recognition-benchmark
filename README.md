@@ -43,6 +43,29 @@ python3 infer.py --image demo_image/demo_1.png --model  https://github.com/roati
 python3 infer.py --image demo_image/demo_1.png --model  https://github.com/roatienza/deep-text-recognition-benchmark/releases/download/v0.1.0/vitstr_small_patch16_quant.pt --quantized --rpi
 ```
 
+**Inference Time on GPU using JIT**
+```
+python3 infer.py --model https://github.com/roatienza/deep-text-recognition-benchmark/releases/download/v0.1.0/vitstr_small_patch16_jit.pt --time --gpu
+Average inference time per image: 2.57e-03 sec (Quadro RTX 6000)
+Average inference time per image: 4.53e-03 sec (V100)
+```
+
+**Inference Time on CPU using JIT**
+```
+python3 infer.py --model https://github.com/roatienza/deep-text-recognition-benchmark/releases/download/v0.1.0/vitstr_small_patch16_jit.pt --time
+Average inference time per image: 2.80e-02 sec (AMD Ryzen Threadripper 3970X 32-Core)
+Average inference time per image: 2.70e-02 sec (Intel(R) Xeon(R) CPU E5-2650 v4 @ 2.20GHz)
+```
+
+**Inference Time on RPi 4**
+```
+python3 infer.py --model https://github.com/roatienza/deep-text-recognition-benchmark/releases/download/v0.1.0/vitstr_small_patch16_quant.pt  --time --rpi --quantized
+Average inference time per image: 3.69e-01 sec (Quantized)
+
+python3 infer.py --model https://github.com/roatienza/deep-text-recognition-benchmark/releases/download/v0.1.0/vitstr_small_patch16_jit.pt  --time --rpi
+Average inference time per image: 4.64e-01 sec (JIT)
+```
+
 #### Sample Results:
 | Input Image | Output Prediction  |
 | :---: | :---: |
