@@ -163,6 +163,7 @@ def train(opt):
 
     while(True):
         # train part
+        opt.eval = False
         image_tensors, labels = train_dataset.get_batch()
         image = image_tensors.to(device)
         if not opt.Transformer:
@@ -200,6 +201,7 @@ def train(opt):
             # for log
             with open(f'./saved_models/{opt.exp_name}/log_train.txt', 'a') as log:
                 model.eval()
+                opt.eval = True
                 with torch.no_grad():
                     valid_loss, current_accuracy, current_norm_ED, preds, confidence_score, labels, infer_time, length_of_data = validation(
                         model, criterion, valid_loader, converter, opt)
